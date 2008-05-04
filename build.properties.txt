@@ -1,0 +1,3 @@
+catalina.home:  /opt/local/share/java/tomcat5
+manager.username: you
+manager.password: blah
