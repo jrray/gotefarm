@@ -1,3 +1,6 @@
 catalina.home:  /opt/local/share/java/tomcat5
 manager.username: you
 manager.password: blah
+
+scala-compiler.jar: /opt/local/share/scala/lib/scala-compiler.jar
+scala-library.jar: /opt/local/share/scala/lib/scala-library.jar

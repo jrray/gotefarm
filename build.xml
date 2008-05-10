@@ -118,6 +118,7 @@
   <property name="manager.url"   value="http://localhost:8080/manager"/>
   <property name="src.home"      value="${basedir}/src"/>
   <property name="web.home"      value="${basedir}/web"/>
+  <property name="lib.home"      value="${basedir}/lib"/>
 
 
 <!-- ================== Custom Ant Task Definitions ======================= -->
@@ -146,6 +147,15 @@
   <taskdef name="list"     classname="org.apache.catalina.ant.ListTask"/>
   <taskdef name="reload"   classname="org.apache.catalina.ant.ReloadTask"/>
   <taskdef name="undeploy" classname="org.apache.catalina.ant.UndeployTask"/>
+
+  <path id="scala.classpath">
+    <pathelement location="${scala-compiler.jar}"/>
+    <pathelement location="${scala-library.jar}"/>
+  </path>
+
+  <taskdef resource="scala/tools/ant/antlib.xml">
+    <classpath refid="scala.classpath"/>
+  </taskdef>
 
 
 <!--  ==================== Compilation Control Options ==================== -->
@@ -209,12 +219,17 @@
 -->
 
   <path id="compile.classpath">
+    <path refid="scala.classpath"/>
 
     <!-- Include all JAR files that will be included in /WEB-INF/lib -->
     <!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 <!--
     <pathelement location="${foo.jar}"/>
 -->
+    <pathelement location="${lib.home}/spring.jar"/>
+    <pathelement location="${lib.home}/spring-webmvc.jar"/>
+    <pathelement location="${lib.home}/commons-logging.jar"/>
+    <pathelement location="${lib.home}/aspectjweaver.jar"/>
 
     <!-- Include all elements that Tomcat exposes to applications -->
     <pathelement location="${catalina.home}/common/classes"/>
@@ -275,9 +290,8 @@
 
 -->
 
-  <target name="compile" depends="prepare"
+  <target name="compile_java" depends="prepare"
    description="Compile Java sources">
-
     <!-- Compile Java classes as necessary -->
     <mkdir    dir="${build.home}/WEB-INF/classes"/>
     <javac srcdir="${src.home}"
@@ -287,10 +301,25 @@
          optimize="${compile.optimize}">
         <classpath refid="compile.classpath"/>
     </javac>
+  </target>
+
+  <target name="compile_scala" depends="compile_java"
+   description="Compile Scala sources">
+    <!-- Compile Java classes as necessary -->
+    <scalac srcdir="${src.home}"
+          destdir="${build.home}/WEB-INF/classes"
+            force="changed">
+        <classpath refid="compile.classpath"/>
+        <include name="**/*.scala"/>
+    </scalac>
+  </target>
+
+  <target name="compile" depends="compile_java,compile_scala"
+   description="Compile Java and Scala sources">
 
     <!-- Copy application resources -->
     <copy  todir="${build.home}/WEB-INF/classes">
-      <fileset dir="${src.home}" excludes="**/*.java"/>
+      <fileset dir="${src.home}" excludes="**/*.java **/*.scala"/>
     </copy>
 
   </target>
@@ -317,10 +346,12 @@
    description="Create binary distribution">
 
     <!-- Copy documentation subdirectories -->
+    <!--
     <mkdir   dir="${dist.home}/docs"/>
     <copy    todir="${dist.home}/docs">
       <fileset dir="${docs.home}"/>
     </copy>
+    -->
 
     <!-- Create application JAR file -->
     <jar jarfile="${dist.home}/${app.name}-${app.version}.war"
@@ -380,11 +411,13 @@
    description="Create Javadoc API documentation">
 
     <mkdir          dir="${dist.home}/docs/api"/>
+    <!--
     <javadoc sourcepath="${src.home}"
                 destdir="${dist.home}/docs/api"
            packagenames="*">
       <classpath refid="compile.classpath"/>
     </javadoc>
+    -->
 
   </target>
 
@@ -443,6 +476,10 @@
 <!--
     <copy todir="${build.home}/WEB-INF/lib" file="${foo.jar}"/>
 -->
+    <copy todir="${build.home}/WEB-INF/lib">
+      <fileset dir="${lib.home}"/>
+    </copy>
+    <copy todir="${build.home}/WEB-INF/lib" file="${scala-library.jar}"/>
 
     <!-- Copy static files from external dependencies as needed -->
     <!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
