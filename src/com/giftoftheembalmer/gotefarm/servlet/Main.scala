@@ -7,11 +7,21 @@ import javax.servlet.http.{
   HttpServletResponse
 }
 
+import com.giftoftheembalmer.gotefarm.service._
+
 class Main extends FrameworkServlet
 {
+  private var goteFarmService: GoteFarmServiceT = null
+
+  override def initFrameworkServlet() = {
+    goteFarmService = getWebApplicationContext().getBean("goteFarmService").asInstanceOf[GoteFarmServiceT]
+  }
+
   override def doService(request: HttpServletRequest, response: HttpServletResponse) = {
     response.setContentType("text/html")
     val out = response.getWriter()
     out.println("<html>Hello World</html>")
+
+    // goteFarmService.test()
   }
 }
