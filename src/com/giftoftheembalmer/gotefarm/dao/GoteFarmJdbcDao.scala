@@ -111,5 +111,48 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         created INTEGER NOT NULL
       )"""
     )
+
+    if (!tableExists("role")) {
+      // A restricted role cannot be self-assigned to a character.
+      // An admin can add restricted roles to any character.
+      jdbc.execute(
+        """CREATE TABLE role (
+          roleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          name TEXT UNIQUE NOT NULL,
+          restricted INTEGER NOT NULL
+        )"""
+      )
+
+      val roles = Array(
+        "Tank" -> 0,
+        "Healer" -> 0,
+        "DPS" -> 0,
+        "AoE DPS" -> 0,
+        "Mage Tank (Krosh)" -> 1,
+        "Warlock Tank (Leotheras)" -> 1,
+        "Nature Resist Tank (Hydross)" -> 1,
+        "Frost Resist Tank (Hydross)" -> 1,
+        "Nature/Frost Resist Tank (Hydross adds)" -> 1
+      )
+
+      jdbc.batchUpdate(
+        """INSERT INTO role (name,restricted) VALUES (?,?)""",
+        new BatchPreparedStatementSetter {
+          def getBatchSize(): Int = roles.size
+          def setValues(ps: PreparedStatement, i: Int) {
+            ps.setString(1, roles(i)._1)
+            ps.setInt(2, roles(i)._2)
+          }
+        }
+      )
+    }
+
+    jdbc.execute(
+      """CREATE TABLE IF NOT EXISTS chrrole (
+        chrroleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        characterid INTEGER NOT NULL,
+        roleid INTEGER NOT NULL
+      )"""
+    )
   }
 }
