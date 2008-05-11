@@ -18,7 +18,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       true
     }
     catch {
-      case _:org.springframework.dao.IncorrectResultSizeDataAccessException =>
+      case _: org.springframework.dao.IncorrectResultSizeDataAccessException =>
         false
     }
   }
