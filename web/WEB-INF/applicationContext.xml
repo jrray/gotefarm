@@ -48,7 +48,14 @@
 
 	<!-- ========================= BUSINESS OBJECT DEFINITIONS ======================== -->
 
-        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.service.GoteFarmServiceImpl"/>
+        <bean id="goteFarmDao" class="com.giftoftheembalmer.gotefarm.dao.GoteFarmJdbcDao">
+            <property name="dataSource" ref="dataSource"/>
+        </bean>
+
+        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.service.GoteFarmServiceImpl"
+            init-method="generateTables">
+            <property name="goteFarmDao" ref="goteFarmDao"/>
+        </bean>
 
 	<!-- ========================= ASPECT CONFIGURATION ======================== -->
 
@@ -80,6 +87,7 @@
 		<tx:attributes>
 			<tx:method name="insert*"/>
 			<tx:method name="update*"/>
+			<tx:method name="generate*"/>
 			<tx:method name="*" read-only="true"/>
 		</tx:attributes>
 	</tx:advice>
