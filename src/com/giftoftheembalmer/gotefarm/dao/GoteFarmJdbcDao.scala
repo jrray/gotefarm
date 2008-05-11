@@ -154,5 +154,78 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         roleid INTEGER NOT NULL
       )"""
     )
+
+    if (!tableExists("badge")) {
+      // A badge is like a role, it is an attribute that a character can earn.
+      jdbc.execute(
+        """CREATE TABLE badge (
+          badgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          name TEXT UNIQUE NOT NULL
+        )"""
+      )
+
+      val badges = Array(
+        "Karazhan Geared",
+        "Gruul/Mag Geared",
+        "ZA Geared",
+        "SSC/TK Geared",
+        "BT/HYJ Geared",
+        "Sunwell Geared"
+      )
+
+      jdbc.batchUpdate(
+        """INSERT INTO badge (name) VALUES (?)""",
+        new BatchPreparedStatementSetter {
+          def getBatchSize(): Int = badges.size
+          def setValues(ps: PreparedStatement, i: Int) {
+            ps.setString(1, badges(i))
+          }
+        }
+      )
+    }
+
+    jdbc.execute(
+      """CREATE TABLE IF NOT EXISTS chrbadge (
+        chrbadgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        characterid INTEGER NOT NULL,
+        badgeid INTEGER NOT NULL
+      )"""
+    )
+
+    jdbc.execute(
+      """CREATE TABLE IF NOT EXISTS eventtmpl (
+        eventtmplid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        name TEXT UNIQUE NOT NULL
+      )"""
+    )
+
+    // event-global badge requirements
+    // if present, a character must have earned the specified badge to sign
+    // up for the event
+    jdbc.execute(
+      """CREATE TABLE IF NOT EXISTS eventtmplbadge (
+        eventtmplbadgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        badgeid INTEGER NOT NULL
+      )"""
+    )
+
+    jdbc.execute(
+      """CREATE TABLE IF NOT EXISTS eventtmplrole (
+        eventtmplroleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        roleid INTEGER NOT NULL,
+        count INTEGER NOT NULL CHECK (count > 0)
+      )"""
+    )
+
+    // role-specific badge requirements
+    // if present, a character must have earned the specified badge to be
+    // eligible to sign up for the associated role
+    jdbc.execute(
+      """CREATE TABLE IF NOT EXISTS eventtmplrolebadge (
+        eventtmplrolebadgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        eventtmplroleid INTEGER NOT NULL,
+        badgeid INTEGER NOT NULL
+      )"""
+    )
   }
 }
