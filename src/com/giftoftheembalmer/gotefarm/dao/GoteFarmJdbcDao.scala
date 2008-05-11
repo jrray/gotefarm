@@ -31,6 +31,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         accountid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        admin INTEGER NOT NULL,
         created INTEGER NOT NULL,
         lastevent INTEGER
       )"""
