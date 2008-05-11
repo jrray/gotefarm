@@ -157,28 +157,32 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     if (!tableExists("badge")) {
       // A badge is like a role, it is an attribute that a character can earn.
+      // The score per badge is an arbitrary, unitless value used to compare
+      // the relative worth of badges.
       jdbc.execute(
         """CREATE TABLE badge (
           badgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          name TEXT UNIQUE NOT NULL
+          name TEXT UNIQUE NOT NULL,
+          score INTEGER NOT NULL
         )"""
       )
 
       val badges = Array(
-        "Karazhan Geared",
-        "Gruul/Mag Geared",
-        "ZA Geared",
-        "SSC/TK Geared",
-        "BT/HYJ Geared",
-        "Sunwell Geared"
+        "Karazhan Geared" -> 300,
+        "Gruul/Mag Geared" -> 400,
+        "ZA Geared" -> 450,
+        "SSC/TK Geared" -> 500,
+        "BT/HYJ Geared" -> 600,
+        "Sunwell Geared" -> 700
       )
 
       jdbc.batchUpdate(
-        """INSERT INTO badge (name) VALUES (?)""",
+        """INSERT INTO badge (name,score) VALUES (?,?)""",
         new BatchPreparedStatementSetter {
           def getBatchSize(): Int = badges.size
           def setValues(ps: PreparedStatement, i: Int) {
-            ps.setString(1, badges(i))
+            ps.setString(1, badges(i)._1)
+            ps.setInt(2, badges(i)._2)
           }
         }
       )
