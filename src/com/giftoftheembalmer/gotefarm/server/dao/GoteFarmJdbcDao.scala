@@ -159,6 +159,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       )
 
       val classes = Array(
+        "Death Knight",
         "Druid",
         "Hunter",
         "Mage",
