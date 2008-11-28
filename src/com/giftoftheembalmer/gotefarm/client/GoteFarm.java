@@ -95,14 +95,13 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     RootPanel.get().add(vpanel);
 
     String initToken = History.getToken();
-    if (initToken.length() == 0)
-      initToken = "events";
-
-    // onHistoryChanged() is not called when the application first runs. Call
-    // it now in order to reflect the initial state.
-    onHistoryChanged(initToken);
+    if (initToken.length() == 0) {
+        History.newItem("events");
+    }
 
     History.addHistoryListener(this);
+
+    History.fireCurrentHistoryState();
   }
 
   void showLogin() {
