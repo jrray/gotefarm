@@ -119,6 +119,7 @@
   <property name="src.home"      value="${basedir}/src"/>
   <property name="web.home"      value="${basedir}/web"/>
   <property name="lib.home"      value="${basedir}/lib"/>
+  <property name="gote-appl-public.dir" value="${src.home}/com/giftoftheembalmer/gotefarm/public"/>
 
 
 <!-- ================== Custom Ant Task Definitions ======================= -->
@@ -151,6 +152,17 @@
   <path id="scala.classpath">
     <pathelement location="${scala-compiler.jar}"/>
     <pathelement location="${scala-library.jar}"/>
+    <fileset dir="${lib.home}">
+        <include name="**/*.jar"/>
+    </fileset>
+  </path>
+
+  <path id="js.build.classpath">
+    <pathelement location="${src.home}"/>
+    <pathelement location="${gwt.dev.tool.jar}"/>
+    <fileset dir="${lib.home}">
+        <include name="**/*.jar"/>
+    </fileset>
   </path>
 
   <taskdef resource="scala/tools/ant/antlib.xml">
@@ -230,6 +242,7 @@
     <pathelement location="${lib.home}/spring-webmvc.jar"/>
     <pathelement location="${lib.home}/commons-logging.jar"/>
     <pathelement location="${lib.home}/aspectjweaver.jar"/>
+    <pathelement location="${lib.home}/gwt-user.jar"/>
 
     <!-- Include all elements that Tomcat exposes to applications -->
     <pathelement location="${catalina.home}/common/classes"/>
@@ -277,6 +290,47 @@
     <delete dir="${dist.home}"/>
   </target>
 
+    <uptodate property="compileJs.notrequired" targetfile="${build.home}/.js">
+        <srcfiles dir="${src.home}/com/giftoftheembalmer/gotefarm/client"/>
+        <!-- <srcfiles dir="${src.home}/com/giftoftheembalmer/gotefarm/public"/> -->
+    </uptodate>
+
+
+    <target name="stagePublic">
+        <copy todir="${build.home}/${gwt-output.dir}">
+            <fileset dir="${gote-appl-public.dir}" includes="**/*"/>
+        </copy>
+    </target>
+
+    <target name="compileJs" depends="compile, stagePublic, cleanForJs" unless="compileJs.notrequired">
+        <java classpathref="js.build.classpath"
+                classname="com.google.gwt.dev.GWTCompiler"
+                fork="true">
+                <jvmarg value="-Xmx1G"/>
+                <arg value="-out"/>
+                <arg value="${build.home}"/>
+                <arg value="${gwt-xml-ep.name}"/>
+                <!-- 
+                    Every now and then you will need uncomment the following to be able 
+                    to debug FF in Venkman to remove a gwt-user-lib bug that only 
+                    manifests itself in non IE browsers.
+                <arg value="-style"/>
+                <arg value="DETAILED"/>
+                -->
+        </java>
+        <move file="${build.home}/${gwt-xml-ep.name}" tofile="${build.home}/${gwt-output.dir}"/>
+        <touch file="${build.home}/.js"/>
+    </target>
+
+    <target name="cleanForJs" unless="compileJs.notrequired">
+        <delete includeEmptyDirs="true" failonerror="false">
+            <fileset dir="${build.home}/${gwt-output.dir}">
+                    <exclude name="**/.svn/*"/>
+            </fileset>
+            <fileset file="${build.home}/jump.css"/>
+            <fileset dir="${build.home}/images"/>
+        </delete>
+    </target>
 
 
 <!-- ==================== Compile Target ================================== -->
@@ -299,6 +353,8 @@
             debug="${compile.debug}"
       deprecation="${compile.deprecation}"
          optimize="${compile.optimize}">
+        <compilerarg value="-Xlint:unchecked"/>
+        <compilerarg value="-Xlint:deprecation"/>
         <classpath refid="compile.classpath"/>
     </javac>
   </target>
@@ -306,9 +362,11 @@
   <target name="compile_scala" depends="compile_java"
    description="Compile Scala sources">
     <!-- Compile Java classes as necessary -->
-    <scalac srcdir="${src.home}"
-          destdir="${build.home}/WEB-INF/classes"
-            force="changed">
+    <scalac
+        srcdir="${src.home}"
+        destdir="${build.home}/WEB-INF/classes"
+        force="changed"
+        deprecation="yes">
         <classpath refid="compile.classpath"/>
         <include name="**/*.scala"/>
     </scalac>
@@ -384,7 +442,7 @@
 
 -->
 
-  <target name="install" depends="compile"
+  <target name="install" depends="compileJs"
    description="Install application to servlet container">
 
     <deploy url="${manager.url}"
@@ -394,6 +452,25 @@
        localWar="file://${build.home}"/>
 
   </target>
+
+
+<!-- ==================== war Target ================================== -->
+
+    <target name="war" depends="compileJs">
+        <war destfile="gotefarm.war" needxmlfile="false" duplicate="fail">
+            <fileset dir="${build.home}">
+                <exclude name="WEB-INF/**"/>
+                <exclude name=".gwt-tmp/**"/>
+                <exclude name=".js"/>
+                <exclude name="${gwt-xml-ep.name}-aux/**"/>
+            </fileset>
+            <webinf dir="${build.home}/WEB-INF"/>
+        </war>
+    </target>
+
+    <target name="deploy" depends="war">
+        <copy todir="${catalina.home}/webapps/" file="gotefarm.war"/>
+    </target>
 
 
 <!-- ==================== Javadoc Target ================================== -->
@@ -477,7 +554,9 @@
     <copy todir="${build.home}/WEB-INF/lib" file="${foo.jar}"/>
 -->
     <copy todir="${build.home}/WEB-INF/lib">
-      <fileset dir="${lib.home}"/>
+      <fileset dir="${lib.home}">
+        <exclude name="gwt-user.jar"/>
+      </fileset>
     </copy>
     <copy todir="${build.home}/WEB-INF/lib" file="${scala-library.jar}"/>
 

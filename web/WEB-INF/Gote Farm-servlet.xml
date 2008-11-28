@@ -14,4 +14,19 @@
 			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
 			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
 
+    <bean id="urlMapping"
+        class="org.gwtwidgets.server.spring.GWTHandler">
+        <property name="mappings">
+            <map>
+                <entry key="/goteService">
+                    <ref local="goteService"/>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="goteService"
+        class="com.giftoftheembalmer.gotefarm.server.servlet.GoteFarmRPCImpl">
+        <property name="goteFarmService"><ref bean="goteFarmService"/></property>
+    </bean>
 </beans>

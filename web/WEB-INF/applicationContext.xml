@@ -39,7 +39,7 @@
 
         <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
             <property name="driverClassName" value="org.sqlite.JDBC"/>
-            <property name="url" value="jdbc:sqlite:/tmp/gotefarm.sqlite3"/>
+            <property name="url" value="jdbc:sqlite:/Users/jrray/gotefarmdb/gotefarm.sqlite3"/>
         </bean>
 
         <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -48,11 +48,11 @@
 
 	<!-- ========================= BUSINESS OBJECT DEFINITIONS ======================== -->
 
-        <bean id="goteFarmDao" class="com.giftoftheembalmer.gotefarm.dao.GoteFarmJdbcDao">
+        <bean id="goteFarmDao" class="com.giftoftheembalmer.gotefarm.server.dao.GoteFarmJdbcDao">
             <property name="dataSource" ref="dataSource"/>
         </bean>
 
-        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.service.GoteFarmServiceImpl"
+        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl"
             init-method="generateTables">
             <property name="goteFarmDao" ref="goteFarmDao"/>
         </bean>
@@ -65,7 +65,7 @@
 			expressed in AspectJ pointcut language. Here: applying the advice named
 			"txAdvice" to all methods on classes named PetStoreImpl.
 		-->
-		<aop:advisor pointcut="execution(* com.giftoftheembalmer.gotefarm.service.GoteFarmServiceT.*(..))" advice-ref="txAdvice"/>
+		<aop:advisor pointcut="execution(* com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceT.*(..))" advice-ref="txAdvice"/>
 
 		<!--
 			This definition creates auto-proxy infrastructure based on the given pointcut,

@@ -1,0 +1,85 @@
+/** Add css rules here for your application. */
+body {
+  font-family:arial,sans-serif
+}
+
+div,td {
+  color:#000000
+}
+
+a:link {
+  color:#0000cc
+}
+     
+a:visited {
+  color:#551a8b
+}
+
+a:active {
+  color:#ff0000
+}
+
+button {
+  display: block;
+  font-size: 16pt
+}
+
+.widePanel {
+  width: 100%
+}
+
+div#login {
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 2;
+    background: #ffffff;
+    border-style: solid;
+    border-color: rgb(146, 193, 240);
+    border-width: 2px;
+}
+
+.gwt-Label-error {
+    color: #ff0000;
+}
+
+.error {
+    color: #ff0000;
+}
+
+td.header {
+    border-bottom: solid;
+    border-bottom-color: #000000;
+    border-bottom-width: 1px;
+}
+
+td.footer {
+    border-top: solid;
+    border-top-color: #000000;
+    border-top-width: 1px;
+}
+
+.gwt-TabPanel-main {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gwt-Button-bottom {
+    margin-top: auto;
+    margin-bottom: 0px;
+}
+
+.gwt-Button-left {
+    margin-left: 0px;
+    margin-right: auto;
+}
+
+.gwt-Button-right {
+    margin-left: auto;
+    margin-right: 0px;
+}
+
+.padleft {
+    padding-left: 10px;
+}

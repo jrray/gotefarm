@@ -7,20 +7,26 @@ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
        <description>Gote Farm</description>
        <display-name>Gote Farm</display-name>
 
+       <session-config>
+        <session-timeout>604800</session-timeout>
+       </session-config>
+
        <listener>
-               <listener-class>
-                       org.springframework.web.context.ContextLoaderListener
-               </listener-class>
+            <listener-class>
+                org.springframework.web.context.ContextLoaderListener
+            </listener-class>
        </listener>
 
        <servlet>
                <servlet-name>Gote Farm</servlet-name>
-               <servlet-class>com.giftoftheembalmer.gotefarm.servlet.Main</servlet-class>
+               <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+               <load-on-startup>1</load-on-startup>
        </servlet>
 
        <servlet-mapping>
                <servlet-name>Gote Farm</servlet-name>
-               <url-pattern>/</url-pattern>
+               <url-pattern>/gotefarm/servlet/*</url-pattern>
        </servlet-mapping>
+
 </web-app>
 
