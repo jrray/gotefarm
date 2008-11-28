@@ -4,6 +4,6 @@ manager.password: blah
 
 scala-compiler.jar: /opt/local/share/scala/lib/scala-compiler.jar
 scala-library.jar: /opt/local/share/scala/lib/scala-library.jar
-gwt.dev.tool.jar: /Users/jrray/gwt-mac-1.5.1/gwt-dev-mac.jar
+gwt.dev.tool.jar: /Users/jrray/java/gwt-mac-1.5.3/gwt-dev-mac.jar
 gwt-xml-ep.name: com.giftoftheembalmer.gotefarm.GoteFarm
 gwt-output.dir: gotefarm

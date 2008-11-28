@@ -1,4 +1,5 @@
 #!/bin/sh
 APPDIR=`dirname $0`;
 LIBDIR="$APPDIR/lib";
-java -XstartOnFirstThread -Xmx2G -cp "$APPDIR/src:$APPDIR/bin:$APPDIR/build/WEB-INF/classes:/Users/jrray/gwt-mac-1.5.1/gwt-user.jar:/Users/jrray/gwt-mac-1.5.1/gwt-dev-mac.jar:$LIBDIR/spring.jar:$LIBDIR/spring-webmvc.jar:/opt/local/share/scala/lib/scala-library.jar:$LIBDIR/aspectjweaver.jar:$LIBDIR/commons-dbcp.jar:$LIBDIR/commons-logging.jar:$LIBDIR/commons-pool.jar:$LIBDIR/sqlitejdbc-v044-nested.jar:$LIBDIR/gwt-sl.jar:$LIBDIR/gwt-datepicker.jar" com.google.gwt.dev.GWTShell -out "$APPDIR/www" -noserver -port 8080 "$@" /gotefarm/gotefarm/GoteFarm.html;
+GWTDIR=/Users/jrray/java/gwt-mac-1.5.3
+java -XstartOnFirstThread -Xmx2G -cp "$APPDIR/src:$APPDIR/bin:$APPDIR/build/WEB-INF/classes:$GWTDIR/gwt-user.jar:$GWTDIR/gwt-dev-mac.jar:$LIBDIR/spring.jar:$LIBDIR/spring-webmvc.jar:/opt/local/share/scala/lib/scala-library.jar:$LIBDIR/aspectjweaver.jar:$LIBDIR/commons-dbcp.jar:$LIBDIR/commons-logging.jar:$LIBDIR/commons-pool.jar:$LIBDIR/sqlitejdbc-v044-nested.jar:$LIBDIR/gwt-sl.jar:$LIBDIR/gwt-datepicker.jar" com.google.gwt.dev.GWTShell -out "$APPDIR/www" -noserver -port 8080 "$@" /gotefarm/gotefarm/GoteFarm.html;
