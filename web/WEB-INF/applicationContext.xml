@@ -37,9 +37,11 @@
 	</bean>
 	-->
 
-        <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
-            <property name="driverClassName" value="org.sqlite.JDBC"/>
-            <property name="url" value="jdbc:sqlite:/Users/jrray/gotefarmdb/gotefarm.sqlite3"/>
+        <bean id="dataSource" destroy-method="close" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+            <property name="driverClass" value="org.sqlite.JDBC"/>
+            <property name="jdbcUrl" value="jdbc:sqlite:/Users/jrray/gotefarmdb/gotefarm.sqlite3"/>
+            <property name="autoCommitOnClose" value="false"/>
+            <property name="maxStatementsPerConnection" value="16"/>
         </bean>
 
         <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
