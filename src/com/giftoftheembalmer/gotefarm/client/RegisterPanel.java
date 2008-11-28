@@ -3,7 +3,6 @@ package com.giftoftheembalmer.gotefarm.client;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ClickListener;
-import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.PasswordTextBox;
@@ -16,7 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class RegisterPanel extends PopupPanel implements ChangeListener {
+public class RegisterPanel extends PopupPanel {
     TextBox username = new TextBox();
     TextBox email = new TextBox();
     PasswordTextBox pw1 = new PasswordTextBox();
@@ -33,11 +32,6 @@ public class RegisterPanel extends PopupPanel implements ChangeListener {
         email.setVisibleLength(40);
         pw1.setVisibleLength(40);
         pw2.setVisibleLength(40);
-
-        username.addChangeListener(this);
-        email.addChangeListener(this);
-        pw1.addChangeListener(this);
-        pw2.addChangeListener(this);
 
         errmsg1.addStyleName(errmsg1.getStylePrimaryName() + "-error");
         errmsg2.addStyleName(errmsg1.getStylePrimaryName() + "-error");
@@ -168,9 +162,5 @@ public class RegisterPanel extends PopupPanel implements ChangeListener {
         }
 
         return valid;
-    }
-
-    public void onChange(Widget sender) {
-        validateEntries();
     }
 }
