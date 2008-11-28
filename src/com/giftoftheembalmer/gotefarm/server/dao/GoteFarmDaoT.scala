@@ -12,28 +12,28 @@ import java.util.List
 trait GoteFarmDaoT {
   def generateTables(): Unit
 
-  def validateUser(username: String, password: String): Int
-  def createUser(username: String, email: String, password: String): Int
-  def createCharacter(uid: Int, realm: String, character: String): Int
+  def validateUser(username: String, password: String): Long
+  def createUser(username: String, email: String, password: String): Long
+  def createCharacter(uid: Long, realm: String, character: String): Long
 
-  def getCharacters(uid: Int): List[JSCharacter]
-  def getCharacter(cid: Int): JSCharacter
+  def getCharacters(uid: Long): List[JSCharacter]
+  def getCharacter(cid: Long): JSCharacter
 
   def getRoles: List[JSRole]
-  def addRole(name: String, restricted: Boolean): Int
+  def addRole(name: String, restricted: Boolean): Long
 
   def getBadges: List[String]
-  def addBadge(name: String, score: Int): Int
+  def addBadge(name: String, score: Int): Long
 
-  def addInstance(name: String): Int
-  def addBoss(instance: String, boss: String): Int
+  def addInstance(name: String): Long
+  def addBoss(instance: String, boss: String): Long
 
   def getInstances: List[String]
   def getInstanceBosses(instance: String): List[String]
 
   def getEventTemplate(name: String): JSEventTemplate
   def getEventTemplates: List[String]
-  def saveEventTemplate(et: JSEventTemplate): Int
+  def saveEventTemplate(et: JSEventTemplate): Long
 
   def getEventSchedules(name: String): List[JSEventSchedule]
 }

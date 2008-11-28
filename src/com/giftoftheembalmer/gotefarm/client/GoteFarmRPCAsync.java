@@ -8,14 +8,14 @@ interface GoteFarmRPCAsync {
     public void login(String username, String password, AsyncCallback<String> cb);
     public void newUser(String username, String email, String password, AsyncCallback<String> cb);
     public void validateSID(String sid, AsyncCallback<String> cb);
-    public void newCharacter(String sid, String realm, String character, AsyncCallback<Integer> cb);
+    public void newCharacter(String sid, String realm, String character, AsyncCallback<Long> cb);
 
     public void getCharacters(String sid, AsyncCallback<List<JSCharacter>> cb);
-    public void getCharacter(String sid, int cid, AsyncCallback<JSCharacter> cb);
+    public void getCharacter(String sid, long cid, AsyncCallback<JSCharacter> cb);
 
     public void getRoles(AsyncCallback<List<JSRole>> cb);
     public void addRole(String sid, String name, boolean restricted, AsyncCallback<Boolean> cb);
-    // public void getCharacterRoles(int cid, AsyncCallback<List<JSCharRole>> cb);
+    // public void getCharacterRoles(long cid, AsyncCallback<List<JSCharRole>> cb);
 
     public void getBadges(AsyncCallback<List<String>> cb);
     public void addBadge(String sid, String name, int score, AsyncCallback<Boolean> cb);

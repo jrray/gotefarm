@@ -24,7 +24,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   @scala.reflect.BeanProperty
   private var goteFarmService: GoteFarmServiceT = null
 
-  private def sessionID(uid: Int) = {
+  private def sessionID(uid: Long) = {
     val req = ServletUtils.getRequest()
     if (req eq null) {
       throw new RuntimeException("request is null")
@@ -71,17 +71,17 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
 
   def newCharacter(sid: String, realm: String, character: String) = {
     val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Int]
+    val uid = sess.getValue("uid").asInstanceOf[Long]
     goteFarmService.newCharacter(uid, realm, character)
   }
 
   def getCharacters(sid: String) = {
     val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Int]
+    val uid = sess.getValue("uid").asInstanceOf[Long]
     goteFarmService.getCharacters(uid)
   }
 
-  def getCharacter(sid: String, cid: Int) = {
+  def getCharacter(sid: String, cid: Long) = {
     val sess = getSession(sid)
     goteFarmService.getCharacter(cid)
   }

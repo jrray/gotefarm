@@ -8,14 +8,14 @@ public interface GoteFarmRPC extends RemoteService {
     public String login(String username, String password) throws InvalidCredentialsError;
     public String newUser(String username, String email, String password) throws AlreadyExistsError;
     public String validateSID(String sid);
-    public Integer newCharacter(String sid, String realm, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
+    public Long newCharacter(String sid, String realm, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
 
     public List<JSCharacter> getCharacters(String sid) throws UserNotLoggedInError;
-    public JSCharacter getCharacter(String sid, int cid) throws UserNotLoggedInError, NotFoundError;
+    public JSCharacter getCharacter(String sid, long cid) throws UserNotLoggedInError, NotFoundError;
 
     public List<JSRole> getRoles();
     public Boolean addRole(String sid, String name, boolean restricted) throws UserNotLoggedInError, AlreadyExistsError;
-    // public List<JSCharRole> getCharacterRoles(int cid);
+    // public List<JSCharRole> getCharacterRoles(long cid);
 
     public List<String> getBadges();
     public Boolean addBadge(String sid, String name, int score) throws UserNotLoggedInError, AlreadyExistsError;

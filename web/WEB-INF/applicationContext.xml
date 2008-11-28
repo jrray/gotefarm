@@ -38,8 +38,8 @@
         <tx:annotation-driven transaction-manager="txManager"/>
 
         <bean id="dataSource" destroy-method="close" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-            <property name="driverClass" value="org.sqlite.JDBC"/>
-            <property name="jdbcUrl" value="jdbc:sqlite:/Users/jrray/gotefarmdb/gotefarm.sqlite3"/>
+            <property name="driverClass" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+            <property name="jdbcUrl" value="jdbc:derby:/Users/jrray/gotefarmdb/derby;create=true"/>
             <property name="autoCommitOnClose" value="false"/>
             <property name="maxStatementsPerConnection" value="16"/>
         </bean>

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Date;
 
 public class JSEventSchedule implements IsSerializable {
-    public int esid;
-    public int eid;
+    public long esid;
+    public long eid;
 
     public Date start_time;
     public int duration;

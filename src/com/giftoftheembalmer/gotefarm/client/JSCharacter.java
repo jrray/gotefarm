@@ -5,7 +5,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import java.util.Date;
 
 public class JSCharacter implements IsSerializable {
-    public int cid;
+    public long cid;
     public String realm;
     public String name;
     public String race;

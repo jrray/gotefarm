@@ -14,8 +14,10 @@ import com.giftoftheembalmer.gotefarm.client.{
 
 import org.springframework.jdbc.core._
 import org.springframework.jdbc.core.simple._
-import org.springframework.jdbc.UncategorizedSQLException
-import org.springframework.dao.IncorrectResultSizeDataAccessException
+import org.springframework.dao.{
+  DataIntegrityViolationException,
+  IncorrectResultSizeDataAccessException
+}
 
 import org.apache.commons.logging.LogFactory;
 
@@ -27,7 +29,6 @@ import java.net.{
   URL,
   URLEncoder
 }
-import java.util.Date
 
 import scala.collection.jcl.Conversions._
 
@@ -42,30 +43,30 @@ object GoteFarmJdbcDao {
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val jsc = new JSCharacter
 
-      jsc.cid = rs.getInt(1)
+      jsc.cid = rs.getLong(1)
       jsc.realm = rs.getString(2)
       jsc.name = rs.getString(3)
       jsc.race = rs.getString(4)
       jsc.clazz = rs.getString(5)
       jsc.characterxml = rs.getString(6)
-      jsc.created = new Date(rs.getLong(7))
+      jsc.created = rs.getTimestamp(7)
 
       jsc
     }
   }
 
   val JSEventScheduleMapper = new ParameterizedRowMapper[JSEventSchedule] {
-    val columns = """eventschedid, eventtmplid, start_time, duration,
+    val columns = """eventschedid, eventsched.eventtmplid, start_time, duration,
                      display_start, display_end, signups_start, signups_end,
                      repeat_size, repeat_freq, day_mask, repeat_by"""
 
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val jses = new JSEventSchedule
 
-      jses.esid = rs.getInt(1)
-      jses.eid = rs.getInt(2)
+      jses.esid = rs.getLong(1)
+      jses.eid = rs.getLong(2)
 
-      jses.start_time = new Date(rs.getLong(3))
+      jses.start_time = rs.getTimestamp(3)
       jses.duration = rs.getInt(4)
 
       jses.display_start = rs.getInt(5)
@@ -88,41 +89,80 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
   with GoteFarmDaoT {
   import GoteFarmJdbcDao._
 
-  private def tableExists(name: String): Boolean = {
-    try {
-      getSimpleJdbcTemplate().queryForObject(
-        """SELECT name FROM sqlite_master WHERE type='table' and name = ?""",
-        classOf[java.lang.String],
-        Array[AnyRef](name): _*
+  def generateTables() = {
+    val jdbc = getSimpleJdbcTemplate
+    val jdbco = jdbc.getJdbcOperations
+
+    val schema_name = "gotefarm"
+
+    var schema_vers = try {
+      jdbc.queryForLong(
+        """select version from schema_vers where schema_name = ? for update""",
+        Array[AnyRef](schema_name): _*
       )
-      true
     }
     catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        false
+      case e: org.springframework.jdbc.BadSqlGrammarException
+        if e.getMessage.contains("does not exist") =>
+          // create the schema_vers table
+          jdbco.execute(
+            """CREATE TABLE schema_vers (
+                schema_name VARCHAR(32) NOT NULL PRIMARY KEY,
+                version BIGINT NOT NULL
+              )"""
+          )
+
+          jdbc.update(
+            """INSERT INTO schema_vers
+                (schema_name, version) VALUES (?, ?)""",
+            Array[AnyRef](schema_name, 0L): _*
+          )
+
+          0L
     }
-  }
 
-  def generateTables() = {
-    val jdbc = getSimpleJdbcTemplate().getJdbcOperations()
+    var prev_schema_vers: Option[Long] = None
+    var new_schema_vers: Option[Long] = None
 
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS account (
-        accountid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT NOT NULL,
-        password TEXT NOT NULL,
-        admin INTEGER NOT NULL,
-        created INTEGER NOT NULL,
-        lastevent INTEGER
-      )"""
-    )
+    def migrate_to_vers(vers: Long)(f: => Unit) = {
+      for {
+        last_version <- prev_schema_vers
+        if vers <= last_version
+      } {
+        throw new RuntimeException(  "Migration version "
+                                   + vers
+                                   + " less or equal to previous version "
+                                   + last_version)
+      }
 
-    if (!tableExists("race")) {
-      jdbc.execute(
+      if (schema_vers < vers) {
+        logger.info(  "Migrating database to version " + vers
+                    + " (currently at " + schema_vers + ")")
+        schema_vers = vers
+        new_schema_vers = Some(vers)
+        f
+      }
+
+      prev_schema_vers = Some(vers)
+    }
+
+    migrate_to_vers(200811280139L) {
+      jdbco.execute(
+        """CREATE TABLE account (
+          accountid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          username VARCHAR(16) UNIQUE NOT NULL,
+          email VARCHAR(64) NOT NULL,
+          password VARCHAR(64) NOT NULL,
+          admin CHAR(1) NOT NULL CONSTRAINT account_admin_bool CHECK (admin in ('Y', 'N')),
+          created TIMESTAMP NOT NULL,
+          lastevent TIMESTAMP
+        )"""
+      )
+
+      jdbco.execute(
         """CREATE TABLE race (
-          raceid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          name TEXT UNIQUE NOT NULL
+          raceid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(32) UNIQUE NOT NULL
         )"""
       )
 
@@ -139,7 +179,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         "Undead"
       )
 
-      jdbc.batchUpdate(
+      jdbco.batchUpdate(
         """INSERT INTO race (name) VALUES (?)""",
         new BatchPreparedStatementSetter {
           def getBatchSize(): Int = races.size
@@ -148,13 +188,11 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           }
         }
       )
-    }
 
-    if (!tableExists("class")) {
-      jdbc.execute(
+      jdbco.execute(
         """CREATE TABLE class (
-          classid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          name TEXT UNIQUE NOT NULL
+          classid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(32) UNIQUE NOT NULL
         )"""
       )
 
@@ -171,7 +209,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         "Warrior"
       )
 
-      jdbc.batchUpdate(
+      jdbco.batchUpdate(
         """INSERT INTO class (name) VALUES (?)""",
         new BatchPreparedStatementSetter {
           def getBatchSize(): Int = classes.size
@@ -180,30 +218,31 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           }
         }
       )
-    }
 
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS character (
-        characterid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        accountid INTEGER NOT NULL,
-        realm TEXT NOT NULL,
-        name TEXT NOT NULL,
-        raceid INTEGER NOT NULL,
-        classid INTEGER NOT NULL,
-        characterxml TEXT,
-        created INTEGER NOT NULL,
-        UNIQUE(realm,name)
-      )"""
-    )
+      jdbco.execute(
+        """CREATE TABLE chr (
+          chrid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          accountid BIGINT NOT NULL,
+          realm VARCHAR(32) NOT NULL,
+          name VARCHAR(32) NOT NULL,
+          raceid BIGINT NOT NULL,
+          classid BIGINT NOT NULL,
+          chrxml LONG VARCHAR,
+          created TIMESTAMP NOT NULL,
+          CONSTRAINT character_realm_name_unique UNIQUE (realm, name),
+          CONSTRAINT character_accountid_fk FOREIGN KEY (accountid) REFERENCES account (accountid) ON DELETE CASCADE,
+          CONSTRAINT character_raceid_fk FOREIGN KEY (raceid) REFERENCES race (raceid) ON DELETE RESTRICT,
+          CONSTRAINT character_classid_fk FOREIGN KEY (classid) REFERENCES class (classid) ON DELETE RESTRICT
+        )"""
+      )
 
-    if (!tableExists("role")) {
       // A restricted role cannot be self-assigned to a character.
       // An admin can add restricted roles to any character.
-      jdbc.execute(
+      jdbco.execute(
         """CREATE TABLE role (
-          roleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          name TEXT UNIQUE NOT NULL,
-          restricted INTEGER NOT NULL
+          roleid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(128) UNIQUE NOT NULL,
+          restricted CHAR(1) NOT NULL CONSTRAINT role_restricted_bool CHECK (restricted in ('Y', 'N'))
         )"""
       )
 
@@ -219,35 +258,34 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         "Nature/Frost Resist Tank (Hydross adds)" -> 1
       )
 
-      jdbc.batchUpdate(
+      jdbco.batchUpdate(
         """INSERT INTO role (name,restricted) VALUES (?,?)""",
         new BatchPreparedStatementSetter {
           def getBatchSize(): Int = roles.size
           def setValues(ps: PreparedStatement, i: Int) {
             ps.setString(1, roles(i)._1)
-            ps.setInt(2, roles(i)._2)
+            ps.setString(2, if (roles(i)._2 == 1) "Y" else "N")
           }
         }
       )
-    }
 
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS chrrole (
-        chrroleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        characterid INTEGER NOT NULL,
-        roleid INTEGER NOT NULL,
-        approved INTEGER NOT NULL
-      )"""
-    )
+      jdbco.execute(
+        """CREATE TABLE chrrole (
+          chrroleid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          chrid BIGINT NOT NULL,
+          roleid BIGINT NOT NULL,
+          approved CHAR(1) NOT NULL CONSTRAINT chrrole_approved_bool CHECK (approved in ('Y','N')),
+          CONSTRAINT chrrole_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE
+        )"""
+      )
 
-    if (!tableExists("badge")) {
       // A badge is like a role, it is an attribute that a character can earn.
       // The score per badge is an arbitrary, unitless value used to compare
       // the relative worth of badges.
-      jdbc.execute(
+      jdbco.execute(
         """CREATE TABLE badge (
-          badgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          name TEXT UNIQUE NOT NULL,
+          badgeid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(128) UNIQUE NOT NULL,
           score INTEGER NOT NULL
         )"""
       )
@@ -261,7 +299,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         "Sunwell Geared" -> 700
       )
 
-      jdbc.batchUpdate(
+      jdbco.batchUpdate(
         """INSERT INTO badge (name,score) VALUES (?,?)""",
         new BatchPreparedStatementSetter {
           def getBatchSize(): Int = badges.size
@@ -271,147 +309,172 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           }
         }
       )
+
+      jdbco.execute(
+        """CREATE TABLE chrbadge (
+          chrbadgeid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          chrid BIGINT NOT NULL,
+          badgeid BIGINT NOT NULL,
+          CONSTRAINT chrbadge_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE,
+          CONSTRAINT chrbadge_badgeid_fk FOREIGN KEY (badgeid) REFERENCES badge (badgeid) ON DELETE RESTRICT
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE instance (
+          instanceid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(64) UNIQUE NOT NULL
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventtmpl (
+          eventtmplid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(128) UNIQUE NOT NULL,
+          size INTEGER NOT NULL,
+          minimum_level INTEGER NOT NULL,
+          instanceid BIGINT NOT NULL,
+          CONSTRAINT eventtmpl_instanceid_fk FOREIGN KEY (instanceid) REFERENCES instance (instanceid) ON DELETE RESTRICT
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventtmplrole (
+          eventtmplroleid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventtmplid BIGINT NOT NULL,
+          roleid BIGINT NOT NULL,
+          min_count INTEGER NOT NULL CONSTRAINT eventtmplrole_min_count_ge_zero CHECK (min_count >= 0),
+          max_count INTEGER NOT NULL CONSTRAINT eventtmplrole_max_count_gt_zero CHECK (max_count > 0),
+          CONSTRAINT eventtmplrole_eventtmplid_fk FOREIGN KEY (eventtmplid) REFERENCES eventtmpl (eventtmplid) ON DELETE CASCADE,
+          CONSTRAINT eventtmplrole_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
+        )"""
+      )
+
+      // event badge requirements
+      jdbco.execute(
+        """CREATE TABLE eventtmplbadge (
+          eventtmplbadgeid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventtmplid BIGINT NOT NULL,
+          badgeid BIGINT NOT NULL,
+          require_for_signup CHAR(1) NOT NULL CONSTRAINT eventtmplbadge_require_for_signup_bool CHECK (require_for_signup in ('Y','N')),
+          roleid BIGINT,
+          num_slots INTEGER NOT NULL,
+          early_signup INTEGER NOT NULL,
+          CONSTRAINT eventtmplbadge_eventtmplid_fk FOREIGN KEY (eventtmplid) REFERENCES eventtmpl (eventtmplid) ON DELETE CASCADE,
+          CONSTRAINT eventtmplbadge_badgeid_fk FOREIGN KEY (badgeid) REFERENCES badge (badgeid) ON DELETE RESTRICT,
+          CONSTRAINT eventtmplbadge_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE boss (
+          bossid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          instanceid BIGINT NOT NULL,
+          name VARCHAR(64) NOT NULL,
+          CONSTRAINT boss_instanceid_name_unique UNIQUE (instanceid, name),
+          CONSTRAINT boss_instanceid_fk FOREIGN KEY (instanceid) REFERENCES instance (instanceid) ON DELETE CASCADE
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventtmplboss (
+          eventtmplbossid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventtmplid BIGINT NOT NULL,
+          bossid BIGINT NOT NULL,
+          CONSTRAINT eventtmplboss_eventtmplid_bossid_unique UNIQUE (eventtmplid, bossid),
+          CONSTRAINT eventtmplboss_eventtmplid_fk FOREIGN KEY (eventtmplid) REFERENCES eventtmpl (eventtmplid) ON DELETE CASCADE
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventsched (
+          eventschedid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventtmplid BIGINT NOT NULL,
+          active INTEGER NOT NULL,
+          start_time INTEGER NOT NULL,
+          duration INTEGER NOT NULL,
+          display_start INTEGER NOT NULL,
+          display_end INTEGER NOT NULL,
+          signups_start INTEGER NOT NULL,
+          signups_end INTEGER NOT NULL,
+          repeat_size INTEGER NOT NULL DEFAULT 0,
+          repeat_freq INTEGER NOT NULL DEFAULT 0,
+          day_mask INTEGER NOT NULL DEFAULT 0,
+          repeat_by INTEGER NOT NULL DEFAULT 0,
+          CONSTRAINT eventsched_eventtmplid_fk FOREIGN KEY (eventtmplid) REFERENCES eventtmpl (eventtmplid) ON DELETE CASCADE
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE event (
+          eventid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          name VARCHAR(128) UNIQUE NOT NULL,
+          size INTEGER NOT NULL,
+          minimum_level INTEGER NOT NULL,
+          instanceid BIGINT NOT NULL,
+          start_time INTEGER NOT NULL,
+          duration INTEGER NOT NULL,
+          display_start INTEGER NOT NULL,
+          display_end INTEGER NOT NULL,
+          signups_start INTEGER NOT NULL,
+          signups_end INTEGER NOT NULL,
+          CONSTRAINT event_instanceid_fk FOREIGN KEY (instanceid) REFERENCES instance (instanceid) ON DELETE RESTRICT
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventrole (
+          eventroleid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventid BIGINT NOT NULL,
+          roleid BIGINT NOT NULL,
+          min_count INTEGER NOT NULL CONSTRAINT eventrole_min_count_ge_zero CHECK (min_count >= 0),
+          max_count INTEGER NOT NULL CONSTRAINT eventrole_max_count_gt_zero CHECK (max_count > 0),
+          CONSTRAINT eventrole_eventid_fk FOREIGN KEY (eventid) REFERENCES event (eventid) ON DELETE CASCADE,
+          CONSTRAINT eventrole_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventbadge (
+          eventbadgeid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventid BIGINT NOT NULL,
+          badgeid BIGINT NOT NULL,
+          require_for_signup CHAR(1) NOT NULL CONSTRAINT eventbadge_require_for_signup_bool CHECK (require_for_signup in ('Y','N')),
+          roleid BIGINT,
+          num_slots INTEGER NOT NULL,
+          early_signup INTEGER NOT NULL,
+          CONSTRAINT eventbadge_eventid_fk FOREIGN KEY (eventid) REFERENCES event (eventid) ON DELETE CASCADE,
+          CONSTRAINT eventbadge_badgeid_fk FOREIGN KEY (badgeid) REFERENCES badge (badgeid) ON DELETE RESTRICT,
+          CONSTRAINT eventbadge_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
+        )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventboss (
+          eventbossid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventid BIGINT NOT NULL,
+          bossid BIGINT NOT NULL,
+          CONSTRAINT eventboss_eventid_bossid_unique UNIQUE (eventid, bossid),
+          CONSTRAINT eventboss_eventid_fk FOREIGN KEY (eventid) REFERENCES event (eventid) ON DELETE CASCADE
+        )"""
+      )
     }
 
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS chrbadge (
-        chrbadgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        characterid INTEGER NOT NULL,
-        badgeid INTEGER NOT NULL
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventtmpl (
-        eventtmplid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        name TEXT UNIQUE NOT NULL,
-        size INTEGER NOT NULL,
-        minimum_level INTEGER NOT NULL,
-        instanceid INTEGER NOT NULL
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventtmplrole (
-        eventtmplroleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventtmplid INTEGER NOT NULL,
-        roleid INTEGER NOT NULL,
-        min_count INTEGER NOT NULL CHECK (min_count >= 0),
-        max_count INTEGER NOT NULL CHECK (max_count > 0)
-      )"""
-    )
-
-    // event badge requirements
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventtmplbadge (
-        eventtmplbadgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventtmplid INTEGER NOT NULL,
-        badgeid INTEGER NOT NULL,
-        require_for_signup INTEGER NOT NULL,
-        roleid INTEGER,
-        num_slots INTEGER NOT NULL,
-        early_signup INTEGER NOT NULL
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS instance (
-        instanceid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        name TEXT UNIQUE NOT NULL
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS boss (
-        bossid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        instanceid INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        UNIQUE(instanceid, name)
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventtmplboss (
-        eventtmplbossid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventtmplid INTEGER NOT NULL,
-        bossid INTEGER NOT NULL,
-        UNIQUE(eventtmplid, bossid)
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventsched (
-        eventschedid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventtmplid INTEGER NOT NULL,
-        active INTEGER NOT NULL,
-        start_time INTEGER NOT NULL,
-        duration INTEGER NOT NULL,
-        display_start INTEGER NOT NULL,
-        display_end INTEGER NOT NULL,
-        signups_start INTEGER NOT NULL,
-        signups_end INTEGER NOT NULL,
-        repeat_size INTEGER NOT NULL DEFAULT 0,
-        repeat_freq INTEGER NOT NULL DEFAULT 0,
-        day_mask INTEGER NOT NULL DEFAULT 0,
-        repeat_by INTEGER NOT NULL DEFAULT 0
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS event (
-        eventid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        name TEXT UNIQUE NOT NULL,
-        size INTEGER NOT NULL,
-        minimum_level INTEGER NOT NULL,
-        instanceid INTEGER NOT NULL,
-        start_time INTEGER NOT NULL,
-        duration INTEGER NOT NULL,
-        display_start INTEGER NOT NULL,
-        display_end INTEGER NOT NULL,
-        signups_start INTEGER NOT NULL,
-        signups_end INTEGER NOT NULL
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventrole (
-        eventroleid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventid INTEGER NOT NULL,
-        roleid INTEGER NOT NULL,
-        min_count INTEGER NOT NULL CHECK (min_count >= 0),
-        max_count INTEGER NOT NULL CHECK (max_count > 0)
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventbadge (
-        eventbadgeid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventid INTEGER NOT NULL,
-        badgeid INTEGER NOT NULL,
-        require_for_signup INTEGER NOT NULL,
-        roleid INTEGER,
-        num_slots INTEGER NOT NULL,
-        early_signup INTEGER NOT NULL
-      )"""
-    )
-
-    jdbc.execute(
-      """CREATE TABLE IF NOT EXISTS eventboss (
-        eventbossid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        eventid INTEGER NOT NULL,
-        bossid INTEGER NOT NULL,
-        UNIQUE(eventid, bossid)
-      )"""
-    )
+    for (version <- new_schema_vers) {
+      jdbc.update(
+        """UPDATE schema_vers SET version = ? WHERE schema_name = ?""",
+        Array[AnyRef](version, schema_name): _*
+      )
+    }
   }
 
   def validateUser(username: String, password: String) = {
     val jdbc = getSimpleJdbcTemplate()
     val acct = jdbc.query(
       "select accountid, password from account where username = ?",
-      new ParameterizedRowMapper[(Int, String)] {
+      new ParameterizedRowMapper[(Long, String)] {
         def mapRow(rs: ResultSet, rowNum: Int) = {
-          (rs.getInt(1), rs.getString(2))
+          (rs.getLong(1), rs.getString(2))
         }
       },
       Array[AnyRef](username): _*
@@ -437,25 +500,29 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     try {
       jdbc.update(
         """insert into account (username, email, password, admin, created)
-                        values (?,        ?,     ?,        ?,     ?      )""",
-        Array[AnyRef](username, email, crypt, 0, System.currentTimeMillis()): _*
+                        values (?,        ?,     ?,        ?,     CURRENT_TIMESTAMP)""",
+        Array[AnyRef](username, email, crypt, "N"): _*
       )
     }
     catch {
-      case _: UncategorizedSQLException =>
+      case _: DataIntegrityViolationException =>
         throw new AlreadyExistsError("User '" + username + "' already exists.")
+
+      case e =>
+        logger.debug("Error creating user", e)
+        throw new RuntimeException("Error creating user: " + e.getMessage)
     }
 
-    jdbc.queryForInt(
+    jdbc.queryForLong(
       "select accountid from account where username = ?",
       Array[AnyRef](username): _*
     )
   }
 
-  private def getRaceId(race: String): Int = {
+  private def getRaceId(race: String): Long = {
     val jdbc = getSimpleJdbcTemplate()
     try {
-      jdbc.queryForInt(
+      jdbc.queryForLong(
         "select raceid from race where name = ?",
         Array[AnyRef](race): _*
       )
@@ -470,10 +537,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
   }
 
-  private def getClassId(clazz: String): Int = {
+  private def getClassId(clazz: String): Long = {
     val jdbc = getSimpleJdbcTemplate()
     try {
-      jdbc.queryForInt(
+      jdbc.queryForLong(
         "select classid from class where name = ?",
         Array[AnyRef](clazz): _*
       )
@@ -488,12 +555,12 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
   }
 
-  def createCharacter(uid: Int, realm: String, character: String) = {
+  def createCharacter(uid: Long, realm: String, character: String) = {
     val jdbc = getSimpleJdbcTemplate()
 
     try {
-      val cid = jdbc.queryForInt(
-        "select characterid from character where realm = ? and name = ?",
+      val cid = jdbc.queryForLong(
+        """select chrid from chr where realm = ? and name = ?""",
         Array[AnyRef](realm, character): _*
       )
 
@@ -542,44 +609,44 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     try {
       jdbc.update(
-        """insert into character (accountid, realm, name, raceid, classid, characterxml, created)
-                          values (?,         ?,     ?,    ?,      ?,       ?,            ?      )""",
-        Array[AnyRef](uid, realm, character, raceid, classid, charxml.toString, System.currentTimeMillis): _*
+        """insert into chr (accountid, realm, name, raceid, classid, chrxml, created)
+                    values (?,         ?,     ?,    ?,      ?,       ?,      CURRENT_TIMESTAMP)""",
+        Array[AnyRef](uid, realm, character, raceid, classid, charxml.toString): _*
       )
     }
     catch {
-      case _: UncategorizedSQLException =>
+      case _: DataIntegrityViolationException =>
         throw new AlreadyExistsError("Character '" + character + "' already exists.")
     }
 
-    jdbc.queryForInt(
-      "select characterid from character where realm = ? and name = ?",
+    jdbc.queryForLong(
+      """select chrid from chr where realm = ? and name = ?""",
       Array[AnyRef](realm, character): _*
     )
   }
 
-  def getCharacters(uid: Int) = {
+  def getCharacters(uid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     jdbc.query(
-      """select characterid, realm, character.name, race.name, class.name, characterxml, created
-          from character, race, class
-          where character.raceid = race.raceid
-            and character.classid = class.classid
+      """select chrid, realm, chr.name, race.name, class.name, chrxml, created
+          from chr, race, class
+          where chr.raceid = race.raceid
+            and chr.classid = class.classid
             and accountid = ?""",
       JSCharacterMapper,
       Array[AnyRef](uid): _*
     )
   }
 
-  def getCharacter(cid: Int) = {
+  def getCharacter(cid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     try {
       jdbc.queryForObject(
-        """select characterid, realm, character.name, race.name, class.name, characterxml, created
-            from character, race, class
-            where character.raceid = race.raceid
-              and character.classid = class.classid
-              and characterid = ?""",
+        """select chrid, realm, chr.name, race.name, class.name, chrxml, created
+            from chr, race, class
+            where chr.raceid = race.raceid
+              and chr.classid = class.classid
+              and chrid = ?""",
         JSCharacterMapper,
         Array[AnyRef](cid): _*
       )
@@ -598,9 +665,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       new ParameterizedRowMapper[JSRole] {
         def mapRow(rs: ResultSet, rowNum: Int) = {
           val jsrole = new JSRole
-          jsrole.roleid = rs.getInt(1)
+          jsrole.roleid = rs.getLong(1)
           jsrole.name = rs.getString(2)
-          jsrole.restricted = rs.getInt(3) != 0
+          jsrole.restricted = rs.getString(3) == "Y"
           jsrole
         }
       },
@@ -614,15 +681,15 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into role (name, restricted)
                      values (?,    ?         )""",
-        Array[AnyRef](name, if (restricted) 1 else 0): _*
+        Array[AnyRef](name, if (restricted) "Y" else "N"): _*
       )
     }
     catch {
-      case _: UncategorizedSQLException =>
+      case _: DataIntegrityViolationException =>
         throw new AlreadyExistsError("Role '" + name + "' already exists.")
     }
 
-    jdbc.queryForInt(
+    jdbc.queryForLong(
       "select roleid from role where name = ?",
       Array[AnyRef](name): _*
     )
@@ -652,11 +719,11 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       )
     }
     catch {
-      case _: UncategorizedSQLException =>
+      case _: DataIntegrityViolationException =>
         throw new AlreadyExistsError("Badge '" + name + "' already exists.")
     }
 
-    jdbc.queryForInt(
+    jdbc.queryForLong(
       "select badgeid from badge where name = ?",
       Array[AnyRef](name): _*
     )
@@ -672,11 +739,11 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       )
     }
     catch {
-      case _: UncategorizedSQLException =>
+      case _: DataIntegrityViolationException =>
         throw new AlreadyExistsError("Instance '" + name + "' already exists.")
     }
 
-    jdbc.queryForInt(
+    jdbc.queryForLong(
       "select instanceid from instance where name = ?",
       Array[AnyRef](name): _*
     )
@@ -703,11 +770,11 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       )
     }
     catch {
-      case _: UncategorizedSQLException =>
+      case _: DataIntegrityViolationException =>
         throw new AlreadyExistsError("Boss '" + boss + "' already exists.")
     }
 
-    jdbc.queryForInt(
+    jdbc.queryForLong(
       "select bossid from boss where instanceid = ? and name = ?",
       parms: _*
     )
@@ -729,7 +796,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
   def getInstanceId(instance: String) = {
     val jdbc = getSimpleJdbcTemplate()
-    jdbc.queryForInt(
+    jdbc.queryForLong(
       "select instanceid from instance where name = ?",
       Array[AnyRef](instance): _*
     )
@@ -762,13 +829,14 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jset = try {
       jdbc.queryForObject(
         """select eventtmplid, size, minimum_level, instance.name
-            from eventtmpl join instance using (instanceid)
+            from eventtmpl join instance
+              on eventtmpl.instanceid = instance.instanceid
             where eventtmpl.name = ?""",
         new ParameterizedRowMapper[JSEventTemplate] {
           def mapRow(rs: ResultSet, rowNum: Int) = {
             val et = new JSEventTemplate
 
-            et.eid = rs.getInt(1)
+            et.eid = rs.getLong(1)
             et.name = name
             et.size = rs.getInt(2)
             et.minimumLevel = rs.getInt(3)
@@ -793,7 +861,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     ops.query(
       """select boss.name
-          from boss join eventtmplboss using (bossid)
+          from boss join eventtmplboss
+            on boss.bossid = eventtmplboss.bossid
           where eventtmplid = ?""",
       Array[AnyRef](jset.eid),
       new RowCallbackHandler {
@@ -805,7 +874,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     ops.query(
       """select role.name, min_count, max_count
-          from role join eventtmplrole using (roleid)
+          from role join eventtmplrole
+            on role.roleid = eventtmplrole.roleid
           where eventtmplid = ?""",
       Array[AnyRef](jset.eid),
       new RowCallbackHandler {
@@ -823,15 +893,19 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     ops.query(
       """select badge.name, require_for_signup, role.name, num_slots, early_signup
-          from eventtmplbadge left join role using (roleid), badge
-          where eventtmplbadge.badgeid = badge.badgeid and eventtmplid = ?""",
+          from
+            eventtmplbadge join role
+              on eventtmplbadge.roleid = role.roleid,
+            badge
+          where
+            eventtmplbadge.badgeid = badge.badgeid and eventtmplid = ?""",
       Array[AnyRef](jset.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
           val eb = new JSEventBadge
 
           eb.name = rs.getString(1)
-          eb.requireForSignup = if (rs.getInt(2) != 0) true else false
+          eb.requireForSignup = if (rs.getString(2) == "Y") true else false
           eb.applyToRole = rs.getString(3)
           eb.numSlots = rs.getInt(4)
           eb.earlySignup = rs.getInt(5)
@@ -870,13 +944,13 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           Array[AnyRef](et.name, et.size, et.minimumLevel, iid): _*
         )
 
-        et.eid = jdbc.queryForInt(
+        et.eid = jdbc.queryForLong(
           "select eventtmplid from eventtmpl where name = ?",
           Array[AnyRef](et.name): _*
         )
       }
       catch {
-        case _: UncategorizedSQLException =>
+        case _: DataIntegrityViolationException =>
           throw new AlreadyExistsError("Template '" + et.name + "' already exists.")
       }
     }
@@ -892,7 +966,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         }
       }
       catch {
-        case _: UncategorizedSQLException =>
+        case _: DataIntegrityViolationException =>
           throw new AlreadyExistsError("Template '" + et.name + "' already exists.")
       }
     }
@@ -904,7 +978,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     for (boss <- et.bosses) {
       val bossid = try {
-        jdbc.queryForInt(
+        jdbc.queryForLong(
           "select bossid from boss where instanceid = ? and name = ?",
           Array[AnyRef](iid, boss): _*
         )
@@ -928,7 +1002,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     for (role <- et.roles) {
       val roleid = try {
-        jdbc.queryForInt(
+        jdbc.queryForLong(
           "select roleid from role where name = ?",
           Array[AnyRef](role.name): _*
         )
@@ -956,7 +1030,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       val badge = iter.next
 
       val badgeid = try {
-        jdbc.queryForInt(
+        jdbc.queryForLong(
           "select badgeid from badge where name = ?",
           Array[AnyRef](badge.name): _*
         )
@@ -966,9 +1040,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           throw new NotFoundError("Badge '" + badge.name + "' not found.")
       }
 
-      val roleid: Option[java.lang.Integer] = if (badge.applyToRole ne null) {
+      val roleid: Option[java.lang.Long] = if (badge.applyToRole ne null) {
         try {
-          Some(jdbc.queryForInt(
+          Some(jdbc.queryForLong(
             "select roleid from role where name = ?",
             Array[AnyRef](badge.applyToRole): _*
           ))
@@ -985,7 +1059,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into eventtmplbadge (eventtmplid, badgeid, require_for_signup, roleid, num_slots, early_signup)
                                VALUES (?,           ?,       ?,                  ?,      ?,         ?           )""",
-        Array[AnyRef](et.eid, badgeid, if (badge.requireForSignup) 1 else 0, roleid.getOrElse(null), badge.numSlots, badge.earlySignup): _*
+        Array[AnyRef](et.eid, badgeid, if (badge.requireForSignup) "Y" else "N", roleid.getOrElse(null), badge.numSlots, badge.earlySignup): _*
       )
 
       ()
@@ -999,7 +1073,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.query(
       "select " + JSEventScheduleMapper.columns +
-      """ from eventsched join eventtmpl using (eventtmplid)
+      """ from eventsched join eventtmpl
+            on eventsched.eventtmplid = eventtmpl.eventtmplid
           where eventtmpl.name = ?
           order by start_time""",
       JSEventScheduleMapper,

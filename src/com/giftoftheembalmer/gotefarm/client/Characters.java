@@ -162,9 +162,9 @@ public class Characters extends Composite {
         public void addCharacter() {
             errmsg.setText("");
 
-            GoteFarm.testService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<Integer>() {
-                public void onSuccess(Integer result) {
-                    GoteFarm.testService.getCharacter(GoteFarm.sessionID, result.intValue(), new AsyncCallback<JSCharacter>() {
+            GoteFarm.testService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<Long>() {
+                public void onSuccess(Long result) {
+                    GoteFarm.testService.getCharacter(GoteFarm.sessionID, result.longValue(), new AsyncCallback<JSCharacter>() {
                         public void onSuccess(JSCharacter chr) {
                             chrpanel.add(new Character(chr));
                         }

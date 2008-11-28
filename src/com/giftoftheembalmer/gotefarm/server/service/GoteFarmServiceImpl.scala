@@ -21,11 +21,11 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def newUser(username: String, email: String, password: String) =
     goteFarmDao.createUser(username, email, password)
   @Transactional{val readOnly = false}
-  def newCharacter(uid: Int, realm: String, character: String) =
+  def newCharacter(uid: Long, realm: String, character: String) =
     goteFarmDao.createCharacter(uid, realm, character)
 
-  def getCharacters(uid: Int) = goteFarmDao.getCharacters(uid)
-  def getCharacter(cid: Int) = goteFarmDao.getCharacter(cid)
+  def getCharacters(uid: Long) = goteFarmDao.getCharacters(uid)
+  def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
 
   def getRoles = goteFarmDao.getRoles
   @Transactional{val readOnly = false}

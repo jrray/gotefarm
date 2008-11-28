@@ -5,7 +5,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import java.util.List;
 
 public class JSEventTemplate implements IsSerializable {
-    public int eid;
+    public long eid;
     public String name;
     public int size;
     public int minimumLevel;
