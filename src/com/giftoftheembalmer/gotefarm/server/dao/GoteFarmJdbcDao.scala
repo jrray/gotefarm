@@ -93,7 +93,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       getSimpleJdbcTemplate().queryForObject(
         """SELECT name FROM sqlite_master WHERE type='table' and name = ?""",
         classOf[java.lang.String],
-        Array[AnyRef](name)
+        Array[AnyRef](name): _*
       )
       true
     }
@@ -414,7 +414,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           (rs.getInt(1), rs.getString(2))
         }
       },
-      Array[AnyRef](username)
+      Array[AnyRef](username): _*
     )
 
     if (acct.isEmpty) {
@@ -438,7 +438,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into account (username, email, password, admin, created)
                         values (?,        ?,     ?,        ?,     ?      )""",
-        Array[AnyRef](username, email, crypt, 0, System.currentTimeMillis())
+        Array[AnyRef](username, email, crypt, 0, System.currentTimeMillis()): _*
       )
     }
     catch {
@@ -448,7 +448,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.queryForInt(
       "select accountid from account where username = ?",
-      Array[AnyRef](username)
+      Array[AnyRef](username): _*
     )
   }
 
@@ -457,14 +457,14 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     try {
       jdbc.queryForInt(
         "select raceid from race where name = ?",
-        Array[AnyRef](race)
+        Array[AnyRef](race): _*
       )
     }
     catch {
       case _: IncorrectResultSizeDataAccessException =>
         jdbc.update(
           "insert into race (name) values (?)",
-          Array[AnyRef](race)
+          Array[AnyRef](race): _*
         )
         getRaceId(race)
     }
@@ -475,14 +475,14 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     try {
       jdbc.queryForInt(
         "select classid from class where name = ?",
-        Array[AnyRef](clazz)
+        Array[AnyRef](clazz): _*
       )
     }
     catch {
       case _: IncorrectResultSizeDataAccessException =>
         jdbc.update(
           "insert into class (name) values (?)",
-          Array[AnyRef](clazz)
+          Array[AnyRef](clazz): _*
         )
         getRaceId(clazz)
     }
@@ -494,7 +494,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     try {
       val cid = jdbc.queryForInt(
         "select characterid from character where realm = ? and name = ?",
-        Array[AnyRef](realm, character)
+        Array[AnyRef](realm, character): _*
       )
 
       throw new AlreadyExistsError("Character '" + character + "' already exists.")
@@ -544,7 +544,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into character (accountid, realm, name, raceid, classid, characterxml, created)
                           values (?,         ?,     ?,    ?,      ?,       ?,            ?      )""",
-        Array[AnyRef](uid, realm, character, raceid, classid, charxml.toString, System.currentTimeMillis)
+        Array[AnyRef](uid, realm, character, raceid, classid, charxml.toString, System.currentTimeMillis): _*
       )
     }
     catch {
@@ -554,7 +554,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.queryForInt(
       "select characterid from character where realm = ? and name = ?",
-      Array[AnyRef](realm, character)
+      Array[AnyRef](realm, character): _*
     )
   }
 
@@ -567,7 +567,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
             and character.classid = class.classid
             and accountid = ?""",
       JSCharacterMapper,
-      Array[AnyRef](uid)
+      Array[AnyRef](uid): _*
     )
   }
 
@@ -581,7 +581,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
               and character.classid = class.classid
               and characterid = ?""",
         JSCharacterMapper,
-        Array[AnyRef](cid)
+        Array[AnyRef](cid): _*
       )
     }
     catch {
@@ -604,7 +604,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           jsrole
         }
       },
-      Array[AnyRef]()
+      Array[AnyRef](): _*
     )
   }
 
@@ -614,7 +614,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into role (name, restricted)
                      values (?,    ?         )""",
-        Array[AnyRef](name, if (restricted) 1 else 0)
+        Array[AnyRef](name, if (restricted) 1 else 0): _*
       )
     }
     catch {
@@ -624,7 +624,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.queryForInt(
       "select roleid from role where name = ?",
-      Array[AnyRef](name)
+      Array[AnyRef](name): _*
     )
   }
 
@@ -638,7 +638,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           rs.getString(1)
         }
       },
-      Array[AnyRef]()
+      Array[AnyRef](): _*
     )
   }
 
@@ -648,7 +648,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into badge (name, score)
                       values (?,    ?    )""",
-        Array[AnyRef](name, score)
+        Array[AnyRef](name, score): _*
       )
     }
     catch {
@@ -658,7 +658,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.queryForInt(
       "select badgeid from badge where name = ?",
-      Array[AnyRef](name)
+      Array[AnyRef](name): _*
     )
   }
 
@@ -668,7 +668,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into instance (name)
                          values (?   )""",
-        Array[AnyRef](name)
+        Array[AnyRef](name): _*
       )
     }
     catch {
@@ -678,7 +678,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.queryForInt(
       "select instanceid from instance where name = ?",
-      Array[AnyRef](name)
+      Array[AnyRef](name): _*
     )
   }
 
@@ -699,7 +699,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into boss (instanceid, name)
                      values (?,          ?   )""",
-        parms
+        parms: _*
       )
     }
     catch {
@@ -709,7 +709,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.queryForInt(
       "select bossid from boss where instanceid = ? and name = ?",
-      parms
+      parms: _*
     )
   }
 
@@ -723,7 +723,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           rs.getString(1)
         }
       },
-      Array[AnyRef]()
+      Array[AnyRef](): _*
     )
   }
 
@@ -731,7 +731,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jdbc = getSimpleJdbcTemplate()
     jdbc.queryForInt(
       "select instanceid from instance where name = ?",
-      Array[AnyRef](instance)
+      Array[AnyRef](instance): _*
     )
   }
 
@@ -747,7 +747,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
             rs.getString(1)
           }
         },
-        Array[AnyRef](iid)
+        Array[AnyRef](iid): _*
       )
     }
     catch {
@@ -781,7 +781,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
             et
           }
         },
-        Array[AnyRef](name)
+        Array[AnyRef](name): _*
       )
     }
     catch {
@@ -853,7 +853,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           rs.getString(1)
         }
       },
-      Array[AnyRef]()
+      Array[AnyRef](): _*
     )
   }
 
@@ -867,12 +867,12 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         jdbc.update(
           """insert into eventtmpl (name, size, minimum_level, instanceid)
                             values (?,    ?,    ?,             ?         )""",
-          Array[AnyRef](et.name, et.size, et.minimumLevel, iid)
+          Array[AnyRef](et.name, et.size, et.minimumLevel, iid): _*
         )
 
         et.eid = jdbc.queryForInt(
           "select eventtmplid from eventtmpl where name = ?",
-          Array[AnyRef](et.name)
+          Array[AnyRef](et.name): _*
         )
       }
       catch {
@@ -884,7 +884,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       try {
         val c = jdbc.update(
           """update eventtmpl set name = ?, size = ?, minimum_level = ?, instanceid = ? where eventtmplid = ?""",
-          Array[AnyRef](et.name, et.size, et.minimumLevel, iid, et.eid)
+          Array[AnyRef](et.name, et.size, et.minimumLevel, iid, et.eid): _*
         )
 
         if (c == 0) {
@@ -899,14 +899,14 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     jdbc.update(
       """delete from eventtmplboss where eventtmplid = ?""",
-      Array[AnyRef](et.eid)
+      Array[AnyRef](et.eid): _*
     )
 
     for (boss <- et.bosses) {
       val bossid = try {
         jdbc.queryForInt(
           "select bossid from boss where instanceid = ? and name = ?",
-          Array[AnyRef](iid, boss)
+          Array[AnyRef](iid, boss): _*
         )
       }
       catch {
@@ -917,20 +917,20 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into eventtmplboss (eventtmplid, bossid)
                               VALUES (?,           ?     )""",
-        Array[AnyRef](et.eid, bossid)
+        Array[AnyRef](et.eid, bossid): _*
       )
     }
 
     jdbc.update(
       """delete from eventtmplrole where eventtmplid = ?""",
-      Array[AnyRef](et.eid)
+      Array[AnyRef](et.eid): _*
     )
 
     for (role <- et.roles) {
       val roleid = try {
         jdbc.queryForInt(
           "select roleid from role where name = ?",
-          Array[AnyRef](role.name)
+          Array[AnyRef](role.name): _*
         )
       }
       catch {
@@ -941,13 +941,13 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into eventtmplrole (eventtmplid, roleid, min_count, max_count)
                               VALUES (?,           ?,      ?,         ?        )""",
-        Array[AnyRef](et.eid, roleid, role.min, role.max)
+        Array[AnyRef](et.eid, roleid, role.min, role.max): _*
       )
     }
 
     jdbc.update(
       """delete from eventtmplbadge where eventtmplid = ?""",
-      Array[AnyRef](et.eid)
+      Array[AnyRef](et.eid): _*
     )
 
     // XXX: JCL wrapper creating weird compiler errors for et.badges
@@ -958,7 +958,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       val badgeid = try {
         jdbc.queryForInt(
           "select badgeid from badge where name = ?",
-          Array[AnyRef](badge.name)
+          Array[AnyRef](badge.name): _*
         )
       }
       catch {
@@ -970,7 +970,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         try {
           Some(jdbc.queryForInt(
             "select roleid from role where name = ?",
-            Array[AnyRef](badge.applyToRole)
+            Array[AnyRef](badge.applyToRole): _*
           ))
         }
         catch {
@@ -985,7 +985,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into eventtmplbadge (eventtmplid, badgeid, require_for_signup, roleid, num_slots, early_signup)
                                VALUES (?,           ?,       ?,                  ?,      ?,         ?           )""",
-        Array[AnyRef](et.eid, badgeid, if (badge.requireForSignup) 1 else 0, roleid.getOrElse(null), badge.numSlots, badge.earlySignup)
+        Array[AnyRef](et.eid, badgeid, if (badge.requireForSignup) 1 else 0, roleid.getOrElse(null), badge.numSlots, badge.earlySignup): _*
       )
 
       ()
@@ -1003,7 +1003,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           where eventtmpl.name = ?
           order by start_time""",
       JSEventScheduleMapper,
-      Array[AnyRef](name)
+      Array[AnyRef](name): _*
     )
   }
 }
