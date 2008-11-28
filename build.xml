@@ -241,7 +241,6 @@
     <pathelement location="${lib.home}/spring.jar"/>
     <pathelement location="${lib.home}/spring-webmvc.jar"/>
     <pathelement location="${lib.home}/commons-logging.jar"/>
-    <pathelement location="${lib.home}/aspectjweaver.jar"/>
     <pathelement location="${lib.home}/gwt-user.jar"/>
 
     <!-- Include all elements that Tomcat exposes to applications -->

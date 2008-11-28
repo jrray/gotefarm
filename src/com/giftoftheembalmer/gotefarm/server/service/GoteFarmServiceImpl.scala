@@ -1,19 +1,26 @@
 package com.giftoftheembalmer.gotefarm.server.service
 
+import org.springframework.transaction.annotation.Transactional
+
 import com.giftoftheembalmer.gotefarm.server.dao.GoteFarmDaoT
 
 import com.giftoftheembalmer.gotefarm.client.JSEventTemplate
 
+@Transactional{val readOnly = true}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
   @scala.reflect.BeanProperty
   private var goteFarmDao: GoteFarmDaoT = null
 
+  @Transactional{val readOnly = false}
   def generateTables() = goteFarmDao.generateTables()
 
   def login(username: String, password: String) =
     goteFarmDao.validateUser(username, password)
+
+  @Transactional{val readOnly = false}
   def newUser(username: String, email: String, password: String) =
     goteFarmDao.createUser(username, email, password)
+  @Transactional{val readOnly = false}
   def newCharacter(uid: Int, realm: String, character: String) =
     goteFarmDao.createCharacter(uid, realm, character)
 
@@ -21,14 +28,18 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getCharacter(cid: Int) = goteFarmDao.getCharacter(cid)
 
   def getRoles = goteFarmDao.getRoles
+  @Transactional{val readOnly = false}
   def addRole(name: String, restricted: Boolean) =
     goteFarmDao.addRole(name, restricted)
 
   def getBadges = goteFarmDao.getBadges
+  @Transactional{val readOnly = false}
   def addBadge(name: String, score: Int) =
     goteFarmDao.addBadge(name, score)
 
+  @Transactional{val readOnly = false}
   def addInstance(name: String) = goteFarmDao.addInstance(name)
+  @Transactional{val readOnly = false}
   def addBoss(instance: String, boss: String) =
     goteFarmDao.addBoss(instance, boss)
 
@@ -38,6 +49,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
   def getEventTemplates = goteFarmDao.getEventTemplates
+  @Transactional{val readOnly = false}
   def saveEventTemplate(et: JSEventTemplate) =
     goteFarmDao.saveEventTemplate(et)
 
