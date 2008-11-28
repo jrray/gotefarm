@@ -443,7 +443,12 @@ public class Admin extends Composite {
                     t.name = name.getText();
                     t.size = getRaidSize();
                     t.minimumLevel = Integer.parseInt(minlevel.getText());
-                    t.instance = instances.getItemText(instances.getSelectedIndex());
+                    int index = instances.getSelectedIndex();
+                    if (index < 0) {
+                        errmsg.setText("Please select an instance for this event.");
+                        return;
+                    }
+                    t.instance = instances.getItemText(index);
 
                     t.bosses = new ArrayList<String>();
                     for (int i = 0; i < bosses.getItemCount(); ++i) {
@@ -556,7 +561,10 @@ public class Admin extends Composite {
         }
 
         public void updateBosses() {
-            final String inst = instances.getItemText(instances.getSelectedIndex());
+            int index = instances.getSelectedIndex();
+            if (index < 0) return;
+
+            final String inst = instances.getItemText(index);
 
             GoteFarm.testService.getInstanceBosses(inst, new AsyncCallback<List<String>>() {
                 public void onSuccess(List<String> results) {
