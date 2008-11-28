@@ -423,8 +423,15 @@ public class Admin extends Composite {
             HorizontalPanel hpanel = new HorizontalPanel();
             hpanel.setWidth("100%");
 
+            final Label errmsg = new Label();
+            errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
+            errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
+
             Button save = new Button("Save", new ClickListener() {
                 public void onClick(Widget sender) {
+                    // clear error message
+                    errmsg.setText("");
+
                     JSEventTemplate t = new JSEventTemplate();
 
                     if (EventEditor.this.et != null) {
@@ -483,6 +490,7 @@ public class Admin extends Composite {
                         }
 
                         public void onFailure(Throwable caught) {
+                            errmsg.setText(caught.getMessage());
                         }
                     });
                 }
@@ -501,6 +509,7 @@ public class Admin extends Composite {
             cancel.addStyleName(cancel.getStylePrimaryName() + "-right");
 
             hpanel.add(save);
+            hpanel.add(errmsg);
             hpanel.add(cancel);
 
             vpanel.add(hpanel);
