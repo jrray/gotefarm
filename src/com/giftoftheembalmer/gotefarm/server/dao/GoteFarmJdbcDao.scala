@@ -1012,11 +1012,28 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           throw new NotFoundError("Role '" + role.name + "' not found.")
       }
 
-      jdbc.update(
-        """insert into eventtmplrole (eventtmplid, roleid, min_count, max_count)
-                              VALUES (?,           ?,      ?,         ?        )""",
-        Array[AnyRef](et.eid, roleid, role.min, role.max): _*
-      )
+      try {
+        jdbc.update(
+          """insert into eventtmplrole (eventtmplid, roleid, min_count, max_count)
+                                VALUES (?,           ?,      ?,         ?        )""",
+          Array[AnyRef](et.eid, roleid, role.min, role.max): _*
+        )
+      }
+      catch {
+        case e: DataIntegrityViolationException
+          if e.getMessage.contains("MIN_COUNT_GE_ZERO") =>
+            throw new IllegalArgumentException(
+                "Role '"
+              + role.name
+              + "' must have a non-negative min value.")
+
+        case e: DataIntegrityViolationException
+          if e.getMessage.contains("MAX_COUNT_GT_ZERO") =>
+            throw new IllegalArgumentException(
+                "Role '"
+              + role.name
+              + "' must have a max value greater than zero.")
+      }
     }
 
     jdbc.update(
