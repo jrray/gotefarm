@@ -28,7 +28,7 @@ public class Events extends Composite {
 
                 String name = eventlb.getItemText(sel);
 
-                GoteFarm.testService.getEventTemplate(GoteFarm.sessionID, name, new AsyncCallback<JSEventTemplate>() {
+                GoteFarm.goteService.getEventTemplate(GoteFarm.sessionID, name, new AsyncCallback<JSEventTemplate>() {
                     public void onSuccess(JSEventTemplate result) {
                         Events.this.admin.setCenterWidget(new EventEditor(Events.this.admin, result));
                     }
@@ -57,7 +57,7 @@ public class Events extends Composite {
 
     public void update() {
         eventlb.clear();
-        GoteFarm.testService.getEventTemplates(GoteFarm.sessionID, new AsyncCallback<List<String>>() {
+        GoteFarm.goteService.getEventTemplates(GoteFarm.sessionID, new AsyncCallback<List<String>>() {
             public void onSuccess(List<String> results) {
                 for (String t : results) {
                     eventlb.addItem(t);

@@ -34,7 +34,7 @@ import java.util.Date;
 public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
 
   static final String COOKIE_NAME = "gotefarm_sid";
-  static GoteFarmRPCAsync testService = null;
+  static GoteFarmRPCAsync goteService = null;
   static String sessionID = null;
 
   TabPanel tabpanel;
@@ -45,9 +45,9 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
    * This is the entry point method.
    */
   public void onModuleLoad() {
-    testService = (GoteFarmRPCAsync)GWT.create(GoteFarmRPC.class);
+    goteService = (GoteFarmRPCAsync)GWT.create(GoteFarmRPC.class);
 
-    ServiceDefTarget endpoint = (ServiceDefTarget)testService;
+    ServiceDefTarget endpoint = (ServiceDefTarget)goteService;
     String moduleRelativeURL = GWT.getModuleBaseURL() + "servlet/goteService";
     endpoint.setServiceEntryPoint(moduleRelativeURL);
 
@@ -63,7 +63,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
 
     String cookiesid = Cookies.getCookie(COOKIE_NAME);
     if (cookiesid != null) {
-        testService.validateSID(cookiesid, new AsyncCallback<String>() {
+        goteService.validateSID(cookiesid, new AsyncCallback<String>() {
             public void onSuccess(String result) {
                 if (result != null) {
                     setSessionID(result);
@@ -135,7 +135,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
                 }
 
                 if (username != null && password != null) {
-                    testService.login(username, password, new AsyncCallback<String>() {
+                    goteService.login(username, password, new AsyncCallback<String>() {
                         public void onSuccess(String result) {
                             setSessionID(result);
                             login.setVisible(false);

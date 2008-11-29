@@ -79,7 +79,7 @@ public class RegisterPanel extends PopupPanel {
                     return;
                 }
 
-                GoteFarm.testService.newUser(username.getText(), email.getText(), pw1.getText(), new AsyncCallback<String>() {
+                GoteFarm.goteService.newUser(username.getText(), email.getText(), pw1.getText(), new AsyncCallback<String>() {
                     public void onSuccess(String result) {
                         GoteFarm.sessionID = result;
                         hide();

@@ -126,7 +126,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         grid.setWidget(3, 1, instances);
 
-        GoteFarm.testService.getInstances(new AsyncCallback<List<String>>() {
+        GoteFarm.goteService.getInstances(new AsyncCallback<List<String>>() {
             public void onSuccess(List<String> results) {
                 int sel = 0;
 
@@ -177,7 +177,7 @@ public class EventEditor extends Composite implements ChangeListener {
                         newboss.setText(NEW_BOSS);
                         newboss.setSelectionRange(0, NEW_BOSS.length());
 
-                        GoteFarm.testService.addInstance(GoteFarm.sessionID, inst, new AsyncCallback<Boolean>() {
+                        GoteFarm.goteService.addInstance(GoteFarm.sessionID, inst, new AsyncCallback<Boolean>() {
                             public void onSuccess(Boolean result) {
                             }
 
@@ -222,7 +222,7 @@ public class EventEditor extends Composite implements ChangeListener {
                         bosses.addItem(boss);
                         bosses.setItemSelected(bosses.getItemCount()-1, true);
 
-                        GoteFarm.testService.addBoss(
+                        GoteFarm.goteService.addBoss(
                             GoteFarm.sessionID,
                             instances.getItemText(selinst),
                             boss,
@@ -246,7 +246,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         roles.addItem(SELECT_A_ROLE);
 
-        GoteFarm.testService.getRoles(new AsyncCallback<List<JSRole>>() {
+        GoteFarm.goteService.getRoles(new AsyncCallback<List<JSRole>>() {
             public void onSuccess(List<JSRole> results) {
                 for (JSRole i : results) {
                     roles.addItem(i.name);
@@ -285,7 +285,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
                         addRole(role);
 
-                        GoteFarm.testService.addRole(GoteFarm.sessionID, role, true, new AsyncCallback<Boolean>() {
+                        GoteFarm.goteService.addRole(GoteFarm.sessionID, role, true, new AsyncCallback<Boolean>() {
                             public void onSuccess(Boolean result) {
                             }
 
@@ -324,7 +324,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         badges.addItem(SELECT_A_BADGE);
 
-        GoteFarm.testService.getBadges(new AsyncCallback<List<String>>() {
+        GoteFarm.goteService.getBadges(new AsyncCallback<List<String>>() {
             public void onSuccess(List<String> results) {
                 for (String i : results) {
                     badges.addItem(i);
@@ -363,7 +363,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
                         addBadge(badge);
 
-                        GoteFarm.testService.addBadge(GoteFarm.sessionID, badge, 0, new AsyncCallback<Boolean>() {
+                        GoteFarm.goteService.addBadge(GoteFarm.sessionID, badge, 0, new AsyncCallback<Boolean>() {
                             public void onSuccess(Boolean result) {
                             }
 
@@ -465,7 +465,7 @@ public class EventEditor extends Composite implements ChangeListener {
                     t.badges.add(eb);
                 }
 
-                GoteFarm.testService.saveEventTemplate(GoteFarm.sessionID, t, new AsyncCallback<Boolean>() {
+                GoteFarm.goteService.saveEventTemplate(GoteFarm.sessionID, t, new AsyncCallback<Boolean>() {
                     public void onSuccess(Boolean result) {
                         EventEditor.this.admin.eventAdded();
                         EventEditor.this.admin.setCenterWidget(null);
@@ -543,7 +543,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         final String inst = instances.getItemText(index);
 
-        GoteFarm.testService.getInstanceBosses(inst, new AsyncCallback<List<String>>() {
+        GoteFarm.goteService.getInstanceBosses(inst, new AsyncCallback<List<String>>() {
             public void onSuccess(List<String> results) {
                 bosses.clear();
 

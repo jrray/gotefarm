@@ -162,9 +162,9 @@ public class Characters extends Composite {
         public void addCharacter() {
             errmsg.setText("");
 
-            GoteFarm.testService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<Long>() {
+            GoteFarm.goteService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<Long>() {
                 public void onSuccess(Long result) {
-                    GoteFarm.testService.getCharacter(GoteFarm.sessionID, result.longValue(), new AsyncCallback<JSCharacter>() {
+                    GoteFarm.goteService.getCharacter(GoteFarm.sessionID, result.longValue(), new AsyncCallback<JSCharacter>() {
                         public void onSuccess(JSCharacter chr) {
                             chrpanel.add(new Character(chr));
                         }
@@ -236,7 +236,7 @@ public class Characters extends Composite {
 
         enrollbtn.setEnabled(true);
 
-        GoteFarm.testService.getCharacters(GoteFarm.sessionID, new AsyncCallback<List<JSCharacter>>() {
+        GoteFarm.goteService.getCharacters(GoteFarm.sessionID, new AsyncCallback<List<JSCharacter>>() {
             public void onSuccess(List<JSCharacter> result) {
                 for (JSCharacter c : result) {
                     chrpanel.add(new Character(c));
