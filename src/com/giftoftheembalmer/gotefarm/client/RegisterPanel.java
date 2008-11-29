@@ -87,7 +87,7 @@ public class RegisterPanel extends PopupPanel {
                     public void onSuccess(String result) {
                         RegisterPanel.this.gotefarm.setSessionID(result);
                         hide();
-                        History.newItem("events");
+                        History.newItem("characters");
                     }
 
                     public void onFailure(Throwable caught) {
