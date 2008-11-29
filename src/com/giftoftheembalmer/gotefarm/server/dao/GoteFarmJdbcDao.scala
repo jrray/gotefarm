@@ -390,7 +390,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         """CREATE TABLE eventsched (
           eventschedid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
           eventtmplid BIGINT NOT NULL,
-          active INTEGER NOT NULL,
+          active CHAR(1) NOT NULL CONSTRAINT eventsched_active_bool CHECK (active in ('Y', 'N')),
           start_time INTEGER NOT NULL,
           duration INTEGER NOT NULL,
           display_start INTEGER NOT NULL,
