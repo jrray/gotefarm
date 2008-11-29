@@ -318,6 +318,7 @@
                 -->
         </java>
         <move file="${build.home}/${gwt-xml-ep.name}" tofile="${build.home}/${gwt-output.dir}"/>
+        <copy file="${build.home}/${gwt-output.dir}/GoteFarm.html" tofile="${build.home}/${gwt-output.dir}/index.html"/>
         <touch file="${build.home}/.js"/>
     </target>
 
@@ -458,11 +459,13 @@
     <target name="war" depends="compileJs">
         <war destfile="gotefarm.war" needxmlfile="false" duplicate="fail">
             <fileset dir="${build.home}">
+                <exclude name="${gwt-output.dir}/**"/>
                 <exclude name="WEB-INF/**"/>
                 <exclude name=".gwt-tmp/**"/>
                 <exclude name=".js"/>
                 <exclude name="${gwt-xml-ep.name}-aux/**"/>
             </fileset>
+            <fileset dir="${build.home}/${gwt-output.dir}"/>
             <webinf dir="${build.home}/WEB-INF"/>
         </war>
     </target>
