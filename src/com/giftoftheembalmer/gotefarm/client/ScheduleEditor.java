@@ -1,5 +1,6 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -30,6 +31,7 @@ public class ScheduleEditor extends Composite {
         final Label display_end_time = new Label();
         final Label signups_start_time = new Label();
         final Label signups_end_time = new Label();
+        final DateTimeFormat time_formatter = DateTimeFormat.getShortDateTimeFormat();
         final RadioButton rptnever = new RadioButton("repeatGroup", "Never");
         final RadioButton rptdaily = new RadioButton("repeatGroup", "Daily");
         final RadioButton rptweekly = new RadioButton("repeatGroup", "Weekly");
@@ -368,16 +370,16 @@ public class ScheduleEditor extends Composite {
             Date d = new Date();
 
             d.setTime(sched.start_time.getTime() - display_start.getDuration() * 1000);
-            display_start_time.setText(d.toString());
+            display_start_time.setText(time_formatter.format(d));
 
             d.setTime(sched.start_time.getTime() + display_end.getDuration() * 1000);
-            display_end_time.setText(d.toString());
+            display_end_time.setText(time_formatter.format(d));
 
             d.setTime(sched.start_time.getTime() - signups_start.getDuration() * 1000);
-            signups_start_time.setText(d.toString());
+            signups_start_time.setText(time_formatter.format(d));
 
             d.setTime(sched.start_time.getTime() - signups_end.getDuration() * 1000);
-            signups_end_time.setText(d.toString());
+            signups_end_time.setText(time_formatter.format(d));
         }
 
         public void onClick(Widget sender) {
