@@ -51,7 +51,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   private def getSession(sid: String) = {
     val req = ServletUtils.getRequest()
     val sess = req.getSession(false)
-    if (sess == null || sess.getId() != sid) {
+    if ((sess eq null) || sess.getId() != sid) {
       throw new UserNotLoggedInError
     }
 
