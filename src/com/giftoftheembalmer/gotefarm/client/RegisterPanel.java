@@ -16,6 +16,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RegisterPanel extends PopupPanel {
+    GoteFarm gotefarm;
+
     TextBox username = new TextBox();
     TextBox email = new TextBox();
     PasswordTextBox pw1 = new PasswordTextBox();
@@ -25,8 +27,10 @@ public class RegisterPanel extends PopupPanel {
     Label errmsg2 = new Label();
     Label errmsg3 = new Label();
 
-    public RegisterPanel() {
+    public RegisterPanel(GoteFarm gotefarm) {
         super(false);
+
+        this.gotefarm = gotefarm;
 
         username.setVisibleLength(40);
         email.setVisibleLength(40);
@@ -81,7 +85,7 @@ public class RegisterPanel extends PopupPanel {
 
                 GoteFarm.goteService.newUser(username.getText(), email.getText(), pw1.getText(), new AsyncCallback<String>() {
                     public void onSuccess(String result) {
-                        GoteFarm.sessionID = result;
+                        RegisterPanel.this.gotefarm.setSessionID(result);
                         hide();
                         History.newItem("events");
                     }

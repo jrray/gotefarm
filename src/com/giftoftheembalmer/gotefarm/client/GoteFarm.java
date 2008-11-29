@@ -187,7 +187,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     public void onHistoryChanged(String historyToken) {
         if (historyToken.equals("register")) {
             RootPanel.get("login").setVisible(false);
-            final RegisterPanel popup = new RegisterPanel();
+            final RegisterPanel popup = new RegisterPanel(this);
             popup.setPopupPositionAndShow(new RegisterPanel.PositionCallback() {
             public void setPosition(int offsetWidth, int offsetHeight) {
                 int left = (Window.getClientWidth() - offsetWidth) / 3;
