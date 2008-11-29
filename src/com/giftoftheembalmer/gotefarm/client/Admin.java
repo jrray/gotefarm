@@ -5,19 +5,19 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import java.util.List;
+import java.util.ArrayList;
 
 public class Admin extends Composite {
 
     Widget centerWidget = null;
     DockPanel dpanel = new DockPanel();
+    List<JSEventTemplate> event_templates;
 
     Events events;
     Schedules schedules;
-
-    public void eventAdded() {
-        events.update();
-        schedules.update();
-    }
 
     public Admin() {
         events = new Events(this);
@@ -40,6 +40,8 @@ public class Admin extends Composite {
         initWidget(dpanel);
 
         setStyleName("Admin");
+
+        getEventTemplates();
     }
 
     public void setCenterWidget(Widget widget) {
@@ -54,8 +56,34 @@ public class Admin extends Composite {
         centerWidget = widget;
     }
 
+    // called from GoteFarm after user logs in
     public void refresh() {
-        events.update();
-        schedules.update();
+        getEventTemplates();
+    }
+
+    public void eventAdded() {
+        // reload event templates
+        getEventTemplates();
+    }
+
+    void getEventTemplates() {
+        GoteFarm.goteService.getEventTemplates(
+            GoteFarm.sessionID,
+            new AsyncCallback<List<JSEventTemplate>>() {
+
+            public void onSuccess(List<JSEventTemplate> results) {
+                event_templates = results;
+
+                // notify sub-widgets of new list
+                events.setEventTemplates(event_templates);
+                schedules.setEventTemplates(event_templates);
+            }
+
+            public void onFailure(Throwable caught) {
+                List<JSEventTemplate> l = new ArrayList<JSEventTemplate>();
+                events.setEventTemplates(l);
+                schedules.setEventTemplates(l);
+            }
+        });
     }
 }

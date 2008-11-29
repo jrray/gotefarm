@@ -83,6 +83,27 @@ object GoteFarmJdbcDao {
       jses
     }
   }
+
+  val JSEventTemplateMapper = new ParameterizedRowMapper[JSEventTemplate] {
+    val columns = """eventtmplid, eventtmpl.name, size, minimum_level, instance.name"""
+    val tables = """eventtmpl join instance on eventtmpl.instanceid = instance.instanceid"""
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      val et = new JSEventTemplate
+
+      et.eid = rs.getLong(1)
+      et.name = rs.getString(2)
+      et.size = rs.getInt(3)
+      et.minimumLevel = rs.getInt(4)
+      et.instance = rs.getString(5)
+
+      et.bosses = new java.util.ArrayList[String]
+      et.roles = new java.util.ArrayList[JSEventRole]
+      et.badges = new java.util.ArrayList[JSEventBadge]
+
+      et
+    }
+  }
 }
 
 class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
@@ -823,40 +844,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
   }
 
-  def getEventTemplate(name: String) = {
+  private def populateEventTemplate(et: JSEventTemplate): JSEventTemplate = {
     val jdbc = getSimpleJdbcTemplate()
-
-    val jset = try {
-      jdbc.queryForObject(
-        """select eventtmplid, size, minimum_level, instance.name
-            from eventtmpl join instance
-              on eventtmpl.instanceid = instance.instanceid
-            where eventtmpl.name = ?""",
-        new ParameterizedRowMapper[JSEventTemplate] {
-          def mapRow(rs: ResultSet, rowNum: Int) = {
-            val et = new JSEventTemplate
-
-            et.eid = rs.getLong(1)
-            et.name = name
-            et.size = rs.getInt(2)
-            et.minimumLevel = rs.getInt(3)
-            et.instance = rs.getString(4)
-
-            et.bosses = new java.util.ArrayList[String]
-            et.roles = new java.util.ArrayList[JSEventRole]
-            et.badges = new java.util.ArrayList[JSEventBadge]
-
-            et
-          }
-        },
-        Array[AnyRef](name): _*
-      )
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("Template '" + name + "' not found.")
-    }
-
     val ops = jdbc.getJdbcOperations()
 
     ops.query(
@@ -864,10 +853,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           from boss join eventtmplboss
             on boss.bossid = eventtmplboss.bossid
           where eventtmplid = ?""",
-      Array[AnyRef](jset.eid),
+      Array[AnyRef](et.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
-          jset.bosses.add(rs.getString(1))
+          et.bosses.add(rs.getString(1))
         }
       }
     )
@@ -877,7 +866,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           from role join eventtmplrole
             on role.roleid = eventtmplrole.roleid
           where eventtmplid = ?""",
-      Array[AnyRef](jset.eid),
+      Array[AnyRef](et.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
           val ev = new JSEventRole
@@ -886,7 +875,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           ev.min = rs.getInt(2)
           ev.max = rs.getInt(3)
 
-          jset.roles.add(ev)
+          et.roles.add(ev)
         }
       }
     )
@@ -899,7 +888,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
             badge
           where
             eventtmplbadge.badgeid = badge.badgeid and eventtmplid = ?""",
-      Array[AnyRef](jset.eid),
+      Array[AnyRef](et.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
           val eb = new JSEventBadge
@@ -910,25 +899,49 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           eb.numSlots = rs.getInt(4)
           eb.earlySignup = rs.getInt(5)
 
-          jset.badges.add(eb)
+          et.badges.add(eb)
         }
       }
     )
 
-    jset
+    et
+  }
+
+  def getEventTemplate(name: String) = {
+    val jdbc = getSimpleJdbcTemplate()
+
+    val jset = try {
+      jdbc.queryForObject(
+        "select " + JSEventTemplateMapper.columns
+                  + " from "
+                  + JSEventTemplateMapper.tables
+                  + " where eventtmpl.name = ?",
+        JSEventTemplateMapper,
+        Array[AnyRef](name): _*
+      )
+    }
+    catch {
+      case _: IncorrectResultSizeDataAccessException =>
+        throw new NotFoundError("Template '" + name + "' not found.")
+    }
+
+    populateEventTemplate(jset)
   }
 
   def getEventTemplates = {
     val jdbc = getSimpleJdbcTemplate()
-    jdbc.query(
-      "select name from eventtmpl order by name",
-      new ParameterizedRowMapper[String] {
-        def mapRow(rs: ResultSet, rowNum: Int) = {
-          rs.getString(1)
-        }
-      },
+    val jsets = jdbc.query(
+      "select " + JSEventTemplateMapper.columns
+                + " from "
+                + JSEventTemplateMapper.tables
+                + " order by eventtmpl.name",
+      JSEventTemplateMapper,
       Array[AnyRef](): _*
-    )
+    ).map(populateEventTemplate)
+
+    val r = new scala.collection.jcl.ArrayList[JSEventTemplate]
+    r.addAll(jsets)
+    r
   }
 
   def saveEventTemplate(et: JSEventTemplate) = {

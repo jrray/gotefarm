@@ -32,7 +32,7 @@ trait GoteFarmDaoT {
   def getInstanceBosses(instance: String): List[String]
 
   def getEventTemplate(name: String): JSEventTemplate
-  def getEventTemplates: List[String]
+  def getEventTemplates: List[JSEventTemplate]
   def saveEventTemplate(et: JSEventTemplate): Long
 
   def getEventSchedules(name: String): List[JSEventSchedule]

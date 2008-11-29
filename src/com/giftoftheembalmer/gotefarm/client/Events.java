@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import java.util.List;
 
@@ -15,9 +14,11 @@ public class Events extends Composite {
     Admin admin;
     VerticalPanel vpanel = new VerticalPanel();
     ListBox eventlb = new ListBox();
+    List<JSEventTemplate> event_templates;
 
     public Events(Admin admin) {
         this.admin = admin;
+
         eventlb.setWidth("100%");
         eventlb.setVisibleItemCount(20);
 
@@ -28,14 +29,15 @@ public class Events extends Composite {
 
                 String name = eventlb.getItemText(sel);
 
-                GoteFarm.goteService.getEventTemplate(GoteFarm.sessionID, name, new AsyncCallback<JSEventTemplate>() {
-                    public void onSuccess(JSEventTemplate result) {
-                        Events.this.admin.setCenterWidget(new EventEditor(Events.this.admin, result));
+                for (JSEventTemplate e : event_templates) {
+                    if (e.name.equals(name)) {
+                        Events.this.admin.setCenterWidget(new EventEditor(Events.this.admin, e));
+                        return;
                     }
+                }
 
-                    public void onFailure(Throwable caught) {
-                    }
-                });
+                // TODO: display not-found error
+                Events.this.admin.setCenterWidget(null);
             }
         });
 
@@ -48,24 +50,18 @@ public class Events extends Composite {
             }
         }));
 
-        update();
-
         initWidget(vpanel);
 
         setStyleName("Admin-Events");
     }
 
-    public void update() {
-        eventlb.clear();
-        GoteFarm.goteService.getEventTemplates(GoteFarm.sessionID, new AsyncCallback<List<String>>() {
-            public void onSuccess(List<String> results) {
-                for (String t : results) {
-                    eventlb.addItem(t);
-                }
-            }
+    public void setEventTemplates(List<JSEventTemplate> events) {
+        event_templates = events;
 
-            public void onFailure(Throwable caught) {
-            }
-        });
+        eventlb.clear();
+
+        for (JSEventTemplate e : events) {
+            eventlb.addItem(e.name);
+        }
     }
 }

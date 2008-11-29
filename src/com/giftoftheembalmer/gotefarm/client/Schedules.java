@@ -13,6 +13,7 @@ public class Schedules extends Composite {
     Admin admin;
     VerticalPanel vpanel = new VerticalPanel();
     ListBox eventlb = new ListBox();
+    List<JSEventTemplate> event_templates;
 
     public Schedules(Admin admin) {
         this.admin = admin;
@@ -40,24 +41,18 @@ public class Schedules extends Composite {
 
         vpanel.add(eventlb);
 
-        update();
-
         initWidget(vpanel);
 
         setStyleName("Admin-Schedules");
     }
 
-    public void update() {
-        eventlb.clear();
-        GoteFarm.goteService.getEventTemplates(GoteFarm.sessionID, new AsyncCallback<List<String>>() {
-            public void onSuccess(List<String> results) {
-                for (String t : results) {
-                    eventlb.addItem(t);
-                }
-            }
+    public void setEventTemplates(List<JSEventTemplate> events) {
+        event_templates = events;
 
-            public void onFailure(Throwable caught) {
-            }
-        });
+        eventlb.clear();
+
+        for (JSEventTemplate e : events) {
+            eventlb.addItem(e.name);
+        }
     }
 }
