@@ -152,6 +152,7 @@
   <path id="scala.classpath">
     <pathelement location="${scala-compiler.jar}"/>
     <pathelement location="${scala-library.jar}"/>
+    <pathelement location="${derby.jar}"/>
     <fileset dir="${lib.home}">
         <include name="**/*.jar"/>
     </fileset>

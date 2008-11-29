@@ -1,0 +1,3 @@
+# This file should be copied into tomcat's classes directory
+
+gotefarm.derby.system.home = /path/to/derby/database

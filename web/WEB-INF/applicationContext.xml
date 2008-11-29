@@ -8,9 +8,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xmlns:tx="http://www.springframework.org/schema/tx"
+                xmlns:context="http://www.springframework.org/schema/context"
 		xsi:schemaLocation="
 			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
 
 	<!-- ========================= GENERAL DEFINITIONS ========================= -->
@@ -35,11 +37,43 @@
 	</bean>
 	-->
 
+        <context:property-placeholder location="classpath:gotefarm.properties"/>
+
+        <bean id="sysprops" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+            <property name="targetClass" value="java.lang.System" />
+            <property name="targetMethod" value="getProperties" />
+        </bean>
+
+        <!-- set the derby system home to the user-configured path -->
+        <bean id="derbysystemhome" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+            <property name="targetObject"><ref local="sysprops"/></property>
+            <property name="targetMethod" value="setProperty"/>
+            <property name="arguments">
+                <list>
+                    <value>derby.system.home</value>
+                    <value>${gotefarm.derby.system.home}</value>
+                </list>
+            </property>
+        </bean>
+
         <tx:annotation-driven transaction-manager="txManager"/>
 
-        <bean id="dataSource" destroy-method="close" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <bean id="createDerbyDatabase"
+              init-method="initialize"
+              class="com.giftoftheembalmer.gotefarm.server.dao.DerbyCreator"
+              depends-on="derbysystemhome">
             <property name="driverClass" value="org.apache.derby.jdbc.EmbeddedDriver"/>
-            <property name="jdbcUrl" value="jdbc:derby:/Users/jrray/gotefarmdb/derby;create=true"/>
+            <!-- create=true needed here -->
+            <property name="jdbcUrl" value="jdbc:derby:gotefarm;create=true"/>
+        </bean>
+
+        <bean id="dataSource"
+              destroy-method="close"
+              class="com.mchange.v2.c3p0.ComboPooledDataSource"
+              depends-on="createDerbyDatabase">
+            <property name="driverClass" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+            <!-- no create=true needed here -->
+            <property name="jdbcUrl" value="jdbc:derby:gotefarm"/>
             <property name="autoCommitOnClose" value="false"/>
             <property name="maxStatementsPerConnection" value="16"/>
         </bean>
