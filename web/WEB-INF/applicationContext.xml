@@ -62,7 +62,6 @@
               init-method="initialize"
               class="com.giftoftheembalmer.gotefarm.server.dao.DerbyCreator"
               depends-on="derbysystemhome">
-            <property name="driverClass" value="org.apache.derby.jdbc.EmbeddedDriver"/>
             <!-- create=true needed here -->
             <property name="jdbcUrl" value="jdbc:derby:gotefarm;create=true"/>
         </bean>

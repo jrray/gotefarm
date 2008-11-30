@@ -2,9 +2,6 @@ package com.giftoftheembalmer.gotefarm.server.dao
 
 class DerbyCreator {
   @scala.reflect.BeanProperty
-  private var driverClass: String = _
-
-  @scala.reflect.BeanProperty
   private var jdbcUrl: String = _
 
   def initialize() = {
