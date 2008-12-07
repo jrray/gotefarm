@@ -26,11 +26,20 @@ public class Schedules extends Composite {
                 int sel = eventlb.getSelectedIndex();
                 if (sel < 0) return;
 
-                String name = eventlb.getItemText(sel);
+                final String name = eventlb.getItemText(sel);
 
                 GoteFarm.goteService.getEventSchedules(GoteFarm.sessionID, name, new AsyncCallback<List<JSEventSchedule>>() {
                     public void onSuccess(List<JSEventSchedule> results) {
-                        Schedules.this.admin.setCenterWidget(new ScheduleEditor(results));
+                        long eid = -1L;
+
+                        for (JSEventTemplate e : Schedules.this.event_templates) {
+                            if (e.name.equals(name)) {
+                                eid = e.eid;
+                                break;
+                            }
+                        }
+
+                        Schedules.this.admin.setCenterWidget(new ScheduleEditor(eid, results));
                     }
 
                     public void onFailure(Throwable caught) {

@@ -39,6 +39,8 @@ import scala.Predef.{
 }
 
 object GoteFarmJdbcDao {
+  val noargs = new Array[AnyRef](0)
+
   val JSCharacterMapper = new ParameterizedRowMapper[JSCharacter] {
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val jsc = new JSCharacter
@@ -412,7 +414,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           eventschedid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
           eventtmplid BIGINT NOT NULL,
           active CHAR(1) NOT NULL CONSTRAINT eventsched_active_bool CHECK (active in ('Y', 'N')),
-          start_time INTEGER NOT NULL,
+          start_time TIMESTAMP NOT NULL,
           duration INTEGER NOT NULL,
           display_start INTEGER NOT NULL,
           display_end INTEGER NOT NULL,
@@ -1111,4 +1113,58 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       Array[AnyRef](name): _*
     )
   }
+
+  def saveEventSchedule(es: JSEventSchedule) = {
+    val jdbc = getSimpleJdbcTemplate
+
+    if (es.esid == -1) {
+      // new schedule
+      jdbc.update(
+        """insert into eventsched
+            (eventtmplid, active, start_time, duration,
+             display_start, display_end,
+             signups_start, signups_end,
+             repeat_size, repeat_freq,
+             day_mask, repeat_by)
+            VALUES
+            (?, ?, ?, ?,
+             ?, ?,
+             ?, ?,
+             ?, ?,
+             ?, ?)""",
+          Array[AnyRef](es.eid, "Y", es.start_time, es.duration,
+                        es.display_start, es.display_end,
+                        es.signups_start, es.signups_end,
+                        es.repeat_size, es.repeat_freq,
+                        es.day_mask, es.repeat_by): _*)
+
+      jdbc.queryForLong("values IDENTITY_VAL_LOCAL()", noargs: _*)
+    }
+    else {
+      // update existing
+      val r = jdbc.update(
+        """update eventsched
+            set
+              eventtmplid = ?, active = ?, start_time = ?, duration = ?,
+              display_start = ?, display_end = ?,
+              signups_start = ?, signups_end = ?,
+              repeat_size = ?, repeat_freq = ?, day_mask = ?,
+              repeat_by = ?
+            where
+              eventschedid = ?""",
+          Array[AnyRef](es.eid, "Y", es.start_time, es.duration,
+                        es.display_start, es.display_end,
+                        es.signups_start, es.signups_end,
+                        es.repeat_size, es.repeat_freq, es.day_mask,
+                        es.repeat_by, es.esid): _*)
+
+      if (r == 0) {
+        throw new NotFoundError(  "Event schedule not found, "
+                                + "did somebody else delete it?")
+      }
+
+      es.esid
+    }
+  }
+
 }

@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.server.service._
 
 import com.giftoftheembalmer.gotefarm.client.{
   GoteFarmRPC,
+  JSEventSchedule,
   JSEventTemplate,
   UserNotLoggedInError
 }
@@ -140,5 +141,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   def getEventSchedules(sid: String, name: String) = {
     val sess = getSession(sid)
     goteFarmService.getEventSchedules(name)
+  }
+
+  def saveEventSchedule(sid: String, es: JSEventSchedule) = {
+    val sess = getSession(sid)
+    goteFarmService.saveEventSchedule(es)
+    true
   }
 }

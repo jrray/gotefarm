@@ -33,4 +33,6 @@ public interface GoteFarmRPC extends RemoteService {
             IllegalArgumentException;
 
     public List<JSEventSchedule> getEventSchedules(String sid, String name) throws UserNotLoggedInError;
+    public Boolean saveEventSchedule(String sid, JSEventSchedule es)
+        throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 }

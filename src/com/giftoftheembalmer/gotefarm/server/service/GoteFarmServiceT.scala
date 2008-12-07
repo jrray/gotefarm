@@ -58,4 +58,7 @@ trait GoteFarmServiceT {
   def saveEventTemplate(et: JSEventTemplate): Long
 
   def getEventSchedules(name: String): List[JSEventSchedule]
+  @throws(classOf[NotFoundError])
+  @throws(classOf[IllegalArgumentException])
+  def saveEventSchedule(es: JSEventSchedule): Long
 }

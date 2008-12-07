@@ -36,4 +36,5 @@ trait GoteFarmDaoT {
   def saveEventTemplate(et: JSEventTemplate): Long
 
   def getEventSchedules(name: String): List[JSEventSchedule]
+  def saveEventSchedule(es: JSEventSchedule): Long
 }

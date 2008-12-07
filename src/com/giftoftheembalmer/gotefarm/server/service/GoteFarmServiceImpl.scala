@@ -4,7 +4,10 @@ import org.springframework.transaction.annotation.Transactional
 
 import com.giftoftheembalmer.gotefarm.server.dao.GoteFarmDaoT
 
-import com.giftoftheembalmer.gotefarm.client.JSEventTemplate
+import com.giftoftheembalmer.gotefarm.client.{
+  JSEventSchedule,
+  JSEventTemplate
+}
 
 @Transactional{val readOnly = true}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
@@ -55,5 +58,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   def getEventSchedules(name: String) =
     goteFarmDao.getEventSchedules(name)
-
+  @Transactional{val readOnly = false}
+  def saveEventSchedule(es: JSEventSchedule) =
+    goteFarmDao.saveEventSchedule(es)
 }

@@ -1,6 +1,7 @@
 package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -18,8 +19,17 @@ import java.util.Date;
 import java.util.List;
 
 public class ScheduleEditor extends Composite {
+    static int last_group_num = 0;
+
     class Schedule extends Composite implements ChangeListener, ClickListener {
-        JSEventSchedule sched = null;
+        JSEventSchedule sched;
+
+        // append a distinct number to radio button group names, per schedule,
+        // so multiple schedules' radio buttons don't end up in the same group
+        final int radio_group_num = last_group_num++;
+        final String REPEAT_GROUP = "repeatGroup_" + radio_group_num;
+        final String DAYOF_GROUP = "dayofGroup_" + radio_group_num;
+
         VerticalPanel vpanel = new VerticalPanel();
         final DatePickerWrapper dp;
         final TimePicker tp;
@@ -32,10 +42,10 @@ public class ScheduleEditor extends Composite {
         final Label signups_start_time = new Label();
         final Label signups_end_time = new Label();
         final DateTimeFormat time_formatter = DateTimeFormat.getShortDateTimeFormat();
-        final RadioButton rptnever = new RadioButton("repeatGroup", "Never");
-        final RadioButton rptdaily = new RadioButton("repeatGroup", "Daily");
-        final RadioButton rptweekly = new RadioButton("repeatGroup", "Weekly");
-        final RadioButton rptmonthly = new RadioButton("repeatGroup", "Monthly");
+        final RadioButton rptnever = new RadioButton(REPEAT_GROUP, "Never");
+        final RadioButton rptdaily = new RadioButton(REPEAT_GROUP, "Daily");
+        final RadioButton rptweekly = new RadioButton(REPEAT_GROUP, "Weekly");
+        final RadioButton rptmonthly = new RadioButton(REPEAT_GROUP, "Monthly");
         final VerticalPanel dailyrptpanel = new VerticalPanel();
         final VerticalPanel weeklyrptpanel = new VerticalPanel();
         final VerticalPanel monthlyrptpanel = new VerticalPanel();
@@ -54,16 +64,17 @@ public class ScheduleEditor extends Composite {
         };
         final ListBox monthlyrptmonth = new ListBox();
         final Label monthlyrptmonthlabel = new Label("month");
-        final RadioButton rptdayofmonth = new RadioButton("dayofGroup", "day of the month");
-        final RadioButton rptdayofweek = new RadioButton("dayofGroup", "day of the week");
+        final RadioButton rptdayofmonth = new RadioButton(DAYOF_GROUP, "day of the month");
+        final RadioButton rptdayofweek = new RadioButton(DAYOF_GROUP, "day of the week");
 
-        public Schedule(JSEventSchedule sched) {
+        public Schedule(long eid, JSEventSchedule sched) {
             this.sched = sched;
+
             if (this.sched == null) {
                 this.sched = sched = new JSEventSchedule();
 
                 sched.esid = -1;
-                sched.eid = -1;
+                sched.eid = eid;
 
                 sched.start_time = new Date();
                 sched.start_time.setTime(
@@ -200,7 +211,11 @@ public class ScheduleEditor extends Composite {
 
                 dailyrptdays.addChangeListener(new ChangeListener() {
                     public void onChange(Widget sender) {
-                        if (dailyrptdays.getSelectedIndex() > 0) {
+                        final int index = dailyrptdays.getSelectedIndex();
+
+                        Schedule.this.sched.repeat_freq = index + 1;
+
+                        if (index > 0) {
                             dailyrptdaylabel.setText("days");
                         }
                         else {
@@ -228,7 +243,11 @@ public class ScheduleEditor extends Composite {
 
                 weeklyrptweeks.addChangeListener(new ChangeListener() {
                     public void onChange(Widget sender) {
-                        if (weeklyrptweeks.getSelectedIndex() > 0) {
+                        final int index = weeklyrptweeks.getSelectedIndex();
+
+                        Schedule.this.sched.repeat_freq = index + 1;
+
+                        if (index > 0) {
                             weeklyrptweeklabel.setText("weeks");
                         }
                         else {
@@ -249,11 +268,33 @@ public class ScheduleEditor extends Composite {
                 HorizontalPanel hpanel = new HorizontalPanel();
                 hpanel.add(new Label("Repeat on"));
 
+                final ClickListener daychanged = new ClickListener() {
+                    public void onClick(Widget sender) {
+                        final boolean checked = ((CheckBox)sender).isChecked();
+
+                        for (int i = 0; i < 7; ++i ) {
+                            if (sender == weeklydays[i]) {
+                                if (checked) {
+                                    Schedule.this.sched.day_mask |= (1 << i);
+                                }
+                                else {
+                                    Schedule.this.sched.day_mask &= ~(1 << i);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                };
+
                 for (int i = 0; i < 7; ++i ) {
                     weeklydays[i].addStyleName("padleft");
+
                     if ((sched.day_mask & (1 << i)) > 0) {
                         weeklydays[i].setChecked(true);
                     }
+
+                    weeklydays[i].addClickListener(daychanged);
+
                     hpanel.add(weeklydays[i]);
                 }
 
@@ -271,7 +312,11 @@ public class ScheduleEditor extends Composite {
 
                 monthlyrptmonth.addChangeListener(new ChangeListener() {
                     public void onChange(Widget sender) {
-                        if (monthlyrptmonth.getSelectedIndex() > 0) {
+                        final int index = monthlyrptmonth.getSelectedIndex();
+
+                        Schedule.this.sched.repeat_freq = index + 1;
+
+                        if (index > 0) {
                             monthlyrptmonthlabel.setText("months");
                         }
                         else {
@@ -292,12 +337,26 @@ public class ScheduleEditor extends Composite {
                 HorizontalPanel hpanel = new HorizontalPanel();
                 hpanel.add(new Label("Repeat by"));
 
+                final ClickListener rptdayofchanged = new ClickListener() {
+                    public void onClick(Widget sender) {
+                        if (sender == rptdayofmonth) {
+                            Schedule.this.sched.repeat_by = 0;
+                        }
+                        else {
+                            Schedule.this.sched.repeat_by = 1;
+                        }
+                    }
+                };
+
                 if (sched.repeat_by == 0) {
                     rptdayofmonth.setChecked(true);
                 }
                 else {
                     rptdayofweek.setChecked(true);
                 }
+
+                rptdayofmonth.addClickListener(rptdayofchanged);
+                rptdayofweek.addClickListener(rptdayofchanged);
 
                 hpanel.add(rptdayofmonth);
                 hpanel.add(rptdayofweek);
@@ -326,13 +385,46 @@ public class ScheduleEditor extends Composite {
                     break;
             }
 
+            HorizontalPanel hpanel = new HorizontalPanel();
+            hpanel.setWidth("100%");
+
+            final Label errmsg = new Label();
+            errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
+
+            Button save = new Button("Save", new ClickListener() {
+                public void onClick(Widget sender) {
+                    // clear error message
+                    errmsg.setText("");
+
+                    GoteFarm.goteService.saveEventSchedule(GoteFarm.sessionID, Schedule.this.sched, new AsyncCallback<Boolean>() {
+                        public void onSuccess(Boolean result) {
+                            errmsg.removeStyleName(errmsg.getStylePrimaryName() + "-error");
+                            errmsg.setText("Schedule saved successfully.");
+                        }
+
+                        public void onFailure(Throwable caught) {
+                            errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
+                            errmsg.setText(caught.getMessage());
+                        }
+                    });
+                }
+            });
+
+            save.addStyleName(save.getStylePrimaryName() + "-bottom");
+            save.addStyleName(save.getStylePrimaryName() + "-left");
+
+            hpanel.add(save);
+            hpanel.add(errmsg);
+
+            vpanel.add(hpanel);
+
             initWidget(vpanel);
 
             setStyleName("Admin-Schedule");
         }
 
-        public Schedule() {
-            this(null);
+        public Schedule(long eid) {
+            this(eid, null);
         }
 
         public void onChange(Widget sender) {
@@ -385,27 +477,32 @@ public class ScheduleEditor extends Composite {
         public void onClick(Widget sender) {
             Widget toshow = null;
 
-            if (sender == rptdaily)        { toshow = dailyrptpanel; }
-            else if (sender == rptweekly)  { toshow = weeklyrptpanel; }
-            else if (sender == rptmonthly) { toshow = monthlyrptpanel; }
+            int repeat_size = 0;
+
+            if      (sender == rptdaily)   { toshow = dailyrptpanel;   repeat_size = 1; }
+            else if (sender == rptweekly)  { toshow = weeklyrptpanel;  repeat_size = 2; }
+            else if (sender == rptmonthly) { toshow = monthlyrptpanel; repeat_size = 3; }
 
             dailyrptpanel.setVisible(toshow == dailyrptpanel);
             weeklyrptpanel.setVisible(toshow == weeklyrptpanel);
             monthlyrptpanel.setVisible(toshow == monthlyrptpanel);
+
+            sched.repeat_size = repeat_size;
         }
     }
 
     VerticalPanel vpanel = new VerticalPanel();
 
-    public ScheduleEditor(List<JSEventSchedule> schedules) {
+    public ScheduleEditor(long eid, List<JSEventSchedule> schedules) {
         vpanel.setWidth("100%");
         vpanel.setHeight("100%");
+        vpanel.setSpacing(40);
 
         for (JSEventSchedule s : schedules) {
-            vpanel.add(new Schedule(s));
+            vpanel.add(new Schedule(eid, s));
         }
 
-        vpanel.add(new Schedule());
+        vpanel.add(new Schedule(eid));
 
         initWidget(vpanel);
 
