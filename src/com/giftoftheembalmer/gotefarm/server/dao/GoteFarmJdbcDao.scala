@@ -431,7 +431,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbco.execute(
         """CREATE TABLE event (
           eventid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
-          name VARCHAR(128) UNIQUE NOT NULL,
+          name VARCHAR(128) NOT NULL,
           size INTEGER NOT NULL,
           minimum_level INTEGER NOT NULL,
           instanceid BIGINT NOT NULL,
