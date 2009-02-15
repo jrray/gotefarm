@@ -5,7 +5,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import java.util.List;
 
 interface GoteFarmRPCAsync {
-    public void login(String username, String password, AsyncCallback<String> cb);
     public void newUser(String username, String email, String password, AsyncCallback<String> cb);
     public void validateSID(String sid, AsyncCallback<String> cb);
     public void newCharacter(String sid, String realm, String character, AsyncCallback<Long> cb);

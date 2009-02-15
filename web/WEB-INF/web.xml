@@ -25,8 +25,21 @@ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
        <servlet-mapping>
                <servlet-name>Gote Farm</servlet-name>
-               <url-pattern>/servlet/*</url-pattern>
+               <url-pattern>/rpc/*</url-pattern>
        </servlet-mapping>
+
+    <servlet>
+            <servlet-name>servlets</servlet-name>
+            <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+            <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+            <servlet-name>servlets</servlet-name>
+            <url-pattern>/servlet/*</url-pattern>
+    </servlet-mapping>
+
+
 
 </web-app>
 

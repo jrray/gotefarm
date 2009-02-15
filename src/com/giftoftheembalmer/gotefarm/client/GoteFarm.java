@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.client.InvalidCredentialsError;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -11,16 +12,21 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.HistoryListener;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.ClickListener;
-import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.FormHandler;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.FormSubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormSubmitEvent;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimpleCheckBox;
 import com.google.gwt.user.client.ui.SourcesTabEvents;
 import com.google.gwt.user.client.ui.TabListener;
 import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -48,7 +54,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     goteService = (GoteFarmRPCAsync)GWT.create(GoteFarmRPC.class);
 
     ServiceDefTarget endpoint = (ServiceDefTarget)goteService;
-    String moduleRelativeURL = GWT.getModuleBaseURL() + "servlet/goteService";
+    String moduleRelativeURL = GWT.getModuleBaseURL() + "rpc/goteService";
     endpoint.setServiceEntryPoint(moduleRelativeURL);
 
     tabpanel = new TabPanel();
@@ -104,76 +110,116 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     History.fireCurrentHistoryState();
   }
 
+  // Workaround for http://code.google.com/p/google-web-toolkit/issues/detail?id=3364
+  // At least on gwt-mac-1.5.3 in the gwt shell, the body element is missing
+  // compareDocumentPosition. Looking at the GWT code, it is only needed to
+  // pass an assertion. This function creates a bogus definition for the
+  // function that allows the assertion to pass.
+  native boolean fake_compare(com.google.gwt.dom.client.Element parent) /*-{
+    if (typeof parent.compareDocumentPosition == 'undefined') {
+        parent.compareDocumentPosition = function(child) {
+            return 16;
+        }
+        return true;
+    }
+    return false;
+  }-*/;
+
+  // Undo the damage done in unfake_compare.
+  native void unfake_compare(com.google.gwt.dom.client.Element parent) /*-{
+    parent.compareDocumentPosition = undefined;
+  }-*/;
+
   void showLogin() {
         final RootPanel login = RootPanel.get("login");
         login.setVisible(true);
 
-        final CheckBox rememberme = new CheckBox("Remember me on this computer");
+        boolean faked = fake_compare(Document.get().getBody());
+
+        // login form widgets
+        final FormPanel loginForm = FormPanel.wrap(DOM.getElementById("loginform"), true);
+        final TextBox username = TextBox.wrap(DOM.getElementById("login_username"));
+        final PasswordTextBox password = PasswordTextBox.wrap(DOM.getElementById("login_password"));
+        final SimpleCheckBox rememberme = SimpleCheckBox.wrap(DOM.getElementById("remember"));
+        final Button submit = Button.wrap(DOM.getElementById("loginattempt"));
+
+        submit.setEnabled(true);
+
+        if (faked) {
+            unfake_compare(Document.get().getBody());
+        }
+
         final Label errmsg = new Label();
         errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
-        login.add(rememberme);
         login.add(errmsg);
 
         HorizontalPanel hpanel = new HorizontalPanel();
         hpanel.setWidth("100%");
 
-        hpanel.add(new Button("Login", new ClickListener() {
-            String username = null;
-            String password = null;
-
-            public void onClick(Widget sender) {
-                errmsg.setVisible(false);
-
-                Element elem = DOM.getElementById("login_username");
-                if (elem != null) {
-                    username = DOM.getElementProperty(elem, "value");
-                }
-
-                elem = DOM.getElementById("login_password");
-                if (elem != null) {
-                    password = DOM.getElementProperty(elem, "value");
-                }
-
-                if (username != null && password != null) {
-                    goteService.login(username, password, new AsyncCallback<String>() {
-                        public void onSuccess(String result) {
-                            setSessionID(result);
-                            login.setVisible(false);
-
-                            if (rememberme.isChecked()) {
-                                final long DURATION = 1000 * 60 * 60 * 24 * 14; //duration remembering login. 2 weeks in this example.
-                                Date expires = new Date(System.currentTimeMillis() + DURATION);
-                                Cookies.setCookie(COOKIE_NAME, sessionID, expires, null, "/", false);
-                            }
-                            else {
-                                Cookies.removeCookie(COOKIE_NAME);
-                            }
-                        }
-
-                        public void onFailure(Throwable caught) {
-                            try {
-                                throw caught;
-                            }
-                            catch (InvalidCredentialsError e) {
-                                errmsg.setText("Invalid username or password.");
-                                errmsg.setVisible(true);
-                            }
-                            catch (Throwable e) {
-                                errmsg.setText(e.toString());
-                                errmsg.setVisible(true);
-                            }
-                        }
-                    });
-                }
-                else {
-                    Window.alert("Failed to locate username and password inputs");
-                }
-            }
-        }));
-
         hpanel.add(new Hyperlink("Register", "register"));
 
         login.add(hpanel);
+
+        loginForm.addFormHandler(new FormHandler() {
+            public void onSubmit(FormSubmitEvent event) {
+                errmsg.setVisible(false);
+
+                String u = username.getText();
+
+                if (u == null || u.length() == 0) {
+                    errmsg.setText("You must provide a username");
+                    errmsg.setVisible(true);
+                    username.setFocus(true);
+                    event.setCancelled(true);
+                    return;
+                }
+
+                String pw = password.getText();
+
+                if (pw == null || pw.length() == 0) {
+                    errmsg.setText("You must provide a password");
+                    errmsg.setVisible(true);
+                    password.setFocus(true);
+                    event.setCancelled(true);
+                    return;
+                }
+
+                submit.setEnabled(false);
+            }
+
+            public void onSubmitComplete(FormSubmitCompleteEvent event) {
+                submit.setEnabled(true);
+
+                String results = event.getResults();
+
+                if (results.contains("NOK")) {
+                    errmsg.setText("Invalid username or password.");
+                    errmsg.setVisible(true);
+                    return;
+                }
+
+                int ok = results.indexOf("OK,");
+                if (ok < 0) {
+                    errmsg.setText("Invalid username or password.");
+                    errmsg.setVisible(true);
+                    return;
+                }
+
+                String id = results.substring(ok+3, results.indexOf(",", ok+3));
+                setSessionID(id);
+
+                if (rememberme.isChecked()) {
+                    final long DURATION = 1000 * 60 * 60 * 24 * 14; //duration remembering login. 2 weeks in this example.
+                    Date expires = new Date(System.currentTimeMillis() + DURATION);
+                    Cookies.setCookie(COOKIE_NAME, sessionID, expires, null, "/", false);
+                }
+                else {
+                    Cookies.removeCookie(COOKIE_NAME);
+                }
+
+                login.setVisible(false);
+            }
+        });
     }
 
     void setSessionID(String sessionID) {

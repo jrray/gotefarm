@@ -39,11 +39,6 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     sess.getId()
   }
 
-  def login(username: String, password: String) = {
-    val uid = goteFarmService.login(username, password)
-    sessionID(uid)
-  }
-
   def newUser(username: String, email: String, password: String) = {
     val uid = goteFarmService.newUser(username, email, password)
     sessionID(uid)

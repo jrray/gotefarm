@@ -5,7 +5,6 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import java.util.List;
 
 public interface GoteFarmRPC extends RemoteService {
-    public String login(String username, String password) throws InvalidCredentialsError;
     public String newUser(String username, String email, String password) throws AlreadyExistsError;
     public String validateSID(String sid);
     public Long newCharacter(String sid, String realm, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
