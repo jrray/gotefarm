@@ -59,6 +59,20 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getEventSchedules(name: String) =
     goteFarmDao.getEventSchedules(name)
   @Transactional{val readOnly = false}
-  def saveEventSchedule(es: JSEventSchedule) =
+  def saveEventSchedule(es: JSEventSchedule) = {
+    if (es.repeat_size < 0 || es.repeat_size > 3) {
+      throw new IllegalArgumentException("Illegal repeat size")
+    }
+    if (es.repeat_size > 0 && es.repeat_freq < 1) {
+      throw new IllegalArgumentException("Illegal repeat freq")
+    }
+    if (es.repeat_size == 2 && (es.day_mask & 0x7F) == 0) {
+      throw new IllegalArgumentException("Illegal day mask")
+    }
+    if (es.repeat_size == 3 && (es.repeat_by < 0 || es.repeat_by > 1)) {
+      throw new IllegalArgumentException("Illegal repeat by")
+    }
+
     goteFarmDao.saveEventSchedule(es)
+  }
 }
