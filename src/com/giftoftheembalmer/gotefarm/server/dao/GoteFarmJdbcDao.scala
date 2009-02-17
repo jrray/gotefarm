@@ -435,12 +435,12 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           size INTEGER NOT NULL,
           minimum_level INTEGER NOT NULL,
           instanceid BIGINT NOT NULL,
-          start_time INTEGER NOT NULL,
+          start_time TIMESTAMP NOT NULL,
           duration INTEGER NOT NULL,
-          display_start INTEGER NOT NULL,
-          display_end INTEGER NOT NULL,
-          signups_start INTEGER NOT NULL,
-          signups_end INTEGER NOT NULL,
+          display_start TIMESTAMP NOT NULL,
+          display_end TIMESTAMP NOT NULL,
+          signups_start TIMESTAMP NOT NULL,
+          signups_end TIMESTAMP NOT NULL,
           CONSTRAINT event_instanceid_fk FOREIGN KEY (instanceid) REFERENCES instance (instanceid) ON DELETE RESTRICT
         )"""
       )
