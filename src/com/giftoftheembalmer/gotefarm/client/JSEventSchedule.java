@@ -10,6 +10,7 @@ public class JSEventSchedule implements IsSerializable {
     public long eid;
 
     public Date start_time;
+    public int timezone_offset;
     public int duration;
 
     public int display_start;

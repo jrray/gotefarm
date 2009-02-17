@@ -82,6 +82,9 @@ public class ScheduleEditor extends Composite {
                     (sched.start_time.getTime() % 3600000)
                 );
 
+                // FIXME: this doesn't handle daylight saving time properly
+                sched.timezone_offset = sched.start_time.getTimezoneOffset();
+
                 sched.duration = 120 * 60;
 
                 sched.display_start = 7 * 86400;
@@ -397,6 +400,9 @@ public class ScheduleEditor extends Composite {
                 public void onClick(Widget sender) {
                     // clear error message
                     errmsg.setText("");
+
+                    // update timezone_offset when saving
+                    Schedule.this.sched.timezone_offset = Schedule.this.sched.start_time.getTimezoneOffset();
 
                     GoteFarm.goteService.saveEventSchedule(GoteFarm.sessionID, Schedule.this.sched, new AsyncCallback<Boolean>() {
                         public void onSuccess(Boolean result) {

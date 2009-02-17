@@ -66,7 +66,8 @@ object GoteFarmJdbcDao {
   }
 
   val JSEventScheduleMapper = new ParameterizedRowMapper[JSEventSchedule] {
-    val columns = """eventschedid, eventsched.eventtmplid, start_time, duration,
+    val columns = """eventschedid, eventsched.eventtmplid, start_time,
+                     timezone_offset, duration,
                      display_start, display_end, signups_start, signups_end,
                      repeat_size, repeat_freq, day_mask, repeat_by, active"""
 
@@ -77,20 +78,21 @@ object GoteFarmJdbcDao {
       jses.eid = rs.getLong(2)
 
       jses.start_time = rs.getTimestamp(3)
-      jses.duration = rs.getInt(4)
+      jses.timezone_offset = rs.getInt(4)
+      jses.duration = rs.getInt(5)
 
-      jses.display_start = rs.getInt(5)
-      jses.display_end = rs.getInt(6)
+      jses.display_start = rs.getInt(6)
+      jses.display_end = rs.getInt(7)
 
-      jses.signups_start = rs.getInt(7)
-      jses.signups_end = rs.getInt(8)
+      jses.signups_start = rs.getInt(8)
+      jses.signups_end = rs.getInt(9)
 
-      jses.repeat_size = rs.getInt(9)
-      jses.repeat_freq = rs.getInt(10)
-      jses.day_mask = rs.getInt(11)
-      jses.repeat_by = rs.getInt(12)
+      jses.repeat_size = rs.getInt(10)
+      jses.repeat_freq = rs.getInt(11)
+      jses.day_mask = rs.getInt(12)
+      jses.repeat_by = rs.getInt(13)
 
-      jses.active = charbool(rs.getString(13))
+      jses.active = charbool(rs.getString(14))
 
       jses
     }
@@ -425,6 +427,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           eventtmplid BIGINT NOT NULL,
           active CHAR(1) NOT NULL CONSTRAINT eventsched_active_bool CHECK (active in ('Y', 'N')),
           start_time TIMESTAMP NOT NULL,
+          timezone_offset INTEGER NOT NULL,
           duration INTEGER NOT NULL,
           display_start INTEGER NOT NULL,
           display_end INTEGER NOT NULL,
@@ -1131,18 +1134,21 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       // new schedule
       jdbc.update(
         """insert into eventsched
-            (eventtmplid, active, start_time, duration,
+            (eventtmplid, active, start_time,
+             timezone_offset, duration,
              display_start, display_end,
              signups_start, signups_end,
              repeat_size, repeat_freq,
              day_mask, repeat_by)
             VALUES
-            (?, ?, ?, ?,
+            (?, ?, ?,
+             ?, ?,
              ?, ?,
              ?, ?,
              ?, ?,
              ?, ?)""",
-          Array[AnyRef](es.eid, boolchar(es.active), es.start_time, es.duration,
+          Array[AnyRef](es.eid, boolchar(es.active), es.start_time,
+                        es.timezone_offset, es.duration,
                         es.display_start, es.display_end,
                         es.signups_start, es.signups_end,
                         es.repeat_size, es.repeat_freq,
@@ -1155,14 +1161,16 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       val r = jdbc.update(
         """update eventsched
             set
-              eventtmplid = ?, active = ?, start_time = ?, duration = ?,
+              eventtmplid = ?, active = ?, start_time = ?,
+              timezone_offset = ?, duration = ?,
               display_start = ?, display_end = ?,
               signups_start = ?, signups_end = ?,
               repeat_size = ?, repeat_freq = ?, day_mask = ?,
               repeat_by = ?
             where
               eventschedid = ?""",
-          Array[AnyRef](es.eid, boolchar(es.active), es.start_time, es.duration,
+          Array[AnyRef](es.eid, boolchar(es.active), es.start_time,
+                        es.timezone_offset, es.duration,
                         es.display_start, es.display_end,
                         es.signups_start, es.signups_end,
                         es.repeat_size, es.repeat_freq, es.day_mask,
