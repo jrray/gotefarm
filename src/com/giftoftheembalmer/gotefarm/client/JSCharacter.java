@@ -12,6 +12,8 @@ public class JSCharacter implements IsSerializable {
     public String clazz;
     public String characterxml;
     public Date created;
+    public JSChrRole[] roles;
+    public JSChrBadge[] badges;
 
     public JSCharacter() {
     }

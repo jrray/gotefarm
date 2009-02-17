@@ -3,6 +3,8 @@ package com.giftoftheembalmer.gotefarm.server.dao
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSChrBadge,
+  JSChrRole,
   JSEvent,
   JSEventBadge,
   JSEventRole,
@@ -76,6 +78,33 @@ object GoteFarmJdbcDao {
       r.roleid = rs.getLong(1)
       r.name = rs.getString(2)
       r.restricted = charbool(rs.getString(3))
+      r
+    }
+  }
+
+  val JSChrRoleMapper = new ParameterizedRowMapper[JSChrRole] {
+    val columns = "role.roleid, name, restricted, chrroleid, approved"
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      val r = new JSChrRole
+      r.roleid = rs.getLong(1)
+      r.name = rs.getString(2)
+      r.restricted = charbool(rs.getString(3))
+      r.chrroleid = rs.getLong(4)
+      r.approved = charbool(rs.getString(5))
+      r
+    }
+  }
+
+  val JSChrBadgeMapper = new ParameterizedRowMapper[JSChrBadge] {
+    val columns = "badge.badgeid, name, score, chrbadgeid"
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      val r = new JSChrBadge
+      r.badgeid = rs.getLong(1)
+      r.name = rs.getString(2)
+      r.score = rs.getInt(3)
+      r.chrbadgeid = rs.getLong(4)
       r
     }
   }
@@ -710,9 +739,27 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     )
   }
 
-  def getCharacters(uid: Long) = {
+  def getCharacterRoles(cid: Long): Seq[JSChrRole] = {
     val jdbc = getSimpleJdbcTemplate()
     jdbc.query(
+      "select " + JSChrRoleMapper.columns + " from role join chrrole on role.roleid = chrrole.roleid where chrid = ? order by name",
+      JSChrRoleMapper,
+      Array[AnyRef](cid): _*
+    )
+  }
+
+  def getCharacterBadges(cid: Long): Seq[JSChrBadge] = {
+    val jdbc = getSimpleJdbcTemplate()
+    jdbc.query(
+      "select " + JSChrBadgeMapper.columns + " from badge join chrbadge on badge.badgeid = chrbadge.badgeid where chrid = ? order by name",
+      JSChrBadgeMapper,
+      Array[AnyRef](cid): _*
+    )
+  }
+
+  def getCharacters(uid: Long) = {
+    val jdbc = getSimpleJdbcTemplate()
+    val r = jdbc.query(
       """select chrid, realm, chr.name, race.name, class.name, chrxml, created
           from chr, race, class
           where chr.raceid = race.raceid
@@ -721,12 +768,17 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       JSCharacterMapper,
       Array[AnyRef](uid): _*
     )
+    for (chr <- r) {
+      chr.roles = getCharacterRoles(chr.cid).toArray
+      chr.badges = getCharacterBadges(chr.cid).toArray
+    }
+    r
   }
 
   def getCharacter(cid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     try {
-      jdbc.queryForObject(
+      val chr = jdbc.queryForObject(
         """select chrid, realm, chr.name, race.name, class.name, chrxml, created
             from chr, race, class
             where chr.raceid = race.raceid
@@ -735,6 +787,11 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         JSCharacterMapper,
         Array[AnyRef](cid): _*
       )
+
+      chr.roles = getCharacterRoles(chr.cid).toArray
+      chr.badges = getCharacterBadges(chr.cid).toArray
+
+      chr
     }
     catch {
       case _: IncorrectResultSizeDataAccessException =>
