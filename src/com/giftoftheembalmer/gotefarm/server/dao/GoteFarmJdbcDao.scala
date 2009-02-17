@@ -68,6 +68,18 @@ object GoteFarmJdbcDao {
     }
   }
 
+  val JSRoleMapper = new ParameterizedRowMapper[JSRole] {
+    val columns = "roleid, name, restricted"
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      val r = new JSRole
+      r.roleid = rs.getLong(1)
+      r.name = rs.getString(2)
+      r.restricted = charbool(rs.getString(3))
+      r
+    }
+  }
+
   val JSEventScheduleMapper = new ParameterizedRowMapper[JSEventSchedule] {
     val columns = """eventschedid, eventsched.eventtmplid,
                      start_time, orig_start_time,
@@ -734,16 +746,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jdbc = getSimpleJdbcTemplate()
 
     jdbc.query(
-      "select roleid, name, restricted from role order by name",
-      new ParameterizedRowMapper[JSRole] {
-        def mapRow(rs: ResultSet, rowNum: Int) = {
-          val jsrole = new JSRole
-          jsrole.roleid = rs.getLong(1)
-          jsrole.name = rs.getString(2)
-          jsrole.restricted = charbool(rs.getString(3))
-          jsrole
-        }
-      },
+      "select " + JSRoleMapper.columns + " from role order by name",
+      JSRoleMapper,
       Array[AnyRef](): _*
     )
   }
