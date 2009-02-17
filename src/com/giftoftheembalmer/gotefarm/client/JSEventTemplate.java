@@ -13,6 +13,7 @@ public class JSEventTemplate implements IsSerializable {
     public List<String> bosses;
     public List<JSEventRole> roles;
     public List<JSEventBadge> badges;
+    public boolean modifyEvents;
 
     public JSEventTemplate() {
     }

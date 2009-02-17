@@ -80,6 +80,16 @@ td.footer {
     margin-right: 0px;
 }
 
+.gwt-CheckBox-bottom {
+    margin-top: auto;
+    margin-bottom: 0px;
+}
+
+.gwt-CheckBox-left {
+    margin-left: 0px;
+    margin-right: auto;
+}
+
 .padleft {
     padding-left: 10px;
 }

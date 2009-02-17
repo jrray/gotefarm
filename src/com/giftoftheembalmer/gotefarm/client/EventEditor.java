@@ -404,6 +404,11 @@ public class EventEditor extends Composite implements ChangeListener {
         errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
         errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
 
+        final CheckBox modify = new CheckBox("Modify published events (can change signups)");
+        modify.setChecked(true);
+        modify.addStyleName(modify.getStylePrimaryName() + "-bottom");
+        modify.addStyleName(modify.getStylePrimaryName() + "-left");
+
         Button save = new Button("Save", new ClickListener() {
             public void onClick(Widget sender) {
                 // clear error message
@@ -465,6 +470,8 @@ public class EventEditor extends Composite implements ChangeListener {
                     t.badges.add(eb);
                 }
 
+                t.modifyEvents = modify.isChecked();
+
                 GoteFarm.goteService.saveEventTemplate(GoteFarm.sessionID, t, new AsyncCallback<Boolean>() {
                     public void onSuccess(Boolean result) {
                         EventEditor.this.admin.eventAdded();
@@ -491,6 +498,10 @@ public class EventEditor extends Composite implements ChangeListener {
         cancel.addStyleName(cancel.getStylePrimaryName() + "-right");
 
         hpanel.add(save);
+        // Editing an existing event?
+        if (EventEditor.this.et != null) {
+            hpanel.add(modify);
+        }
         hpanel.add(errmsg);
         hpanel.add(cancel);
 

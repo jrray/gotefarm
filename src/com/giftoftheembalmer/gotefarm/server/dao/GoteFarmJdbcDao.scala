@@ -449,6 +449,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbco.execute(
         """CREATE TABLE event (
           eventid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventtmplid BIGINT,
           name VARCHAR(128) NOT NULL,
           size INTEGER NOT NULL,
           minimum_level INTEGER NOT NULL,
@@ -459,6 +460,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           display_end TIMESTAMP NOT NULL,
           signups_start TIMESTAMP NOT NULL,
           signups_end TIMESTAMP NOT NULL,
+          CONSTRAINT event_eventmplid_fk FOREIGN KEY (eventtmplid) REFERENCES eventtmpl (eventtmplid) ON DELETE SET NULL,
           CONSTRAINT event_instanceid_fk FOREIGN KEY (instanceid) REFERENCES instance (instanceid) ON DELETE RESTRICT
         )"""
       )
@@ -964,12 +966,51 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     r
   }
 
+  private def rebuildEvents(et: JSEventTemplate): Unit = {
+    val jdbc = getSimpleJdbcTemplate
+
+    val iid = getInstanceId(et.instance)
+
+    for {
+      leventid <- jdbc.query("""select eventid from event
+                                  where event.eventtmplid = ? for update""",
+                             new ParameterizedRowMapper[java.lang.Long] {
+                               def mapRow(rs: ResultSet, rowNum: Int) = {
+                                 rs.getLong(1)
+                               }
+                             },
+                             et.eid)
+      eventid = leventid.longValue
+    } {
+      // update the event row itself
+      jdbc.update("""update event set
+        name = ?,
+        size = ?,
+        minimum_level = ?,
+        instanceid = ?
+        where eventid = ?""",
+        et.name, et.size, et.minimumLevel, iid, eventid)
+
+      // delete and recreate the bosses, roles and badges
+      jdbc.update("delete from eventrole where eventid = ?", eventid)
+      populateEventRoles(eventid, et.eid)
+
+      jdbc.update("delete from eventbadge where eventid = ?", eventid)
+      populateEventBadges(eventid, et.eid)
+
+      jdbc.update("delete from eventboss where eventid = ?", eventid)
+      populateEventBosses(eventid, et.eid)
+    }
+  }
+
   def saveEventTemplate(et: JSEventTemplate) = {
     val jdbc = getSimpleJdbcTemplate()
 
     val iid = getInstanceId(et.instance)
 
-    if (et.eid == -1) {
+    val new_event = et.eid == -1
+
+    if (new_event) {
       try {
         jdbc.update(
           """insert into eventtmpl (name, size, minimum_level, instanceid)
@@ -1113,6 +1154,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       )
 
       ()
+    }
+
+    if (!new_event && et.modifyEvents) {
+      rebuildEvents(et);
     }
 
     et.eid
@@ -1263,10 +1308,11 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val iid = getInstanceId(jset.instance)
 
     jdbc.update(
-      """insert into event (name, size, minimum_level, instanceid, start_time,
-          duration, display_start, display_end, signups_start, signups_end)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-      Array[AnyRef](jset.name, jset.size, jset.minimumLevel, iid,
+      """insert into event (eventtmplid, name, size, minimum_level, instanceid,
+          start_time, duration, display_start, display_end, signups_start,
+          signups_end)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+      Array[AnyRef](es.eid, jset.name, jset.size, jset.minimumLevel, iid,
         es.start_time, es.duration, display_start, display_end,
         signups_start, signups_end
       ): _*)
