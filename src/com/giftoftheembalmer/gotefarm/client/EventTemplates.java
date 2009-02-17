@@ -10,13 +10,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 import java.util.List;
 
-public class Events extends Composite {
+public class EventTemplates extends Composite {
     Admin admin;
     VerticalPanel vpanel = new VerticalPanel();
     ListBox eventlb = new ListBox();
     List<JSEventTemplate> event_templates;
 
-    public Events(Admin admin) {
+    public EventTemplates(Admin admin) {
         this.admin = admin;
 
         eventlb.setWidth("100%");
@@ -31,13 +31,13 @@ public class Events extends Composite {
 
                 for (JSEventTemplate e : event_templates) {
                     if (e.name.equals(name)) {
-                        Events.this.admin.setCenterWidget(new EventEditor(Events.this.admin, e));
+                        EventTemplates.this.admin.setCenterWidget(new EventEditor(EventTemplates.this.admin, e));
                         return;
                     }
                 }
 
                 // TODO: display not-found error
-                Events.this.admin.setCenterWidget(null);
+                EventTemplates.this.admin.setCenterWidget(null);
             }
         });
 
@@ -46,13 +46,13 @@ public class Events extends Composite {
         vpanel.add(new Button("New Event", new ClickListener() {
             public void onClick(Widget sender) {
                 eventlb.setSelectedIndex(-1);
-                Events.this.admin.setCenterWidget(new EventEditor(Events.this.admin));
+                EventTemplates.this.admin.setCenterWidget(new EventEditor(EventTemplates.this.admin));
             }
         }));
 
         initWidget(vpanel);
 
-        setStyleName("Admin-Events");
+        setStyleName("Admin-EventTemplates");
     }
 
     public void setEventTemplates(List<JSEventTemplate> events) {

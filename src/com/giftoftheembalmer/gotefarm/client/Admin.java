@@ -16,11 +16,11 @@ public class Admin extends Composite {
     DockPanel dpanel = new DockPanel();
     List<JSEventTemplate> event_templates;
 
-    Events events;
+    EventTemplates events;
     Schedules schedules;
 
     public Admin() {
-        events = new Events(this);
+        events = new EventTemplates(this);
         schedules = new Schedules(this);
 
         dpanel.setWidth("100%");
