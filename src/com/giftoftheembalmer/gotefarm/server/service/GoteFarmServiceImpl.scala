@@ -9,8 +9,12 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventTemplate
 }
 
+import org.apache.commons.logging.LogFactory
+
 @Transactional{val readOnly = true}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
+  private val logger = LogFactory.getLog(this.getClass)
+
   @scala.reflect.BeanProperty
   private var goteFarmDao: GoteFarmDaoT = null
 
