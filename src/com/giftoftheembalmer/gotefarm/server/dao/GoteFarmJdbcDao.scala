@@ -905,7 +905,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     ops.query(
       """select badge.name, require_for_signup, role.name, num_slots, early_signup
           from
-            eventtmplbadge join role
+            eventtmplbadge left outer join role
               on eventtmplbadge.roleid = role.roleid,
             badge
           where
