@@ -143,4 +143,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     goteFarmService.saveEventSchedule(es)
     true
   }
+
+  def getEvents(sid: String) = {
+    val sess = getSession(sid)
+    goteFarmService.getEvents
+  }
 }

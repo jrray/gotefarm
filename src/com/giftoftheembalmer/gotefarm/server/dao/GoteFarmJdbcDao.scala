@@ -3,6 +3,7 @@ package com.giftoftheembalmer.gotefarm.server.dao
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSEvent,
   JSEventBadge,
   JSEventRole,
   JSEventSchedule,
@@ -120,6 +121,35 @@ object GoteFarmJdbcDao {
       et.badges = new java.util.ArrayList[JSEventBadge]
 
       et
+    }
+  }
+
+  val JSEventMapper = new ParameterizedRowMapper[JSEvent] {
+    val columns = """eventid, event.name, size, minimum_level,
+      instance.name, start_time, duration, display_start, display_end,
+      signups_start, signups_end"""
+    val tables = """event join instance on event.instanceid = instance.instanceid"""
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      val e = new JSEvent
+
+      e.eid = rs.getLong(1)
+      e.name = rs.getString(2)
+      e.size = rs.getInt(3)
+      e.minimumLevel = rs.getInt(4)
+      e.instance = rs.getString(5)
+      e.start_time = rs.getTimestamp(6)
+      e.duration = rs.getInt(7)
+      e.display_start = rs.getTimestamp(8)
+      e.display_end = rs.getTimestamp(9)
+      e.signups_start = rs.getTimestamp(10)
+      e.signups_end = rs.getTimestamp(11)
+
+      e.bosses = new java.util.ArrayList[String]
+      e.roles = new java.util.ArrayList[JSEventRole]
+      e.badges = new java.util.ArrayList[JSEventBadge]
+
+      e
     }
   }
 }
@@ -866,15 +896,18 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
   }
 
-  private def populateEventTemplate(et: JSEventTemplate): JSEventTemplate = {
+  private def populateEventTemplate[T <: JSEventTemplate](et: T,
+                                                          eventstub: String)
+    :T = {
+
     val jdbc = getSimpleJdbcTemplate()
     val ops = jdbc.getJdbcOperations()
 
     ops.query(
       """select boss.name
-          from boss join eventtmplboss
-            on boss.bossid = eventtmplboss.bossid
-          where eventtmplid = ?""",
+          from boss join """ + eventstub + """boss
+            on boss.bossid = """ + eventstub + """boss.bossid
+          where """ + eventstub + """id = ?""",
       Array[AnyRef](et.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
@@ -885,9 +918,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     ops.query(
       """select role.name, min_count, max_count
-          from role join eventtmplrole
-            on role.roleid = eventtmplrole.roleid
-          where eventtmplid = ?""",
+          from role join """ + eventstub + """role
+            on role.roleid = """ + eventstub + """role.roleid
+          where """ + eventstub + """id = ?""",
       Array[AnyRef](et.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
@@ -905,11 +938,12 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     ops.query(
       """select badge.name, require_for_signup, role.name, num_slots, early_signup
           from
-            eventtmplbadge left outer join role
-              on eventtmplbadge.roleid = role.roleid,
+            """ + eventstub + """badge left outer join role
+              on """ + eventstub + """badge.roleid = role.roleid,
             badge
           where
-            eventtmplbadge.badgeid = badge.badgeid and eventtmplid = ?""",
+            """ + eventstub + """badge.badgeid = badge.badgeid
+            and """ + eventstub + """id = ?""",
       Array[AnyRef](et.eid),
       new RowCallbackHandler {
         def processRow(rs: ResultSet) = {
@@ -928,6 +962,12 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     et
   }
+
+  private def populateEventTemplate(et: JSEventTemplate): JSEventTemplate =
+    populateEventTemplate(et, "eventtmpl")
+
+  private def populateEvent(e: JSEvent): JSEvent =
+    populateEventTemplate(e, "event")
 
   def getEventTemplate(name: String) = {
     val jdbc = getSimpleJdbcTemplate()
@@ -1322,5 +1362,26 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     populateEventRoles(eventid, es.eid)
     populateEventBadges(eventid, es.eid)
     populateEventBosses(eventid, es.eid)
+  }
+
+  def getEvents = {
+    val jdbc = getSimpleJdbcTemplate
+
+    val events = jdbc.query(
+      "select " + JSEventMapper.columns
+                + " from "
+                + JSEventMapper.tables
+                + """ where event.display_start <= current_timestamp
+                        and event.display_end >= current_timestamp
+                      order by event.start_time""",
+      JSEventMapper,
+      noargs: _*
+    )
+
+    for (event <- events) {
+      populateEvent(event)
+    }
+
+    events
   }
 }

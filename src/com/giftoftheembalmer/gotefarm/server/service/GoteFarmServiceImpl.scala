@@ -186,6 +186,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
+  def getEvents = goteFarmDao.getEvents
+
   @Transactional{val readOnly = false}
   def publishEvents() = synchronized {
     val reftime = System.currentTimeMillis

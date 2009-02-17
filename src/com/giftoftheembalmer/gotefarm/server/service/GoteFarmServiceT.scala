@@ -3,6 +3,7 @@ package com.giftoftheembalmer.gotefarm.server.service
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSEvent,
   JSEventSchedule,
   JSEventTemplate,
   JSCharacter,
@@ -61,6 +62,8 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
   def saveEventSchedule(es: JSEventSchedule): Long
+
+  def getEvents: List[JSEvent]
 
   def publishEvents(): Unit
 }

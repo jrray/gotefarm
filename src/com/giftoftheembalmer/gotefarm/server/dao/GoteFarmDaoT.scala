@@ -1,6 +1,7 @@
 package com.giftoftheembalmer.gotefarm.server.dao
 
 import com.giftoftheembalmer.gotefarm.client.{
+  JSEvent,
   JSEventSchedule,
   JSEventTemplate,
   JSCharacter,
@@ -39,4 +40,6 @@ trait GoteFarmDaoT {
   def getEventSchedules(name: String): List[JSEventSchedule]
   def saveEventSchedule(es: JSEventSchedule): Long
   def publishEvent(es: JSEventSchedule): Unit
+
+  def getEvents: List[JSEvent]
 }
