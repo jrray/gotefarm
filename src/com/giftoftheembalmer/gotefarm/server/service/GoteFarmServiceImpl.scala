@@ -18,6 +18,8 @@ import java.util.{
   TimeZone
 }
 
+import scala.collection.jcl.Conversions._
+
 @Transactional{val readOnly = true}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
   private val logger = LogFactory.getLog(this.getClass)
@@ -84,7 +86,12 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       throw new IllegalArgumentException("Illegal repeat by")
     }
 
-    goteFarmDao.saveEventSchedule(es)
+    val r = goteFarmDao.saveEventSchedule(es)
+
+    // publish events right away
+    publishEvents()
+
+    r
   }
 
   private def getEventNextOccurrance(event: JSEventSchedule): Date = {
@@ -176,6 +183,46 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
       case _ => // invalid value
         throw new IllegalStateException("Unknown repeat_size value");
+    }
+  }
+
+  @Transactional{val readOnly = false}
+  def publishEvents() = synchronized {
+    val reftime = System.currentTimeMillis
+
+    def keepPublishing(event: JSEventSchedule): Unit = {
+      // publish as soon as the display time is hit
+      if (event.start_time.getTime - event.display_start * 1000 <= reftime) {
+        logger.debug("publishing " + event.esid)
+        logger.debug(event.start_time)
+        logger.debug("repeat_size: " + event.repeat_size)
+        logger.debug("repeat_freq: " + event.repeat_freq)
+        logger.debug("day_mask: " + event.day_mask)
+        logger.debug("repeat_by: " + event.repeat_by)
+
+        goteFarmDao.publishEvent(event)
+
+        // update to next time
+        if (event.repeat_size > 0) {
+          event.start_time = getEventNextOccurrance(event)
+          logger.debug("Next: " + event.start_time)
+
+          // save new start time
+          goteFarmDao.saveEventSchedule(event)
+
+          // try to publish again
+          keepPublishing(event)
+        }
+        else {
+          // one-shot event, deactive it
+          event.active = false
+          goteFarmDao.saveEventSchedule(event)
+        }
+      }
+    }
+
+    for (event <- goteFarmDao.getActiveEventSchedules) {
+      keepPublishing(event)
     }
   }
 }

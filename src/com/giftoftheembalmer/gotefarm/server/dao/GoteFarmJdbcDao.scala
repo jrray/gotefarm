@@ -30,6 +30,8 @@ import java.net.{
   URLEncoder
 }
 
+import java.util.Date
+
 import scala.collection.jcl.Conversions._
 
 import scala.Predef.{
@@ -1116,6 +1118,19 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     et.eid
   }
 
+  def getActiveEventSchedules = {
+    val jdbc = getSimpleJdbcTemplate()
+
+    jdbc.query(
+      "select " + JSEventScheduleMapper.columns +
+      """ from eventsched join eventtmpl
+            on eventsched.eventtmplid = eventtmpl.eventtmplid
+          where active = 'Y'""",
+      JSEventScheduleMapper,
+      noargs: _*
+    )
+  }
+
   def getEventSchedules(name: String) = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -1193,4 +1208,73 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
   }
 
+  private def populateEventRoles(eventid: Long, eventtmplid: Long): Unit = {
+    val jdbc = getSimpleJdbcTemplate
+    jdbc.update(
+      """insert into eventrole (eventid, roleid, min_count, max_count)
+          select ?, roleid, min_count, max_count
+            from eventtmplrole
+            where eventtmplid = ?""",
+      Array[AnyRef](eventid, eventtmplid): _*)
+  }
+
+  private def populateEventBadges(eventid: Long, eventtmplid: Long): Unit = {
+    val jdbc = getSimpleJdbcTemplate
+    jdbc.update(
+      """insert into eventbadge (eventid, badgeid, require_for_signup, roleid,
+          num_slots, early_signup)
+          select ?, badgeid, require_for_signup, roleid, num_slots,
+            early_signup
+            from eventtmplbadge
+            where eventtmplid = ?""",
+      Array[AnyRef](eventid, eventtmplid): _*)
+  }
+
+  private def populateEventBosses(eventid: Long, eventtmplid: Long): Unit = {
+    val jdbc = getSimpleJdbcTemplate
+    jdbc.update(
+      """insert into eventboss (eventid, bossid)
+          select ?, bossid
+            from eventtmplboss
+            where eventtmplid = ?""",
+      Array[AnyRef](eventid, eventtmplid): _*)
+  }
+
+  def publishEvent(es: JSEventSchedule) = {
+    val jdbc = getSimpleJdbcTemplate
+
+    // create event
+
+    //   calculate display/signup dates
+    val display_start = new Date(es.start_time.getTime - es.display_start * 1000)
+    val display_end = new Date(es.start_time.getTime + es.display_end * 1000)
+    val signups_start = new Date(es.start_time.getTime - es.signups_start * 1000)
+    val signups_end = new Date(es.start_time.getTime + es.signups_end * 1000)
+
+    val jset = jdbc.queryForObject(
+      "select " + JSEventTemplateMapper.columns
+                + " from "
+                + JSEventTemplateMapper.tables
+                + " where eventtmpl.eventtmplid = ?",
+      JSEventTemplateMapper,
+      Array[AnyRef](es.eid): _*
+    )
+
+    val iid = getInstanceId(jset.instance)
+
+    jdbc.update(
+      """insert into event (name, size, minimum_level, instanceid, start_time,
+          duration, display_start, display_end, signups_start, signups_end)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+      Array[AnyRef](jset.name, jset.size, jset.minimumLevel, iid,
+        es.start_time, es.duration, display_start, display_end,
+        signups_start, signups_end
+      ): _*)
+
+    val eventid = jdbc.queryForLong("values IDENTITY_VAL_LOCAL()", noargs: _*)
+
+    populateEventRoles(eventid, es.eid)
+    populateEventBadges(eventid, es.eid)
+    populateEventBosses(eventid, es.eid)
+  }
 }

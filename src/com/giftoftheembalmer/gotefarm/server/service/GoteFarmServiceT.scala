@@ -61,4 +61,6 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
   def saveEventSchedule(es: JSEventSchedule): Long
+
+  def publishEvents(): Unit
 }

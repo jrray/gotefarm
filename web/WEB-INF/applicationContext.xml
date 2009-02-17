@@ -112,4 +112,23 @@
 	</bean>
 	-->
 
+        <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+            <property name="triggers">
+                <list>
+                    <bean id="publishEvents" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                        <property name="jobDetail">
+                            <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+                                <property name="targetObject" ref="goteFarmService"/>
+                                <property name="targetMethod" value="publishEvents"/>
+                                <property name="concurrent" value="false"/>
+                            </bean>
+                        </property>
+
+                        <!-- run once a minute -->
+                        <property name="repeatInterval" value="60000"/>
+                    </bean>
+                </list>
+            </property>
+        </bean>
+
 </beans>
