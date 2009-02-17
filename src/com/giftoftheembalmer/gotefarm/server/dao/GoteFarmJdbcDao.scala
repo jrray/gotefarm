@@ -68,7 +68,7 @@ object GoteFarmJdbcDao {
   val JSEventScheduleMapper = new ParameterizedRowMapper[JSEventSchedule] {
     val columns = """eventschedid, eventsched.eventtmplid, start_time, duration,
                      display_start, display_end, signups_start, signups_end,
-                     repeat_size, repeat_freq, day_mask, repeat_by"""
+                     repeat_size, repeat_freq, day_mask, repeat_by, active"""
 
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val jses = new JSEventSchedule
@@ -89,6 +89,8 @@ object GoteFarmJdbcDao {
       jses.repeat_freq = rs.getInt(10)
       jses.day_mask = rs.getInt(11)
       jses.repeat_by = rs.getInt(12)
+
+      jses.active = charbool(rs.getString(13))
 
       jses
     }
@@ -1140,7 +1142,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
              ?, ?,
              ?, ?,
              ?, ?)""",
-          Array[AnyRef](es.eid, "Y", es.start_time, es.duration,
+          Array[AnyRef](es.eid, boolchar(es.active), es.start_time, es.duration,
                         es.display_start, es.display_end,
                         es.signups_start, es.signups_end,
                         es.repeat_size, es.repeat_freq,
@@ -1160,7 +1162,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
               repeat_by = ?
             where
               eventschedid = ?""",
-          Array[AnyRef](es.eid, "Y", es.start_time, es.duration,
+          Array[AnyRef](es.eid, boolchar(es.active), es.start_time, es.duration,
                         es.display_start, es.display_end,
                         es.signups_start, es.signups_end,
                         es.repeat_size, es.repeat_freq, es.day_mask,

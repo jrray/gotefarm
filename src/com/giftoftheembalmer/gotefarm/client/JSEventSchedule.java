@@ -23,6 +23,8 @@ public class JSEventSchedule implements IsSerializable {
     public int day_mask;
     public int repeat_by;
 
+    public boolean active;
+
     public JSEventSchedule() {
     }
 }

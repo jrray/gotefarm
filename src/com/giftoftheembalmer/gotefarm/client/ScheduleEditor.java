@@ -94,6 +94,8 @@ public class ScheduleEditor extends Composite {
                 sched.repeat_freq = 1;
                 sched.day_mask = 1 << sched.start_time.getDay();
                 sched.repeat_by = 0;
+
+                sched.active = true;
             }
 
             vpanel.setWidth("100%");
