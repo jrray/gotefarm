@@ -81,6 +81,7 @@ public class ScheduleEditor extends Composite {
                     sched.start_time.getTime() -
                     (sched.start_time.getTime() % 3600000)
                 );
+                sched.orig_start_time = sched.start_time;
 
                 // FIXME: this doesn't handle daylight saving time properly
                 sched.timezone_offset = sched.start_time.getTimezoneOffset();
@@ -403,6 +404,9 @@ public class ScheduleEditor extends Composite {
 
                     // update timezone_offset when saving
                     Schedule.this.sched.timezone_offset = Schedule.this.sched.start_time.getTimezoneOffset();
+
+                    // clone start_time into orig_start_time
+                    Schedule.this.sched.orig_start_time = Schedule.this.sched.start_time;
 
                     GoteFarm.goteService.saveEventSchedule(GoteFarm.sessionID, Schedule.this.sched, new AsyncCallback<Boolean>() {
                         public void onSuccess(Boolean result) {
