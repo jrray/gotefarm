@@ -41,6 +41,14 @@ import scala.Predef.{
 object GoteFarmJdbcDao {
   val noargs = new Array[AnyRef](0)
 
+  def boolchar(expr: Boolean): String = {
+    if (expr) "Y" else "N"
+  }
+
+  def charbool(str: String): Boolean = {
+    if (str == "Y") true else false
+  }
+
   val JSCharacterMapper = new ParameterizedRowMapper[JSCharacter] {
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val jsc = new JSCharacter
@@ -287,7 +295,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           def getBatchSize(): Int = roles.size
           def setValues(ps: PreparedStatement, i: Int) {
             ps.setString(1, roles(i)._1)
-            ps.setString(2, if (roles(i)._2 == 1) "Y" else "N")
+            ps.setString(2, boolchar(roles(i)._2 == 1))
           }
         }
       )
@@ -690,7 +698,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           val jsrole = new JSRole
           jsrole.roleid = rs.getLong(1)
           jsrole.name = rs.getString(2)
-          jsrole.restricted = rs.getString(3) == "Y"
+          jsrole.restricted = charbool(rs.getString(3))
           jsrole
         }
       },
@@ -704,7 +712,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into role (name, restricted)
                      values (?,    ?         )""",
-        Array[AnyRef](name, if (restricted) "Y" else "N"): _*
+        Array[AnyRef](name, boolchar(restricted)): _*
       )
     }
     catch {
@@ -896,7 +904,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           val eb = new JSEventBadge
 
           eb.name = rs.getString(1)
-          eb.requireForSignup = if (rs.getString(2) == "Y") true else false
+          eb.requireForSignup = charbool(rs.getString(2))
           eb.applyToRole = rs.getString(3)
           eb.numSlots = rs.getInt(4)
           eb.earlySignup = rs.getInt(5)
@@ -1091,7 +1099,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       jdbc.update(
         """insert into eventtmplbadge (eventtmplid, badgeid, require_for_signup, roleid, num_slots, early_signup)
                                VALUES (?,           ?,       ?,                  ?,      ?,         ?           )""",
-        Array[AnyRef](et.eid, badgeid, if (badge.requireForSignup) "Y" else "N", roleid.getOrElse(null), badge.numSlots, badge.earlySignup): _*
+        Array[AnyRef](et.eid, badgeid, boolchar(badge.requireForSignup), roleid.getOrElse(null), badge.numSlots, badge.earlySignup): _*
       )
 
       ()
