@@ -110,31 +110,9 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     History.fireCurrentHistoryState();
   }
 
-  // Workaround for http://code.google.com/p/google-web-toolkit/issues/detail?id=3364
-  // At least on gwt-mac-1.5.3 in the gwt shell, the body element is missing
-  // compareDocumentPosition. Looking at the GWT code, it is only needed to
-  // pass an assertion. This function creates a bogus definition for the
-  // function that allows the assertion to pass.
-  native boolean fake_compare(com.google.gwt.dom.client.Element parent) /*-{
-    if (typeof parent.compareDocumentPosition == 'undefined') {
-        parent.compareDocumentPosition = function(child) {
-            return 16;
-        }
-        return true;
-    }
-    return false;
-  }-*/;
-
-  // Undo the damage done in unfake_compare.
-  native void unfake_compare(com.google.gwt.dom.client.Element parent) /*-{
-    parent.compareDocumentPosition = undefined;
-  }-*/;
-
   void showLogin() {
         final RootPanel login = RootPanel.get("login");
         login.setVisible(true);
-
-        boolean faked = fake_compare(Document.get().getBody());
 
         // login form widgets
         final FormPanel loginForm = FormPanel.wrap(DOM.getElementById("loginform"), true);
@@ -144,10 +122,6 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
         final Button submit = Button.wrap(DOM.getElementById("loginattempt"));
 
         submit.setEnabled(true);
-
-        if (faked) {
-            unfake_compare(Document.get().getBody());
-        }
 
         final Label errmsg = new Label();
         errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
