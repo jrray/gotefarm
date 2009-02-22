@@ -51,6 +51,7 @@ public class Characters extends Composite {
             vpanel.add(new Label(chr.realm));
             vpanel.add(new Label(chr.race));
             vpanel.add(new Label(chr.clazz));
+            vpanel.add(new Label("Level " + chr.level));
 
             xml = XMLParser.parse(chr.characterxml);
             NodeList items = xml.getElementsByTagName("items");
@@ -79,9 +80,6 @@ public class Characters extends Composite {
             if (characters != null) {
                 Node character = characters.item(0);
                 NamedNodeMap attribs = character.getAttributes();
-
-                Node level = attribs.getNamedItem("level");
-                vpanel.add(new Label("Level " + level));
 
                 Node updated = attribs.getNamedItem("lastModified");
                 vpanel.add(new Label("Armory updated: " + updated));

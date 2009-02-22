@@ -10,6 +10,7 @@ public class JSCharacter implements IsSerializable {
     public String name;
     public String race;
     public String clazz;
+    public short level;
     public String characterxml;
     public Date created;
     public JSChrRole[] roles;

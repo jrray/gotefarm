@@ -63,8 +63,9 @@ object GoteFarmJdbcDao {
       jsc.name = rs.getString(3)
       jsc.race = rs.getString(4)
       jsc.clazz = rs.getString(5)
-      jsc.characterxml = rs.getString(6)
-      jsc.created = rs.getTimestamp(7)
+      jsc.level = rs.getShort(6)
+      jsc.characterxml = rs.getString(7)
+      jsc.created = rs.getTimestamp(8)
 
       jsc
     }
@@ -337,6 +338,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           name VARCHAR(32) NOT NULL,
           raceid BIGINT NOT NULL,
           classid BIGINT NOT NULL,
+          level INTEGER NOT NULL,
           chrxml LONG VARCHAR,
           created TIMESTAMP NOT NULL,
           CONSTRAINT character_realm_name_unique UNIQUE (realm, name),
@@ -717,15 +719,16 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
 
     val race = char \ "@race"
     val clazz = char \ "@class"
+    val level = (char \ "@level").toString.toInt
 
     val raceid = getRaceId(race.toString)
     val classid = getClassId(clazz.toString)
 
     try {
       jdbc.update(
-        """insert into chr (accountid, realm, name, raceid, classid, chrxml, created)
-                    values (?,         ?,     ?,    ?,      ?,       ?,      CURRENT_TIMESTAMP)""",
-        Array[AnyRef](uid, realm, character, raceid, classid, charxml.toString): _*
+        """insert into chr (accountid, realm, name, raceid, classid, level, chrxml, created)
+                    values (?,         ?,     ?,    ?,      ?,       ?,     ?,      CURRENT_TIMESTAMP)""",
+        Array[AnyRef](uid, realm, character, raceid, classid, level, charxml.toString): _*
       )
     }
     catch {
@@ -760,7 +763,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
   def getCharacters(uid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     val r = jdbc.query(
-      """select chrid, realm, chr.name, race.name, class.name, chrxml, created
+      """select chrid, realm, chr.name, race.name, class.name, chr.level, chrxml, created
           from chr, race, class
           where chr.raceid = race.raceid
             and chr.classid = class.classid
@@ -779,7 +782,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jdbc = getSimpleJdbcTemplate()
     try {
       val chr = jdbc.queryForObject(
-        """select chrid, realm, chr.name, race.name, class.name, chrxml, created
+        """select chrid, realm, chr.name, race.name, class.name, chr.level, chrxml, created
             from chr, race, class
             where chr.raceid = race.raceid
               and chr.classid = class.classid
