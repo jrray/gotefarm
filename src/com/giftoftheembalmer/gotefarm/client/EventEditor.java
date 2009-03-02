@@ -49,6 +49,7 @@ public class EventEditor extends Composite implements ChangeListener {
     final String SELECT_A_ROLE = "Select a role";
     final String SELECT_A_BADGE = "Select a badge";
     final String ALL_ROLES = "All roles";
+    final String MAX_LEVEL = "80";
 
     public EventEditor(Admin admin, JSEventTemplate et) {
         this.admin = admin;
@@ -106,7 +107,7 @@ public class EventEditor extends Composite implements ChangeListener {
                     }
                 }
                 catch (NumberFormatException e) {
-                    size.setText("70");
+                    size.setText(MAX_LEVEL);
                 }
             }
         });
@@ -529,7 +530,7 @@ public class EventEditor extends Composite implements ChangeListener {
             });
 
             size.setText("25");
-            minlevel.setText("70");
+            minlevel.setText(MAX_LEVEL);
         }
         else {
             name.setText(et.name);

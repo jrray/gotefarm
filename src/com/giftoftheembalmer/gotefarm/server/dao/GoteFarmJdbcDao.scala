@@ -375,12 +375,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         "Tank" -> 0,
         "Healer" -> 0,
         "DPS" -> 0,
-        "AoE DPS" -> 0,
-        "Mage Tank (Krosh)" -> 1,
-        "Warlock Tank (Leotheras)" -> 1,
-        "Nature Resist Tank (Hydross)" -> 1,
-        "Frost Resist Tank (Hydross)" -> 1,
-        "Nature/Frost Resist Tank (Hydross adds)" -> 1
+        "AoE DPS" -> 0
       )
 
       jdbco.batchUpdate(
@@ -416,12 +411,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       )
 
       val badges = Array(
-        "Karazhan Geared" -> 300,
-        "Gruul/Mag Geared" -> 400,
-        "ZA Geared" -> 450,
-        "SSC/TK Geared" -> 500,
-        "BT/HYJ Geared" -> 600,
-        "Sunwell Geared" -> 700
+        "Tier 7 Geared" -> 100,
+        "Tier 7.5 Geared" -> 150,
+        "Tier 8 Geared" -> 200
       )
 
       jdbco.batchUpdate(
