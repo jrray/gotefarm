@@ -15,6 +15,7 @@ import org.gwtwidgets.server.spring.ServletUtils
 
 import org.apache.commons.logging.LogFactory;
 
+import java.util.Date
 
 class GoteFarmRPCImpl extends RemoteServiceServlet
   with GoteFarmRPC {
@@ -147,5 +148,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   def getEvents(sid: String) = {
     val sess = getSession(sid)
     goteFarmService.getEvents
+  }
+
+  def getEventSignups(sid: String, eventid: Long, if_changed_since: Date) = {
+    val sess = getSession(sid)
+    goteFarmService.getEventSignups(eventid, if_changed_since)
+      .getOrElse(null)
   }
 }

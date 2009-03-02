@@ -6,13 +6,17 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
   JSEvent,
   JSEventSchedule,
+  JSEventSignups,
   JSEventTemplate,
   JSCharacter,
   JSRole,
   NotFoundError
 }
 
-import java.util.List
+import java.util.{
+  Date,
+  List
+}
 
 trait GoteFarmServiceT {
   def generateTables(): Unit
@@ -65,6 +69,9 @@ trait GoteFarmServiceT {
   def saveEventSchedule(es: JSEventSchedule): Long
 
   def getEvents: List[JSEvent]
+  @throws(classOf[NotFoundError])
+  def getEventSignups(eventid: Long,
+                      if_changed_since: Date): Option[JSEventSignups]
 
   def publishEvents(): Unit
 }

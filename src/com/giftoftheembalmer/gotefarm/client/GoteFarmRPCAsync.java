@@ -2,6 +2,7 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import java.util.Date;
 import java.util.List;
 
 interface GoteFarmRPCAsync {
@@ -33,4 +34,7 @@ interface GoteFarmRPCAsync {
     public void saveEventSchedule(String sid, JSEventSchedule es, AsyncCallback<Boolean> cb);
 
     public void getEvents(String sid, AsyncCallback<List<JSEvent>> cb);
+    public void getEventSignups(String sid, long eventid,
+                                Date if_changed_since,
+                                AsyncCallback<JSEventSignups> cb);
 }

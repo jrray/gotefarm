@@ -4,12 +4,16 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
   JSEvent,
   JSEventSchedule,
+  JSEventSignups,
   JSEventTemplate,
   JSCharacter,
   JSRole
 }
 
-import java.util.List
+import java.util.{
+  Date,
+  List
+}
 
 trait GoteFarmDaoT {
   def generateTables(): Unit
@@ -43,4 +47,6 @@ trait GoteFarmDaoT {
   def publishEvent(es: JSEventSchedule): Unit
 
   def getEvents: List[JSEvent]
+  def getEventSignups(eventid: Long,
+                      if_changed_since: Date): Option[JSEventSignups]
 }

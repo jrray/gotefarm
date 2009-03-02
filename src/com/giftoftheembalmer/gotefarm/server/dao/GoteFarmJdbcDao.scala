@@ -10,6 +10,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventBadge,
   JSEventRole,
   JSEventSchedule,
+  JSEventSignup,
+  JSEventSignups,
   JSEventTemplate,
   JSCharacter,
   JSRole,
@@ -56,31 +58,42 @@ object GoteFarmJdbcDao {
   }
 
   val JSCharacterMapper = new ParameterizedRowMapper[JSCharacter] {
-    def mapRow(rs: ResultSet, rowNum: Int) = {
+    val columns = """chr.chrid, chr.realm, chr.name, race.name, class.name,
+                      chr.level, chr.chrxml, chr.created"""
+
+    def mapRow(rs: ResultSet, rowNum: Int, start_column: Int) = {
       val jsc = new JSCharacter
 
-      jsc.cid = rs.getLong(1)
-      jsc.realm = rs.getString(2)
-      jsc.name = rs.getString(3)
-      jsc.race = rs.getString(4)
-      jsc.clazz = rs.getString(5)
-      jsc.level = rs.getShort(6)
-      jsc.characterxml = rs.getString(7)
-      jsc.created = rs.getTimestamp(8)
+      jsc.cid = rs.getLong(start_column)
+      jsc.realm = rs.getString(start_column+1)
+      jsc.name = rs.getString(start_column+2)
+      jsc.race = rs.getString(start_column+3)
+      jsc.clazz = rs.getString(start_column+4)
+      jsc.level = rs.getShort(start_column+5)
+      jsc.characterxml = rs.getString(start_column+6)
+      jsc.created = rs.getTimestamp(start_column+7)
 
       jsc
+    }
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      mapRow(rs, rowNum, 1)
     }
   }
 
   val JSRoleMapper = new ParameterizedRowMapper[JSRole] {
-    val columns = "roleid, name, restricted"
+    val columns = "role.roleid, role.name, role.restricted"
+
+    def mapRow(rs: ResultSet, rowNum: Int, start_column: Int) = {
+      val r = new JSRole
+      r.roleid = rs.getLong(start_column)
+      r.name = rs.getString(start_column+1)
+      r.restricted = charbool(rs.getString(start_column+2))
+      r
+    }
 
     def mapRow(rs: ResultSet, rowNum: Int) = {
-      val r = new JSRole
-      r.roleid = rs.getLong(1)
-      r.name = rs.getString(2)
-      r.restricted = charbool(rs.getString(3))
-      r
+      mapRow(rs, rowNum, 1)
     }
   }
 
@@ -538,9 +551,55 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           display_end TIMESTAMP NOT NULL,
           signups_start TIMESTAMP NOT NULL,
           signups_end TIMESTAMP NOT NULL,
+          last_signup_modification TIMESTAMP NOT NULL DEFAULT current_timestamp,
           CONSTRAINT event_eventmplid_fk FOREIGN KEY (eventtmplid) REFERENCES eventtmpl (eventtmplid) ON DELETE SET NULL,
           CONSTRAINT event_instanceid_fk FOREIGN KEY (instanceid) REFERENCES instance (instanceid) ON DELETE RESTRICT
         )"""
+      )
+
+      jdbco.execute(
+        """CREATE TABLE eventsignup (
+          eventsignupid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+          eventid BIGINT NOT NULL,
+          chrid BIGINT NOT NULL,
+          roleid BIGINT NOT NULL,
+          signup_type INTEGER NOT NULL,
+          signup_time TIMESTAMP NOT NULL,
+          note VARCHAR(2048),
+          CONSTRAINT eventsignup_eventid_chrid_unique UNIQUE (eventid, chrid),
+          CONSTRAINT eventsignup_eventid_fk FOREIGN KEY (eventid) REFERENCES event (eventid) ON DELETE CASCADE,
+          CONSTRAINT eventsignup_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE,
+          CONSTRAINT eventsignup_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
+        )"""
+      )
+
+      // create triggers so that any modification to eventsignup will update
+      // the last_signup_modification column in the related event
+      jdbco.execute(
+        """CREATE TRIGGER maint_last_signup_mod_insert
+            AFTER INSERT ON eventsignup
+            REFERENCING NEW AS NEW
+            FOR EACH ROW
+            UPDATE event SET last_signup_modification = current_timestamp
+              WHERE eventid = NEW.eventid"""
+      )
+
+      jdbco.execute(
+        """CREATE TRIGGER maint_last_signup_mod_update
+            AFTER UPDATE ON eventsignup
+            REFERENCING NEW AS NEW
+            FOR EACH ROW
+            UPDATE event SET last_signup_modification = current_timestamp
+              WHERE eventid = NEW.eventid"""
+      )
+
+      jdbco.execute(
+        """CREATE TRIGGER maint_last_signup_mod_delete
+            AFTER DELETE ON eventsignup
+            REFERENCING OLD AS OLD
+            FOR EACH ROW
+            UPDATE event SET last_signup_modification = current_timestamp
+              WHERE eventid = OLD.eventid"""
       )
 
       jdbco.execute(
@@ -768,7 +827,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
   def getCharacters(uid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     val r = jdbc.query(
-      """select chrid, realm, chr.name, race.name, class.name, chr.level, chrxml, created
+      "select " + JSCharacterMapper.columns + """
           from chr, race, class
           where chr.raceid = race.raceid
             and chr.classid = class.classid
@@ -787,7 +846,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jdbc = getSimpleJdbcTemplate()
     try {
       val chr = jdbc.queryForObject(
-        """select chrid, realm, chr.name, race.name, class.name, chr.level, chrxml, created
+        "select " + JSCharacterMapper.columns + """
             from chr, race, class
             where chr.raceid = race.raceid
               and chr.classid = class.classid
@@ -1449,5 +1508,64 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
 
     events
+  }
+
+  def getEventSignups(eventid: Long,
+                      if_changed_since: Date): Option[JSEventSignups] = {
+    val jdbc = getSimpleJdbcTemplate
+    val last_modification = try {
+      jdbc.queryForObject(
+        "select last_signup_modification from event where eventid = ?",
+        classOf[java.sql.Timestamp],
+        eventid
+      )
+    }
+    catch {
+      case _: IncorrectResultSizeDataAccessException =>
+        throw new NotFoundError("No such event")
+    }
+
+    if (last_modification.getTime > if_changed_since.getTime) {
+      val r = new JSEventSignups
+      r.eventid = eventid
+      r.signups = jdbc.query(
+        "select eventsignupid, eventid, " + JSCharacterMapper.columns + ", "
+          + JSRoleMapper.columns + """, signup_type, signup_time, note
+          from
+            eventsignup
+            join chr on eventsignup.chrid = chr.chrid
+            join race on chr.raceid = race.raceid
+            join class on chr.classid = class.classid
+            join role on eventsignup.roleid = role.roleid
+          where eventid = ?
+          order by signup_time""",
+        new ParameterizedRowMapper[JSEventSignup] {
+          override def mapRow(rs: ResultSet, rowNum: Int) = {
+            val r = new JSEventSignup
+            r.eventsignupid = rs.getLong(1)
+            r.eventid = rs.getLong(2)
+            r.chr = JSCharacterMapper.mapRow(rs, rowNum, 3)
+            r.role = JSRoleMapper.mapRow(rs, rowNum, 11)
+            r.signup_type = rs.getInt(14)
+            r.signup_time = rs.getTimestamp(15)
+            r.note = rs.getString(16)
+            r
+          }
+        },
+        eventid
+      )
+
+      for (es <- r.signups) {
+        es.chr.roles = getCharacterRoles(es.chr.cid).toArray
+        es.chr.badges = getCharacterBadges(es.chr.cid).toArray
+      }
+
+      r.asof = last_modification
+
+      Some(r)
+    }
+    else {
+      None
+    }
   }
 }

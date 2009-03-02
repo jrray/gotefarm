@@ -6,6 +6,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.GoteFarmDaoT
 
 import com.giftoftheembalmer.gotefarm.client.{
   JSEventSchedule,
+  JSEventSignups,
   JSEventTemplate
 }
 
@@ -187,6 +188,9 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   def getEvents = goteFarmDao.getEvents
+  def getEventSignups(eventid: Long, if_changed_since: Date)
+    : Option[JSEventSignups] =
+    goteFarmDao.getEventSignups(eventid, if_changed_since)
 
   @Transactional{val readOnly = false}
   def publishEvents() = synchronized {

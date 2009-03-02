@@ -2,6 +2,7 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 
+import java.util.Date;
 import java.util.List;
 
 public interface GoteFarmRPC extends RemoteService {
@@ -36,4 +37,8 @@ public interface GoteFarmRPC extends RemoteService {
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public List<JSEvent> getEvents(String sid) throws UserNotLoggedInError;
+    /* Return null if signups are unchanged */
+    public JSEventSignups getEventSignups(String sid, long eventid,
+                                          Date if_changed_since)
+        throws UserNotLoggedInError, NotFoundError;
 }
