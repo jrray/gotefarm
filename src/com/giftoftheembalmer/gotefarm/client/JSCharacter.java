@@ -22,7 +22,7 @@ public class JSCharacter implements IsSerializable {
     public boolean hasBadge(long badgeid) {
         for (JSChrBadge badge : badges) {
             if (badge.badgeid == badgeid) {
-                return true;
+                return badge.approved;
             }
         }
 

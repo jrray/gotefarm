@@ -110,7 +110,8 @@ object GoteFarmJdbcDao {
   }
 
   val JSChrRoleMapper = new ParameterizedRowMapper[JSChrRole] {
-    val columns = "role.roleid, name, restricted, chrroleid, approved"
+    val columns = """role.roleid, name, restricted, chrroleid, waiting,
+      approved, message"""
 
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val r = new JSChrRole
@@ -118,13 +119,17 @@ object GoteFarmJdbcDao {
       r.name = rs.getString(2)
       r.restricted = charbool(rs.getString(3))
       r.chrroleid = rs.getLong(4)
-      r.approved = charbool(rs.getString(5))
+      // force these to sensible defaults if this role is not restricted
+      r.waiting = if (r.restricted) charbool(rs.getString(5)) else false
+      r.approved = if (r.restricted) charbool(rs.getString(6)) else true
+      r.message = rs.getString(7)
       r
     }
   }
 
   val JSChrBadgeMapper = new ParameterizedRowMapper[JSChrBadge] {
-    val columns = "badge.badgeid, name, score, chrbadgeid"
+    val columns = """badge.badgeid, name, score, chrbadgeid, waiting,
+      approved, message"""
 
     def mapRow(rs: ResultSet, rowNum: Int) = {
       val r = new JSChrBadge
@@ -132,6 +137,9 @@ object GoteFarmJdbcDao {
       r.name = rs.getString(2)
       r.score = rs.getInt(3)
       r.chrbadgeid = rs.getLong(4)
+      r.waiting = charbool(rs.getString(5))
+      r.approved = charbool(rs.getString(6))
+      r.message = rs.getString(7)
       r
     }
   }
@@ -407,7 +415,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           chrroleid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
           chrid BIGINT NOT NULL,
           roleid BIGINT NOT NULL,
-          approved CHAR(1) NOT NULL CONSTRAINT chrrole_approved_bool CHECK (approved in ('Y','N')),
+          waiting CHAR(1) NOT NULL DEFAULT 'N' CONSTRAINT chrrole_waiting_bool CHECK (waiting in ('Y','N')),
+          approved CHAR(1) NOT NULL DEFAULT 'N' CONSTRAINT chrrole_approved_bool CHECK (approved in ('Y','N')),
+          message VARCHAR(2048),
+          CONSTRAINT chrrole_chrid_roleid_unique UNIQUE (chrid, roleid),
           CONSTRAINT chrrole_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE,
           CONSTRAINT chrrole_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
         )"""
@@ -446,6 +457,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           chrbadgeid BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
           chrid BIGINT NOT NULL,
           badgeid BIGINT NOT NULL,
+          waiting CHAR(1) NOT NULL DEFAULT 'N' CONSTRAINT chrbadge_waiting_bool CHECK (waiting in ('Y','N')),
+          approved CHAR(1) NOT NULL DEFAULT 'N' CONSTRAINT chrbadge_approved_bool CHECK (approved in ('Y','N')),
+          message VARCHAR(2048),
+          CONSTRAINT chrbadge_chrid_badgeid_unique UNIQUE (chrid, badgeid),
           CONSTRAINT chrbadge_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE,
           CONSTRAINT chrbadge_badgeid_fk FOREIGN KEY (badgeid) REFERENCES badge (badgeid) ON DELETE RESTRICT
         )"""
