@@ -981,7 +981,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     )
 
     ops.query(
-      """select role.name, min_count, max_count
+      """select role.roleid, role.name, min_count, max_count
           from role join """ + eventstub + """role
             on role.roleid = """ + eventstub + """role.roleid
           where """ + eventstub + """id = ?""",
@@ -990,9 +990,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         def processRow(rs: ResultSet) = {
           val ev = new JSEventRole
 
-          ev.name = rs.getString(1)
-          ev.min = rs.getInt(2)
-          ev.max = rs.getInt(3)
+          ev.roleid = rs.getLong(1)
+          ev.name = rs.getString(2)
+          ev.min = rs.getInt(3)
+          ev.max = rs.getInt(4)
 
           et.roles.add(ev)
         }
