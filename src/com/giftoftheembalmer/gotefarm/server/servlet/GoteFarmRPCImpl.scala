@@ -92,6 +92,13 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     true
   }
 
+  def updateCharacterRole(sid: String, cid: Long, roleid: Long, adding: Boolean) = {
+    val sess = getSession(sid)
+    val uid = sess.getValue("uid").asInstanceOf[Long]
+    goteFarmService.updateCharacterRole(uid, cid, roleid, adding)
+    goteFarmService.getCharacter(cid)
+  }
+
   def getBadges =
     goteFarmService.getBadges
 
@@ -99,6 +106,13 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     val sess = getSession(sid)
     goteFarmService.addBadge(name, score)
     true
+  }
+
+  def updateCharacterBadge(sid: String, cid: Long, badgeid: Long, adding: Boolean) = {
+    val sess = getSession(sid)
+    val uid = sess.getValue("uid").asInstanceOf[Long]
+    goteFarmService.updateCharacterBadge(uid, cid, badgeid, adding)
+    goteFarmService.getCharacter(cid)
   }
 
   def addInstance(sid: String, name: String) = {

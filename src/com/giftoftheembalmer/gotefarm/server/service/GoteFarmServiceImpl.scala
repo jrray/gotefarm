@@ -49,10 +49,32 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def addRole(name: String, restricted: Boolean) =
     goteFarmDao.addRole(name, restricted)
 
+  @Transactional{val readOnly = false}
+  def updateCharacterRole(uid: Long, cid: Long, roleid: Long,
+                          adding: Boolean): Unit = {
+    // character must belong to user
+    val chr = goteFarmDao.getCharacter(cid)
+    if (chr.accountid != uid) {
+      throw new IllegalArgumentException("Character does not belong to you.")
+    }
+    goteFarmDao.updateCharacterRole(cid, roleid, adding)
+  }
+
   def getBadges = goteFarmDao.getBadges
   @Transactional{val readOnly = false}
   def addBadge(name: String, score: Int) =
     goteFarmDao.addBadge(name, score)
+
+  @Transactional{val readOnly = false}
+  def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long,
+                           adding: Boolean): Unit = {
+    // character must belong to user
+    val chr = goteFarmDao.getCharacter(cid)
+    if (chr.accountid != uid) {
+      throw new IllegalArgumentException("Character does not belong to you.")
+    }
+    goteFarmDao.updateCharacterBadge(cid, badgeid, adding)
+  }
 
   @Transactional{val readOnly = false}
   def addInstance(name: String) = goteFarmDao.addInstance(name)

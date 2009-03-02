@@ -12,6 +12,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
@@ -38,11 +39,21 @@ public class Characters
     VerticalPanel chrpanel = new VerticalPanel();
 
     private List<JSCharacter> characters = new ArrayList<JSCharacter>();
+    private List<JSRole> roles = new ArrayList<JSRole>();
+    private List<JSBadge> badges = new ArrayList<JSBadge>();
 
     public void addCharacter(JSCharacter chr) {
         characters.add(chr);
         chrpanel.add(new Character(chr));
         fireCharacterChangedEvent();
+    }
+
+    public void replaceCharacter(JSCharacter oldchr, JSCharacter newchr) {
+        int idx = characters.indexOf(oldchr);
+        if (idx > -1) {
+            characters.set(idx, newchr);
+            fireCharacterChangedEvent();
+        }
     }
 
     private void fireCharacterChangedEvent() {
@@ -58,20 +69,26 @@ public class Characters
         JSCharacter chr = null;
         Document xml = null;
 
-        HorizontalPanel hpanel = new HorizontalPanel();
         VerticalPanel vpanel = new VerticalPanel();
+        HorizontalPanel hpanel = new HorizontalPanel();
+        VerticalPanel attr_vpanel = new VerticalPanel();
+        HorizontalPanel role_and_badge_panel = new HorizontalPanel();
+        RoleAndBadgeEditor role_editor = new RoleAndBadgeEditor("Roles");
+        RoleAndBadgeEditor badge_editor = new RoleAndBadgeEditor("Badges");
 
         public Character(JSCharacter chr) {
             this.chr = chr;
 
-            hpanel.setSpacing(2);
-            hpanel.add(vpanel);
+            vpanel.setSpacing(10);
 
-            vpanel.add(new Label(chr.name));
-            vpanel.add(new Label(chr.realm));
-            vpanel.add(new Label(chr.race));
-            vpanel.add(new Label(chr.clazz));
-            vpanel.add(new Label("Level " + chr.level));
+            hpanel.setSpacing(2);
+            hpanel.add(attr_vpanel);
+
+            attr_vpanel.add(new Label(chr.name));
+            attr_vpanel.add(new Label(chr.realm));
+            attr_vpanel.add(new Label(chr.race));
+            attr_vpanel.add(new Label(chr.clazz));
+            attr_vpanel.add(new Label("Level " + chr.level));
 
             xml = XMLParser.parse(chr.characterxml);
             NodeList items = xml.getElementsByTagName("items");
@@ -102,12 +119,90 @@ public class Characters
                 NamedNodeMap attribs = character.getAttributes();
 
                 Node updated = attribs.getNamedItem("lastModified");
-                vpanel.add(new Label("Armory updated: " + updated));
+                attr_vpanel.add(new Label("Armory updated: " + updated));
             }
 
-            initWidget(hpanel);
+            updateRoles();
+            updateBadges();
+
+            vpanel.add(hpanel);
+
+            role_and_badge_panel.setWidth("100%");
+            role_and_badge_panel.add(role_editor);
+            role_and_badge_panel.add(badge_editor);
+            vpanel.add(role_and_badge_panel);
+
+            initWidget(vpanel);
 
             setStyleName("Character");
+        }
+
+        class RoleClickListener extends BadgeAndRoleClickListener {
+            public RoleClickListener(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
+                super(flavor1, flex, row, role);
+            }
+
+            public void updateCharacterRole(boolean adding) {
+                GoteFarm.goteService.updateCharacterRole(GoteFarm.sessionID,
+                                                         chr.cid,
+                                                         role.getId(),
+                                                         adding,
+                                                         new AsyncCallback<JSCharacter>() {
+                    public void onSuccess(JSCharacter result) {
+                        replaceCharacter(Character.this.chr, result);
+                        Character.this.chr = result;
+                    }
+
+                    public void onFailure(Throwable caught) {
+                    }
+                });
+            }
+        }
+
+        class RoleClickListenerFactory extends BadgeAndRoleClickListenerFactory {
+            public BadgeAndRoleClickListener newClickListener(FlexTable flex,
+                                                              int row,
+                                                              ChrBadgeAndRole role) {
+                return new RoleClickListener("role", flex, row, role);
+            }
+        }
+
+        class BadgeClickListener extends BadgeAndRoleClickListener {
+            public BadgeClickListener(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
+                super(flavor1, flex, row, role);
+            }
+
+            public void updateCharacterRole(boolean adding) {
+                GoteFarm.goteService.updateCharacterBadge(GoteFarm.sessionID,
+                                                          chr.cid,
+                                                          role.getId(),
+                                                          adding,
+                                                          new AsyncCallback<JSCharacter>() {
+                    public void onSuccess(JSCharacter result) {
+                        replaceCharacter(Character.this.chr, result);
+                        Character.this.chr = result;
+                    }
+
+                    public void onFailure(Throwable caught) {
+                    }
+                });
+            }
+        }
+
+        class BadgeClickListenerFactory extends BadgeAndRoleClickListenerFactory {
+            public BadgeAndRoleClickListener newClickListener(FlexTable flex,
+                                                              int row,
+                                                              ChrBadgeAndRole role) {
+                return new BadgeClickListener("badge", flex, row, role);
+            }
+        }
+
+        public void updateRoles() {
+            role_editor.update(roles, chr.roles, new RoleClickListenerFactory());
+        }
+
+        public void updateBadges() {
+            badge_editor.update(badges, chr.badges, new BadgeClickListenerFactory());
         }
     }
 
@@ -243,6 +338,8 @@ public class Characters
         setStyleName("Characters");
     }
 
+    private List<Character> character_widgets = new ArrayList<Character>();
+
     public void loadCharacters() {
         chrpanel.clear();
 
@@ -259,8 +356,36 @@ public class Characters
                 characters = result;
                 fireCharacterChangedEvent();
 
+                character_widgets.clear();
+
                 for (JSCharacter c : result) {
-                    chrpanel.add(new Character(c));
+                    Character nc = new Character(c);
+                    character_widgets.add(nc);
+                    chrpanel.add(nc);
+                }
+            }
+
+            public void onFailure(Throwable caught) {
+            }
+        });
+
+        GoteFarm.goteService.getRoles(new AsyncCallback<List<JSRole>>() {
+            public void onSuccess(List<JSRole> result) {
+                roles = result;
+                for (Character c : character_widgets) {
+                    c.updateRoles();
+                }
+            }
+
+            public void onFailure(Throwable caught) {
+            }
+        });
+
+        GoteFarm.goteService.getBadges(new AsyncCallback<List<JSBadge>>() {
+            public void onSuccess(List<JSBadge> result) {
+                badges = result;
+                for (Character c : character_widgets) {
+                    c.updateBadges();
                 }
             }
 

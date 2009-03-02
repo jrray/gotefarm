@@ -40,9 +40,17 @@ trait GoteFarmServiceT {
   @throws(classOf[AlreadyExistsError])
   def addRole(name: String, restricted: Boolean): Long
 
+  @throws(classOf[NotFoundError])
+  @throws(classOf[IllegalArgumentException])
+  def updateCharacterRole(uid: Long, cid: Long, roleid: Long, adding: Boolean): Unit
+
   def getBadges: List[JSBadge]
   @throws(classOf[AlreadyExistsError])
   def addBadge(name: String, score: Int): Long
+
+  @throws(classOf[NotFoundError])
+  @throws(classOf[IllegalArgumentException])
+  def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long, adding: Boolean): Unit
 
   @throws(classOf[AlreadyExistsError])
   def addInstance(name: String): Long

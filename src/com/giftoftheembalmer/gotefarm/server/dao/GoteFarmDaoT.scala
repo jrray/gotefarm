@@ -27,9 +27,11 @@ trait GoteFarmDaoT {
 
   def getRoles: List[JSRole]
   def addRole(name: String, restricted: Boolean): Long
+  def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit
 
   def getBadges: List[JSBadge]
   def addBadge(name: String, score: Int): Long
+  def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit
 
   def addInstance(name: String): Long
   def addBoss(instance: String, boss: String): Long

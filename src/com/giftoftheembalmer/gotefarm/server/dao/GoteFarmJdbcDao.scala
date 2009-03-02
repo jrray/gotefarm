@@ -914,6 +914,33 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     )
   }
 
+  def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit = {
+    val jdbc = getSimpleJdbcTemplate()
+    if (adding) {
+      try {
+        jdbc.update("""insert into chrrole (chrid, roleid, waiting, approved)
+                        VALUES (?, ?, 'Y', 'N')""",
+                    cid, roleid)
+      }
+      catch {
+        case e: DataIntegrityViolationException if e.getMessage.contains("CHRROLE_CHRID_FK") =>
+          throw new NotFoundError
+
+        case e: DataIntegrityViolationException if e.getMessage.contains("UNIQUE") =>
+          // role already there, ignore
+      }
+    }
+    else {
+      // TODO: Update last_signup_modification for any event that this
+      // character is signed up for with the role being deleted.
+
+      // TODO: Delete any signups by this character with this role.
+
+      jdbc.update("""delete from chrrole where chrid = ? and roleid = ?""",
+                  cid, roleid)
+    }
+  }
+
   def getBadges = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -941,6 +968,32 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       "select badgeid from badge where name = ?",
       Array[AnyRef](name): _*
     )
+  }
+
+  def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit = {
+    val jdbc = getSimpleJdbcTemplate()
+    if (adding) {
+      try {
+        jdbc.update("""insert into chrbadge (chrid, badgeid, waiting, approved)
+                        VALUES (?, ?, 'Y', 'N')""",
+                    cid, badgeid)
+      }
+      catch {
+        case e: DataIntegrityViolationException if e.getMessage.contains("CHRBADGE_CHRID_FK") =>
+          throw new NotFoundError
+
+        case e: DataIntegrityViolationException if e.getMessage.contains("UNIQUE") =>
+          // badge already there, ignore
+      }
+    }
+    else {
+      // TODO: Update last_signup_modification for any event that this
+      // character is signed up for that has badge requirements involving
+      // the badge being deleted.
+
+      jdbc.update("""delete from chrbadge where chrid = ? and badgeid = ?""",
+                  cid, badgeid)
+    }
   }
 
   def addInstance(name: String) = {

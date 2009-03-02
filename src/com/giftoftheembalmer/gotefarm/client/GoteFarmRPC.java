@@ -16,9 +16,15 @@ public interface GoteFarmRPC extends RemoteService {
     public List<JSRole> getRoles();
     public Boolean addRole(String sid, String name, boolean restricted) throws UserNotLoggedInError, AlreadyExistsError;
     // public List<JSCharRole> getCharacterRoles(long cid);
+    public JSCharacter updateCharacterRole(String sid, long cid, long roleid,
+                                           boolean adding)
+        throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public List<JSBadge> getBadges();
     public Boolean addBadge(String sid, String name, int score) throws UserNotLoggedInError, AlreadyExistsError;
+    public JSCharacter updateCharacterBadge(String sid, long cid, long badgeid,
+                                            boolean adding)
+        throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public Boolean addInstance(String sid, String name) throws UserNotLoggedInError, AlreadyExistsError;
     public Boolean addBoss(String sid, String instance, String boss) throws UserNotLoggedInError, NotFoundError, AlreadyExistsError;
