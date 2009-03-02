@@ -63,6 +63,9 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     chars = new Characters();
     admin = new Admin();
 
+    // Events wants to know when there are changes to the user's characters
+    chars.addEventHandler(events);
+
     final RootPanel login = RootPanel.get("login");
     login.setVisible(false);
 

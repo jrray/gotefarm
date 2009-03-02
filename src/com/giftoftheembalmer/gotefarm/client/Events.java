@@ -18,10 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Events extends Composite {
+public class Events
+    extends Composite
+    implements CharactersChangedHandler {
 
     VerticalPanel vpanel = new VerticalPanel();
     final DateTimeFormat time_formatter = DateTimeFormat.getFormat("EEE MMM dd, yyyy hh:mm aaa");
+
+    private List<JSCharacter> characters = new ArrayList<JSCharacter>();
 
     public class Event extends Composite {
 
@@ -296,6 +300,9 @@ public class Events extends Composite {
             }
         }
 
+        public void charactersChanged() {
+        }
+
         void populateRole(JSEventRole role, int column) {
             flex.setText(0, column, role.name + " (" + role.min + "/" + role.max + ")");
 
@@ -381,6 +388,8 @@ public class Events extends Composite {
         setStyleName("Characters");
     }
 
+    private ArrayList<Event> events = new ArrayList<Event>();
+
     public void refresh() {
         vpanel.clear();
 
@@ -391,10 +400,15 @@ public class Events extends Composite {
 
         GoteFarm.goteService.getEvents(GoteFarm.sessionID, new AsyncCallback<List<JSEvent>>() {
             public void onSuccess(List<JSEvent> result) {
+                events.clear();
                 vpanel.clear();
 
+                events.ensureCapacity(result.size());
+
                 for (JSEvent e : result) {
-                    vpanel.add(new Event(e));
+                    Event event = new Event(e);
+                    events.add(event);
+                    vpanel.add(event);
                 }
 
                 if (result.size() == 0) {
@@ -406,5 +420,12 @@ public class Events extends Composite {
                 vpanel.add(new Label(caught.getMessage()));
             }
         });
+    }
+
+    public void onCharactersChanged(CharactersChangedEvent event) {
+        characters = event.getCharacters();
+        for (Event e : events) {
+            e.charactersChanged();
+        }
     }
 }

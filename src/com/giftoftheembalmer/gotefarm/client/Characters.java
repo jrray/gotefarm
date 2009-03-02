@@ -1,7 +1,9 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.HashSet;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
@@ -28,10 +30,28 @@ import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
 
-public class Characters extends Composite {
+public class Characters
+    extends Composite
+    implements FiresCharactersChangedEvents {
 
     VerticalPanel vpanel = new VerticalPanel();
     VerticalPanel chrpanel = new VerticalPanel();
+
+    private List<JSCharacter> characters = new ArrayList<JSCharacter>();
+
+    public void addCharacter(JSCharacter chr) {
+        characters.add(chr);
+        chrpanel.add(new Character(chr));
+        fireCharacterChangedEvent();
+    }
+
+    private void fireCharacterChangedEvent() {
+        CharactersChangedEvent event = new CharactersChangedEvent(this, characters);
+
+        for (CharactersChangedHandler handler : handlers) {
+            handler.onCharactersChanged(event);
+        }
+    }
 
     public class Character extends Composite {
 
@@ -164,7 +184,7 @@ public class Characters extends Composite {
                 public void onSuccess(Long result) {
                     GoteFarm.goteService.getCharacter(GoteFarm.sessionID, result.longValue(), new AsyncCallback<JSCharacter>() {
                         public void onSuccess(JSCharacter chr) {
-                            chrpanel.add(new Character(chr));
+                            Characters.this.addCharacter(chr);
                         }
 
                         public void onFailure(Throwable caught) {
@@ -236,6 +256,9 @@ public class Characters extends Composite {
 
         GoteFarm.goteService.getCharacters(GoteFarm.sessionID, new AsyncCallback<List<JSCharacter>>() {
             public void onSuccess(List<JSCharacter> result) {
+                characters = result;
+                fireCharacterChangedEvent();
+
                 for (JSCharacter c : result) {
                     chrpanel.add(new Character(c));
                 }
@@ -244,5 +267,15 @@ public class Characters extends Composite {
             public void onFailure(Throwable caught) {
             }
         });
+    }
+
+    private HashSet<CharactersChangedHandler> handlers = new HashSet<CharactersChangedHandler>();
+
+    public void addEventHandler(CharactersChangedHandler handler) {
+        handlers.add(handler);
+    }
+
+    public void removeEventHandler(CharactersChangedHandler handler) {
+        handlers.remove(handler);
     }
 }
