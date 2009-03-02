@@ -1000,7 +1000,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     )
 
     ops.query(
-      """select badge.name, require_for_signup, role.name, num_slots, early_signup
+      """select badge.badgeid, badge.name, require_for_signup, role.name, num_slots, early_signup
           from
             """ + eventstub + """badge left outer join role
               on """ + eventstub + """badge.roleid = role.roleid,
@@ -1013,11 +1013,12 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         def processRow(rs: ResultSet) = {
           val eb = new JSEventBadge
 
-          eb.name = rs.getString(1)
-          eb.requireForSignup = charbool(rs.getString(2))
-          eb.applyToRole = rs.getString(3)
-          eb.numSlots = rs.getInt(4)
-          eb.earlySignup = rs.getInt(5)
+          eb.badgeid = rs.getLong(1)
+          eb.name = rs.getString(2)
+          eb.requireForSignup = charbool(rs.getString(3))
+          eb.applyToRole = rs.getString(4)
+          eb.numSlots = rs.getInt(5)
+          eb.earlySignup = rs.getInt(6)
 
           et.badges.add(eb)
         }
