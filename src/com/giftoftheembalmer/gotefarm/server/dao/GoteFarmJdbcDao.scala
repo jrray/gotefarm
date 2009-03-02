@@ -58,20 +58,25 @@ object GoteFarmJdbcDao {
   }
 
   val JSCharacterMapper = new ParameterizedRowMapper[JSCharacter] {
-    val columns = """chr.chrid, chr.realm, chr.name, race.name, class.name,
-                      chr.level, chr.chrxml, chr.created"""
+    val ncolumns = 9
+    val columns = """chr.accountid, chr.chrid, chr.realm, chr.name,
+                      race.name, class.name, chr.level, chr.chrxml,
+                      chr.created"""
+    val tables = """chr join race on chr.raceid = race.raceid
+                        join class on chr.classid = class.classid"""
 
     def mapRow(rs: ResultSet, rowNum: Int, start_column: Int) = {
       val jsc = new JSCharacter
 
-      jsc.cid = rs.getLong(start_column)
-      jsc.realm = rs.getString(start_column+1)
-      jsc.name = rs.getString(start_column+2)
-      jsc.race = rs.getString(start_column+3)
-      jsc.clazz = rs.getString(start_column+4)
-      jsc.level = rs.getShort(start_column+5)
-      jsc.characterxml = rs.getString(start_column+6)
-      jsc.created = rs.getTimestamp(start_column+7)
+      jsc.accountid = rs.getLong(start_column)
+      jsc.cid = rs.getLong(start_column+1)
+      jsc.realm = rs.getString(start_column+2)
+      jsc.name = rs.getString(start_column+3)
+      jsc.race = rs.getString(start_column+4)
+      jsc.clazz = rs.getString(start_column+5)
+      jsc.level = rs.getShort(start_column+6)
+      jsc.characterxml = rs.getString(start_column+7)
+      jsc.created = rs.getTimestamp(start_column+8)
 
       jsc
     }
@@ -82,6 +87,7 @@ object GoteFarmJdbcDao {
   }
 
   val JSRoleMapper = new ParameterizedRowMapper[JSRole] {
+    val ncolumns = 3
     val columns = "role.roleid, role.name, role.restricted"
 
     def mapRow(rs: ResultSet, rowNum: Int, start_column: Int) = {
@@ -843,11 +849,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
   def getCharacters(uid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     val r = jdbc.query(
-      "select " + JSCharacterMapper.columns + """
-          from chr, race, class
-          where chr.raceid = race.raceid
-            and chr.classid = class.classid
-            and accountid = ?""",
+      "select " + JSCharacterMapper.columns + " from "
+        + JSCharacterMapper.tables
+        + """ where accountid = ?""",
       JSCharacterMapper,
       Array[AnyRef](uid): _*
     )
@@ -862,11 +866,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jdbc = getSimpleJdbcTemplate()
     try {
       val chr = jdbc.queryForObject(
-        "select " + JSCharacterMapper.columns + """
-            from chr, race, class
-            where chr.raceid = race.raceid
-              and chr.classid = class.classid
-              and chrid = ?""",
+        "select " + JSCharacterMapper.columns + " from "
+          + JSCharacterMapper.tables
+          + """ where chrid = ?""",
         JSCharacterMapper,
         Array[AnyRef](cid): _*
       )
@@ -1558,13 +1560,20 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
         new ParameterizedRowMapper[JSEventSignup] {
           override def mapRow(rs: ResultSet, rowNum: Int) = {
             val r = new JSEventSignup
-            r.eventsignupid = rs.getLong(1)
-            r.eventid = rs.getLong(2)
-            r.chr = JSCharacterMapper.mapRow(rs, rowNum, 3)
-            r.role = JSRoleMapper.mapRow(rs, rowNum, 11)
-            r.signup_type = rs.getInt(14)
-            r.signup_time = rs.getTimestamp(15)
-            r.note = rs.getString(16)
+            var col = 1
+            r.eventsignupid = rs.getLong(col)
+            col += 1
+            r.eventid = rs.getLong(col)
+            col += 1
+            r.chr = JSCharacterMapper.mapRow(rs, rowNum, col)
+            col += JSCharacterMapper.ncolumns
+            r.role = JSRoleMapper.mapRow(rs, rowNum, col)
+            col += JSRoleMapper.ncolumns
+            r.signup_type = rs.getInt(col)
+            col += 1
+            r.signup_time = rs.getTimestamp(col)
+            col += 1
+            r.note = rs.getString(col)
             r
           }
         },
