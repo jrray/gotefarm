@@ -44,6 +44,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
   static String sessionID = null;
 
   TabPanel tabpanel;
+  Events events;
   Characters chars;
   Admin admin;
 
@@ -58,6 +59,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     endpoint.setServiceEntryPoint(moduleRelativeURL);
 
     tabpanel = new TabPanel();
+    events = new Events();
     chars = new Characters();
     admin = new Admin();
 
@@ -92,7 +94,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     tabpanel.addStyleName(tabpanel.getStylePrimaryName() + "-main");
     tabpanel.addTabListener(this);
 
-    tabpanel.add(new Label("Events"), "Events");
+    tabpanel.add(events, "Events");
     tabpanel.add(chars, "Characters");
     tabpanel.add(admin, "Admin");
 
@@ -200,6 +202,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
         this.sessionID = sessionID;
 
         // refresh UI elements that depend on the sessionID
+        events.refresh();
         chars.loadCharacters();
         admin.refresh();
     }

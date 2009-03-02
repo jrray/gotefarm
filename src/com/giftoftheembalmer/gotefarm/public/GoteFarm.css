@@ -60,6 +60,22 @@ td.footer {
     border-top-width: 1px;
 }
 
+td .coming {
+    background: #ccffcc;
+}
+
+td .standby {
+    background: #ccffff;
+}
+
+td .maybe {
+    background: #ffffcc;
+}
+
+td .notcoming {
+    background: #ffcccc;
+}
+
 .gwt-TabPanel-main {
     margin-left: auto;
     margin-right: auto;
