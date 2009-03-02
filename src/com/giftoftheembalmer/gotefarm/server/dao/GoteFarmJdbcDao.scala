@@ -3,6 +3,7 @@ package com.giftoftheembalmer.gotefarm.server.dao
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSBadge,
   JSChrBadge,
   JSChrRole,
   JSEvent,
@@ -79,6 +80,18 @@ object GoteFarmJdbcDao {
       r.roleid = rs.getLong(1)
       r.name = rs.getString(2)
       r.restricted = charbool(rs.getString(3))
+      r
+    }
+  }
+
+  val JSBadgeMapper = new ParameterizedRowMapper[JSBadge] {
+    val columns = "badgeid, name, score"
+
+    def mapRow(rs: ResultSet, rowNum: Int) = {
+      val r = new JSBadge
+      r.badgeid = rs.getLong(1)
+      r.name = rs.getString(2)
+      r.score = rs.getInt(3)
       r
     }
   }
@@ -836,13 +849,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     val jdbc = getSimpleJdbcTemplate()
 
     jdbc.query(
-      "select name from badge order by name",
-      new ParameterizedRowMapper[String] {
-        def mapRow(rs: ResultSet, rowNum: Int) = {
-          rs.getString(1)
-        }
-      },
-      Array[AnyRef](): _*
+      "select " + JSBadgeMapper.columns + " from badge order by score desc, name",
+      JSBadgeMapper
     )
   }
 

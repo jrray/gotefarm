@@ -3,6 +3,7 @@ package com.giftoftheembalmer.gotefarm.server.service
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSBadge,
   JSEvent,
   JSEventSchedule,
   JSEventTemplate,
@@ -35,7 +36,7 @@ trait GoteFarmServiceT {
   @throws(classOf[AlreadyExistsError])
   def addRole(name: String, restricted: Boolean): Long
 
-  def getBadges: List[String]
+  def getBadges: List[JSBadge]
   @throws(classOf[AlreadyExistsError])
   def addBadge(name: String, score: Int): Long
 

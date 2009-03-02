@@ -1,6 +1,7 @@
 package com.giftoftheembalmer.gotefarm.server.dao
 
 import com.giftoftheembalmer.gotefarm.client.{
+  JSBadge,
   JSEvent,
   JSEventSchedule,
   JSEventTemplate,
@@ -23,7 +24,7 @@ trait GoteFarmDaoT {
   def getRoles: List[JSRole]
   def addRole(name: String, restricted: Boolean): Long
 
-  def getBadges: List[String]
+  def getBadges: List[JSBadge]
   def addBadge(name: String, score: Int): Long
 
   def addInstance(name: String): Long

@@ -324,10 +324,10 @@ public class EventEditor extends Composite implements ChangeListener {
 
         badges.addItem(SELECT_A_BADGE);
 
-        GoteFarm.goteService.getBadges(new AsyncCallback<List<String>>() {
-            public void onSuccess(List<String> results) {
-                for (String i : results) {
-                    badges.addItem(i);
+        GoteFarm.goteService.getBadges(new AsyncCallback<List<JSBadge>>() {
+            public void onSuccess(List<JSBadge> results) {
+                for (JSBadge badge : results) {
+                    badges.addItem(badge.name);
                 }
             }
 

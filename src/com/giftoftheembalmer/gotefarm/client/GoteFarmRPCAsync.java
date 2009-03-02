@@ -16,7 +16,7 @@ interface GoteFarmRPCAsync {
     public void addRole(String sid, String name, boolean restricted, AsyncCallback<Boolean> cb);
     // public void getCharacterRoles(long cid, AsyncCallback<List<JSCharRole>> cb);
 
-    public void getBadges(AsyncCallback<List<String>> cb);
+    public void getBadges(AsyncCallback<List<JSBadge>> cb);
     public void addBadge(String sid, String name, int score, AsyncCallback<Boolean> cb);
 
     public void addInstance(String sid, String name, AsyncCallback<Boolean> cb);

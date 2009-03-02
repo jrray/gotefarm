@@ -16,7 +16,7 @@ public interface GoteFarmRPC extends RemoteService {
     public Boolean addRole(String sid, String name, boolean restricted) throws UserNotLoggedInError, AlreadyExistsError;
     // public List<JSCharRole> getCharacterRoles(long cid);
 
-    public List<String> getBadges();
+    public List<JSBadge> getBadges();
     public Boolean addBadge(String sid, String name, int score) throws UserNotLoggedInError, AlreadyExistsError;
 
     public Boolean addInstance(String sid, String name) throws UserNotLoggedInError, AlreadyExistsError;
