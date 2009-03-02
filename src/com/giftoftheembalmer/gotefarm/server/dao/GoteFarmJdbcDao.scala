@@ -408,7 +408,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           chrid BIGINT NOT NULL,
           roleid BIGINT NOT NULL,
           approved CHAR(1) NOT NULL CONSTRAINT chrrole_approved_bool CHECK (approved in ('Y','N')),
-          CONSTRAINT chrrole_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE
+          CONSTRAINT chrrole_chrid_fk FOREIGN KEY (chrid) REFERENCES chr (chrid) ON DELETE CASCADE,
+          CONSTRAINT chrrole_roleid_fk FOREIGN KEY (roleid) REFERENCES role (roleid) ON DELETE RESTRICT
         )"""
       )
 
