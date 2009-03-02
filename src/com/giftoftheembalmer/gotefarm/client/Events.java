@@ -1,6 +1,7 @@
 package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
@@ -38,6 +39,8 @@ public class Events
     implements CharactersChangedHandler {
 
     VerticalPanel vpanel = new VerticalPanel();
+    VerticalPanel vmsgpanel = new VerticalPanel();
+    VerticalPanel veventpanel = new VerticalPanel();
     final DateTimeFormat time_formatter = DateTimeFormat.getFormat("EEE MMM dd, yyyy hh:mm aaa");
 
     private List<JSCharacter> characters = new ArrayList<JSCharacter>();
@@ -92,6 +95,14 @@ public class Events
             initWidget(vpanel);
 
             setStyleName("Event");
+        }
+
+        void setEvent(JSEvent event) {
+            JSEvent old_event = this.event;
+            this.event = event;
+            if (event == null || !event.equals(old_event)) {
+                showSignups();
+            }
         }
 
         void remakeFlex(FlexTable newFlex) {
@@ -379,10 +390,7 @@ public class Events
         }
 
         void showSignups() {
-            for (DropController dc : registered_drop_controllers) {
-                dragController.unregisterDropController(dc);
-            }
-            registered_drop_controllers.clear();
+            unregisterDropControllers();
             remakeFlex(makeNewSignupTable());
         }
 
@@ -946,13 +954,26 @@ public class Events
 
             signup_error.setText("");
         }
+
+        public void unregisterDropControllers() {
+            for (DropController dc : registered_drop_controllers) {
+                dragController.unregisterDropController(dc);
+            }
+            registered_drop_controllers.clear();
+        }
     }
 
     public Events() {
         vpanel.setWidth("100%");
-        vpanel.setSpacing(20);
+        vmsgpanel.setWidth("100%");
+        veventpanel.setWidth("100%");
 
-        vpanel.add(new Label("You are not signed in."));
+        vpanel.add(vmsgpanel);
+        vpanel.add(veventpanel);
+
+        veventpanel.setSpacing(20);
+
+        vmsgpanel.add(new Label("You are not signed in."));
 
         dragController = new PickupDragController(RootPanel.get(), true);
         dragController.setBehaviorBoundaryPanelDrop(false);
@@ -961,46 +982,83 @@ public class Events
 
         initWidget(vpanel);
 
+        // update the events list once a minute
+        Timer refreshTimer = new Timer() {
+            public void run() {
+                refresh();
+            }
+        };
+        refreshTimer.scheduleRepeating(60000);
+
         setStyleName("Characters");
     }
 
     private ArrayList<Event> events = new ArrayList<Event>();
-    private Set<DragHandler> registered_drag_handlers = new HashSet<DragHandler>();
 
     public void refresh() {
-        vpanel.clear();
-        for (DragHandler dh : registered_drag_handlers) {
-            dragController.removeDragHandler(dh);
-        }
-        registered_drag_handlers.clear();
+        vmsgpanel.clear();
 
         if (GoteFarm.sessionID == null) {
-            vpanel.add(new Label("You are not signed in."));
+            vmsgpanel.add(new Label("You are not signed in."));
             return;
         }
 
+        // update the list of events, and also refresh the signup lists of
+        // each event
+
         GoteFarm.goteService.getEvents(GoteFarm.sessionID, new AsyncCallback<List<JSEvent>>() {
             public void onSuccess(List<JSEvent> result) {
-                events.clear();
-                vpanel.clear();
+                vmsgpanel.clear();
 
                 events.ensureCapacity(result.size());
 
+                // merge new events into existing event list, to reuse widgets
+
+                int old_index = 0;
+                int new_index = 0;
                 for (JSEvent e : result) {
-                    Event event = new Event(e);
-                    dragController.addDragHandler(event);
-                    registered_drag_handlers.add(event);
-                    events.add(event);
-                    vpanel.add(event);
+                    // is this event already in the events list?
+                    Event old_event = null;
+
+                    if (old_index < events.size()) {
+                        old_event = events.get(old_index);
+                    }
+
+                    if (old_event != null && e.eid == old_event.event.eid) {
+                        // give existing event widget new JSEvent
+                        old_event.setEvent(e);
+                    }
+                    else {
+                        // new event, insert
+                        Event event = new Event(e);
+                        dragController.addDragHandler(event);
+                        events.add(old_index, event);
+                        veventpanel.insert(event, old_index);
+                    }
+
+                    ++old_index;
+                    ++new_index;
+                }
+
+                // remove remaining old events
+                while (old_index < events.size()) {
+                    Event event = events.remove(old_index);
+                    event.unregisterDropControllers();
+                    dragController.removeDragHandler(event);
+                    veventpanel.remove(event);
                 }
 
                 if (result.size() == 0) {
-                    vpanel.add(new Label("No events"));
+                    vmsgpanel.add(new Label("No events"));
+                }
+
+                for (Event e : events) {
+                    e.fetchSignups();
                 }
             }
 
             public void onFailure(Throwable caught) {
-                vpanel.add(new Label(caught.getMessage()));
+                vmsgpanel.add(new Label(caught.getMessage()));
             }
         });
     }
