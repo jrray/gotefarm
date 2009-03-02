@@ -224,6 +224,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
         }
         else if (historyToken.equals("events")) {
             tabpanel.selectTab(0);
+            events.resizeRows();
         }
         else if (historyToken.equals("characters")) {
             tabpanel.selectTab(1);

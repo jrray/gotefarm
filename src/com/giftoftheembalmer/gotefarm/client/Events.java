@@ -6,9 +6,24 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import com.allen_sauer.gwt.dnd.client.DragContext;
+import com.allen_sauer.gwt.dnd.client.DragHandler;
+import com.allen_sauer.gwt.dnd.client.DragEndEvent;
+import com.allen_sauer.gwt.dnd.client.DragStartEvent;
+import com.allen_sauer.gwt.dnd.client.PickupDragController;
+import com.allen_sauer.gwt.dnd.client.VetoDragException;
+import com.allen_sauer.gwt.dnd.client.drop.AbstractDropController;
+import com.allen_sauer.gwt.dnd.client.drop.DropController;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,8 +41,13 @@ public class Events
     final DateTimeFormat time_formatter = DateTimeFormat.getFormat("EEE MMM dd, yyyy hh:mm aaa");
 
     private List<JSCharacter> characters = new ArrayList<JSCharacter>();
+    private long accountid;
 
-    public class Event extends Composite {
+    PickupDragController dragController;
+
+    public class Event
+        extends Composite
+        implements DragHandler {
 
         static final String SPACE_AVAILABLE = "available";
 
@@ -35,10 +55,22 @@ public class Events
         JSEventSignups signups = null;
 
         VerticalPanel vpanel = new VerticalPanel();
+        HorizontalPanel hchrpanel = new HorizontalPanel();
+        HorizontalPanel hchractions = new HorizontalPanel();
         FlexTable flex = new FlexTable();
+        boolean have_character_signed_up = false;
+        Label signup_error = new Label();
+
+        private Set<DropController> registered_drop_controllers = new HashSet<DropController>();
+        Map<Long, RoleSignup> role_signups = new HashMap<Long, RoleSignup>();
+        private DropController removeSignupDC;
 
         public Event(JSEvent event) {
             this.event = event;
+
+            signup_error.addStyleName("error");
+            signup_error.addStyleName("gwt-Button-bottom");
+            signup_error.addStyleName("gwt-Button-right");
 
             vpanel.setWidth("100%");
             flex.setWidth("100%");
@@ -47,12 +79,29 @@ public class Events
             vpanel.add(new Label(time_formatter.format(event.start_time)));
             vpanel.add(flex);
 
-            showSignups();
+            hchractions.setWidth("100%");
+            vpanel.add(hchractions);
+
+            hchrpanel.setSpacing(10);
+            hchractions.add(hchrpanel);
+            hchractions.add(signup_error);
+
+            setSignups(null);
             fetchSignups();
 
             initWidget(vpanel);
 
             setStyleName("Event");
+        }
+
+        void remakeFlex(FlexTable newFlex) {
+            // recreate the flex table; clear() doesn't remove columns
+            int index = vpanel.getWidgetIndex(flex);
+            vpanel.remove(flex);
+            flex = newFlex;
+            flex.setWidth("100%");
+            vpanel.insert(flex, index);
+            resizeRows();
         }
 
         void styleColumn(FlexCellFormatter formatter, int column) {
@@ -66,25 +115,288 @@ public class Events
             formatter.setVerticalAlignment(4, column, HasVerticalAlignment.ALIGN_TOP);
         }
 
-        void showSignups() {
-            flex.clear();
+        class Signup extends Label {
+            long eventid;
+            JSCharacter chr;
+            JSEventSignup sup;
 
-            class RoleSignup {
-                int spaces_left;
-                Set<JSEventBadge> badges_required = new HashSet<JSEventBadge>();
-                Map<JSEventBadge, Integer> badges_needed = new HashMap<JSEventBadge, Integer>();
-                List<JSEventSignup> coming = new ArrayList<JSEventSignup>();
-                List<JSEventSignup> standby = new ArrayList<JSEventSignup>();
-                List<JSEventSignup> maybe = new ArrayList<JSEventSignup>();
-                List<JSEventSignup> not_coming = new ArrayList<JSEventSignup>();
+            public Signup(long eventid, JSEventSignup sup) {
+                super(sup.chr.name);
+                this.eventid = eventid;
+                this.sup = sup;
+                dragController.makeDraggable(this);
+                if (sup.chr.accountid == accountid) {
+                    addStyleName("draggable-character");
+                }
+                else {
+                    addStyleName("non-draggable-character");
+                }
+                addStyleName(sup.chr.clazz.replace(' ', '-'));
             }
 
+            public Signup(long eventid, JSCharacter chr) {
+                super(chr.name);
+                this.eventid = eventid;
+                this.chr = chr;
+                dragController.makeDraggable(this);
+                if (chr.accountid == accountid) {
+                    addStyleName("draggable-character");
+                }
+                else {
+                    addStyleName("non-draggable-character");
+                }
+                addStyleName(chr.clazz.replace(' ', '-'));
+            }
+
+            public JSCharacter getCharacter() {
+                if (chr != null) {
+                    return chr;
+                }
+                else {
+                    return sup.chr;
+                }
+            }
+        }
+
+        void setSignups(JSEventSignups signups) {
+            this.signups = signups;
+            showSignups();
+            charactersChanged();
+        }
+
+        AsyncCallback<JSEventSignups> signupCallback = new AsyncCallback<JSEventSignups>() {
+            public void onSuccess(JSEventSignups signups) {
+                if (signups == null) {
+                    // unchanged
+                    return;
+                }
+
+                setSignups(signups);
+            }
+
+            public void onFailure(Throwable caught) {
+                // re-setSignups to rebuild interface, otherwise a failed
+                // drop will leave a signup missing
+                setSignups(signups);
+                signup_error.setText(caught.getMessage());
+            }
+        };
+
+        class RoleDropController extends AbstractDropController {
+            long eventid;
+            JSEventRole role;
+            Widget dropTarget;
+            int signupType;
+            String highlightStyle;
+
+            RoleDropController(long eventid, JSEventRole role, Widget widget,
+                               int signupType, String highlightStyle) {
+                super(widget);
+                this.eventid = eventid;
+                this.role = role;
+                this.dropTarget = widget;
+                this.signupType = signupType;
+                this.highlightStyle = highlightStyle;
+            }
+
+            boolean allowDrop(Signup signup) {
+                JSCharacter chr = signup.getCharacter();
+
+                if (role == null) {
+                    return true;
+                }
+
+                // character must have this role
+                if (!chr.hasRole(role.roleid)) {
+                    signup_error.setText(chr.name + " is missing the role '"
+                                         + role.name + ".'");
+                    return false;
+                }
+
+                // signups must have started
+                long now = System.currentTimeMillis();
+                long signups_start = Event.this.event.signups_start.getTime();
+                if (now < signups_start) {
+                    // character needs to qualify for an early signup for this
+                    // role
+                    boolean found = false;
+                    boolean found_early = false;
+                    long earliest_signup = signups_start;
+
+                    for (JSEventBadge badge : Event.this.event.badges) {
+                        if (!chr.hasBadge(badge.badgeid)) {
+                            continue;
+                        }
+
+                        // if this badge applies to a role, it must apply to
+                        // the drop target role to count
+                        if (   badge.applyToRole != null
+                            && !badge.applyToRole.equals(role.name)) {
+                            continue;
+                        }
+
+                        // character qualifies, but has it started?
+                        long badge_signups_start = signups_start - badge.earlySignup * 3600000L;
+                        if (now < badge_signups_start) {
+                            found_early = true;
+                            earliest_signup = Math.min(earliest_signup, badge_signups_start);
+                            continue;
+                        }
+
+                        found = true;
+                        break;
+                    }
+
+                    if (!found) {
+                        if (found_early) {
+                            signup_error.setText(chr.name + " can't sign up"
+                                                + " for this role yet, but"
+                                                + " early signups start at "
+                                                + time_formatter.format(
+                                                    new Date(earliest_signup))
+                                                + ".");
+                        }
+                        else {
+                            signup_error.setText(chr.name + " can't sign up"
+                                                + " for this role yet,"
+                                                + " signups start at "
+                                                + time_formatter.format(
+                                                    new Date(earliest_signup))
+                                                + ".");
+                        }
+                        return false;
+                    }
+                }
+
+                signup_error.setText("");
+
+                return true;
+            }
+
+            @Override
+            public void onEnter(DragContext context) {
+                super.onEnter(context);
+                Signup sup = (Signup)context.selectedWidgets.get(0);
+
+                // ignore drag events for other raid events
+                if (sup.eventid != eventid) {
+                    return;
+                }
+
+                if (allowDrop(sup)) {
+                    dropTarget.addStyleName(highlightStyle);
+                }
+                else {
+                    dropTarget.addStyleName("bad-drop-target");
+                }
+            }
+
+            @Override
+            public void onLeave(DragContext context) {
+                dropTarget.removeStyleName(highlightStyle);
+                dropTarget.removeStyleName("bad-drop-target");
+                super.onLeave(context);
+            }
+
+            @Override
+            public void onPreviewDrop(DragContext context)
+                throws VetoDragException {
+                super.onPreviewDrop(context);
+                Signup sup = (Signup)context.selectedWidgets.get(0);
+
+                // reject drag events for other raid events
+                if (sup.eventid != eventid) {
+                    throw new VetoDragException();
+                }
+
+                // is this signup allowed to happen?
+                if (!allowDrop(sup)) {
+                    throw new VetoDragException();
+                }
+
+                // is this no-op drop?
+                if (   sup.sup != null
+                    && role != null
+                    && sup.sup.role.roleid == role.roleid
+                    && sup.sup.signup_type == signupType) {
+                    throw new VetoDragException();
+                }
+            }
+
+            @Override
+            public void onDrop(DragContext context) {
+                super.onDrop(context);
+                Signup sup = (Signup)context.selectedWidgets.get(0);
+                sup.removeFromParent();
+                signup_error.setText("");
+                if (sup.sup == null) {
+                    // new signup
+                    GoteFarm.goteService.signupForEvent(GoteFarm.sessionID,
+                                                        event.eid,
+                                                        sup.chr.cid, role.roleid,
+                                                        signupType,
+                                                        signupCallback);
+                }
+                else if (signupType < 0) {
+                    // deleting signup
+                    GoteFarm.goteService.removeEventSignup(GoteFarm.sessionID,
+                                                           event.eid,
+                                                           sup.sup.eventsignupid,
+                                                           signupCallback);
+                }
+                else
+                {
+                    // changing signup
+                    GoteFarm.goteService.changeEventSignup(GoteFarm.sessionID,
+                                                           event.eid,
+                                                           sup.sup.eventsignupid,
+                                                           role.roleid,
+                                                           signupType,
+                                                           signupCallback);
+                }
+            }
+        }
+
+        class RoleSignup {
+            JSEvent event;
+            JSEventRole role;
+            int column = -1;
+            int spaces_left;
+            Set<JSEventBadge> badges_required = new HashSet<JSEventBadge>();
+            Map<JSEventBadge, Integer> badges_needed = new HashMap<JSEventBadge, Integer>();
+            List<JSEventSignup> coming = new ArrayList<JSEventSignup>();
+            List<JSEventSignup> standby = new ArrayList<JSEventSignup>();
+            List<JSEventSignup> maybe = new ArrayList<JSEventSignup>();
+            List<JSEventSignup> not_coming = new ArrayList<JSEventSignup>();
+            DropController coming_dc;
+            DropController maybe_dc;
+            DropController not_coming_dc;
+
+            RoleSignup(JSEvent event, JSEventRole role) {
+                this.event = event;
+                this.role = role;
+            }
+        }
+
+        void showSignups() {
+            for (DropController dc : registered_drop_controllers) {
+                dragController.unregisterDropController(dc);
+            }
+            registered_drop_controllers.clear();
+            remakeFlex(makeNewSignupTable());
+        }
+
+        FlexTable makeNewSignupTable() {
+            FlexTable flex = new FlexTable();
+
+            have_character_signed_up = false;
+
             List<JSEventSignup> limbo = new ArrayList<JSEventSignup>();
-            Map<Long, RoleSignup> role_signups = new HashMap<Long, RoleSignup>();
+            role_signups.clear();
 
             // For each role, figure out the badge requirements
             for (JSEventRole role : event.roles) {
-                RoleSignup rsup = new RoleSignup();
+                RoleSignup rsup = new RoleSignup(event, role);
                 rsup.spaces_left = role.max;
                 role_signups.put(role.roleid, rsup);
 
@@ -107,6 +419,10 @@ public class Events
             if (signups != null) {
                 // Categorize the current signups
                 for (JSEventSignup es : signups.signups) {
+                    if (es.chr.accountid == accountid) {
+                        have_character_signed_up = true;
+                    }
+
                     RoleSignup rsup = role_signups.get(es.role.roleid);
 
                     // role does not exist: limbo
@@ -199,27 +515,34 @@ public class Events
 
             styleColumn(formatter, 0);
 
+            SimplePanel sp;
+
             int column = 1;
             for (JSEventRole role : event.roles) {
                 RoleSignup rsup = role_signups.get(role.roleid);
+                rsup.column = column;
 
                 flex.setText(0, column, role.name);
 
                 styleColumn(formatter, column);
 
+                sp = new SimplePanel();
                 VerticalPanel vsign = new VerticalPanel();
-                vsign.setWidth("100%");
 
                 // show signups
                 for (JSEventSignup sup : rsup.coming) {
-                    vsign.add(new Label(sup.chr.name));
+                    vsign.add(new Signup(event.eid, sup));
                 }
 
                 // show remaining slots
                 int eff_spots_left = Math.min(rsup.spaces_left, spots_left);
                 for (int i = 0; i < eff_spots_left; ++i) {
                     HorizontalPanel hpanel = new HorizontalPanel();
-                    hpanel.add(new Label(SPACE_AVAILABLE));
+                    {
+                        Label l = new Label(SPACE_AVAILABLE);
+                        l.addStyleName("available-character");
+                        hpanel.add(l);
+                    }
 
                     for (JSEventBadge badge : rsup.badges_required) {
                         Label l = new Label("!");
@@ -248,37 +571,62 @@ public class Events
                     vsign.add(hpanel);
                 }
 
-                flex.setWidget(1, column, vsign);
+                sp.add(vsign);
+                flex.setWidget(1, column, sp);
+                rsup.coming_dc = new RoleDropController(event.eid, role, sp,
+                                                        JSEventSignup.SIGNUP_TYPE_COMING,
+                                                        "coming-hi");
+                dragController.registerDropController(rsup.coming_dc);
+                registered_drop_controllers.add(rsup.coming_dc);
 
                 // show standby
                 VerticalPanel vstand = new VerticalPanel();
-                vstand.setWidth("100%");
 
                 for (JSEventSignup sup : rsup.standby) {
-                    vstand.add(new Label(sup.chr.name));
+                    vstand.add(new Signup(event.eid, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
 
                 // show maybe
+                sp = new SimplePanel();
                 VerticalPanel vmaybe = new VerticalPanel();
-                vmaybe.setWidth("100%");
 
                 for (JSEventSignup sup : rsup.maybe) {
-                    vmaybe.add(new Label(sup.chr.name));
+                    vmaybe.add(new Signup(event.eid, sup));
                 }
 
-                flex.setWidget(3, column, vmaybe);
+                if (rsup.maybe.isEmpty()) {
+                    vmaybe.add(new HTML("&nbsp;"));
+                }
+
+                sp.add(vmaybe);
+                flex.setWidget(3, column, sp);
+                rsup.maybe_dc = new RoleDropController(event.eid, role, sp,
+                                                       JSEventSignup.SIGNUP_TYPE_MAYBE,
+                                                       "maybe-hi");
+                dragController.registerDropController(rsup.maybe_dc);
+                registered_drop_controllers.add(rsup.maybe_dc);
 
                 // show not coming
+                sp = new SimplePanel();
                 VerticalPanel vnotcoming = new VerticalPanel();
-                vnotcoming.setWidth("100%");
 
                 for (JSEventSignup sup : rsup.not_coming) {
-                    vnotcoming.add(new Label(sup.chr.name));
+                    vnotcoming.add(new Signup(event.eid, sup));
                 }
 
-                flex.setWidget(4, column, vnotcoming);
+                if (rsup.not_coming.isEmpty()) {
+                    vnotcoming.add(new HTML("&nbsp;"));
+                }
+
+                sp.add(vnotcoming);
+                flex.setWidget(4, column, sp);
+                rsup.not_coming_dc = new RoleDropController(event.eid, role, sp,
+                                                            JSEventSignup.SIGNUP_TYPE_NOT_COMING,
+                                                            "notcoming-hi");
+                dragController.registerDropController(rsup.not_coming_dc);
+                registered_drop_controllers.add(rsup.not_coming_dc);
 
                 ++column;
             }
@@ -290,17 +638,97 @@ public class Events
                 flex.setText(0, column, "Limbo");
 
                 VerticalPanel vstand = new VerticalPanel();
-                vstand.setWidth("100%");
 
                 for (JSEventSignup sup : limbo) {
-                    vstand.add(new Label(sup.chr.name));
+                    vstand.add(new Signup(event.eid, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
+
+                ++column;
+            }
+
+            return flex;
+        }
+
+        void resizeRows() {
+            int column = flex.getCellCount(1);
+
+            // Each role <td> must have the same number of items in it to size
+            // the drop area so it fills the <td>. This hack should be removed
+            // if a way to get the VerticalPanel to fill its space vertically
+            // is found.
+            int most_coming = 0;
+            int most_maybe = 0;
+            int most_not_coming = 0;
+            SimplePanel sp;
+            VerticalPanel vp;
+            UIObject uio;
+
+            for (int c = 1; c < column; ++c) {
+                sp = (SimplePanel)flex.getWidget(1, c);
+                if (sp != null) {
+                    vp = (VerticalPanel)sp.getWidget();
+                    most_coming = Math.max(most_coming, vp.getOffsetHeight());
+                }
+
+                sp = (SimplePanel)flex.getWidget(3, c);
+                if (sp != null) {
+                    vp = (VerticalPanel)sp.getWidget();
+                    most_maybe = Math.max(most_maybe, vp.getOffsetHeight());
+                }
+
+                sp = (SimplePanel)flex.getWidget(4, c);
+                if (sp != null) {
+                    vp = (VerticalPanel)sp.getWidget();
+                    most_not_coming = Math.max(most_not_coming, vp.getOffsetHeight());
+                }
+            }
+
+            for (int c = 1; c < column; ++c) {
+                uio = (UIObject)flex.getWidget(1, c);
+                if (uio != null) {
+                    uio.setHeight("" + most_coming + "px");
+                }
+
+                uio = (UIObject)flex.getWidget(3, c);
+                if (uio != null) {
+                    uio.setHeight("" + most_maybe + "px");
+                }
+
+                uio = (UIObject)flex.getWidget(4, c);
+                if (uio != null) {
+                    uio.setHeight("" + most_not_coming + "px");
+                }
             }
         }
 
         public void charactersChanged() {
+            hchrpanel.clear();
+            if (removeSignupDC != null) {
+                dragController.unregisterDropController(removeSignupDC);
+                removeSignupDC = null;
+            }
+
+            if (have_character_signed_up) {
+                Label l = new Label("You are signed up for this event. Drag to here to delete your signup.");
+                hchrpanel.add(l);
+                removeSignupDC = new RoleDropController(event.eid, null, l, -1, "coming");
+                dragController.registerDropController(removeSignupDC);
+                return;
+            }
+
+            if (characters.isEmpty()) {
+                hchrpanel.add(new Label("You have no characters enrolled."));
+                hchrpanel.add(new Hyperlink("Manage characters", "characters"));
+                return;
+            }
+
+            accountid = characters.get(0).accountid;
+
+            for (JSCharacter c : characters) {
+                hchrpanel.add(new Signup(event.eid, c));
+            }
         }
 
         void populateRole(JSEventRole role, int column) {
@@ -360,20 +788,163 @@ public class Events
                 asof = new Date(0L);
             }
 
-            GoteFarm.goteService.getEventSignups(GoteFarm.sessionID, event.eid, asof, new AsyncCallback<JSEventSignups>() {
-                public void onSuccess(JSEventSignups signups) {
-                    if (signups == null) {
-                        // unchanged
-                        return;
+            GoteFarm.goteService.getEventSignups(GoteFarm.sessionID,
+                                                 event.eid, asof,
+                                                 signupCallback);
+        }
+
+        public void onDragEnd(DragEndEvent event) {
+            DragContext c = event.getContext();
+            Signup sup = (Signup)c.selectedWidgets.get(0);
+
+            // ignore drag events for other raid events
+            if (sup.eventid != Event.this.event.eid) {
+                return;
+            }
+
+            // Reset drop targets
+            FlexCellFormatter formatter = flex.getFlexCellFormatter();
+            for (RoleSignup rsup : role_signups.values()) {
+                formatter.removeStyleName(0, rsup.column, "bad-drop-target");
+            }
+        }
+
+        public void onDragStart(DragStartEvent event) {
+            DragContext c = event.getContext();
+            Signup sup = (Signup)c.selectedWidgets.get(0);
+
+            // ignore drag events for other raid events
+            if (sup.eventid != Event.this.event.eid) {
+                return;
+            }
+
+            JSCharacter chr = sup.getCharacter();
+
+            FlexCellFormatter formatter = flex.getFlexCellFormatter();
+
+            // show which drop targets are viable
+            for (Map.Entry<Long, RoleSignup> rsup : role_signups.entrySet()) {
+                if (!chr.hasRole(rsup.getKey())) {
+                    formatter.addStyleName(0, rsup.getValue().column, "bad-drop-target");
+                }
+            }
+        }
+
+        public void onPreviewDragEnd(DragEndEvent event)
+            throws VetoDragException {
+            DragContext c = event.getContext();
+            Signup sup = (Signup)c.selectedWidgets.get(0);
+
+            // ignore drag events for other raid events
+            if (sup.eventid != Event.this.event.eid) {
+                return;
+            }
+
+            // reject a drop outside the drop zones for a character that
+            // isn't signed up
+            if (   c.vetoException == null
+                && !(c.finalDropController instanceof RoleDropController)) {
+
+                if (sup.sup == null) {
+                    throw new VetoDragException();
+                }
+            }
+        }
+
+        public void onPreviewDragStart(DragStartEvent event)
+            throws VetoDragException {
+            DragContext c = event.getContext();
+            Signup sup = (Signup)c.selectedWidgets.get(0);
+
+            // ignore drag events for other raid events
+            if (sup.eventid != Event.this.event.eid) {
+                return;
+            }
+
+            long now = System.currentTimeMillis();
+
+            // are signups over?
+            if (now >= Event.this.event.signups_end.getTime()) {
+                signup_error.setText("Signups for this event are closed.");
+                throw new VetoDragException();
+            }
+
+            JSCharacter chr = sup.getCharacter();
+
+            // must be at least this high to ride
+            if (chr.level < Event.this.event.minimumLevel) {
+                signup_error.setText(chr.name + " is level " + chr.level
+                                        + ", this event requires level "
+                                        + Event.this.event.minimumLevel + ".");
+                throw new VetoDragException();
+            }
+
+            // character must have at least one role
+            boolean role_found = false;
+            for (JSEventRole role : Event.this.event.roles) {
+                for (JSChrRole chrrole : chr.roles) {
+                    if (role.roleid == chrrole.roleid) {
+                        role_found = true;
+                        break;
+                    }
+                }
+            }
+            if (!role_found) {
+                signup_error.setText(chr.name + " does not perform any of the"
+                                     + " needed roles to sign up for this"
+                                     + " event.");
+                throw new VetoDragException();
+            }
+
+            // check if chr is able to signup yet
+            long signups_start = Event.this.event.signups_start.getTime();
+            if (now < signups_start) {
+                // character needs to qualify for an early signup
+                boolean found = false;
+                boolean found_early = false;
+                long earliest_signup = signups_start;
+
+                for (JSEventBadge badge : Event.this.event.badges) {
+                    if (!chr.hasBadge(badge.badgeid)) {
+                        continue;
                     }
 
-                    Event.this.signups = signups;
-                    showSignups();
+                    if (badge.applyToRole != null && !chr.hasRole(badge.applyToRole)) {
+                        continue;
+                    }
+
+                    // character qualifies, but has it started?
+                    long badge_signups_start = signups_start - badge.earlySignup * 3600000L;
+                    if (now < badge_signups_start) {
+                        found_early = true;
+                        earliest_signup = Math.min(earliest_signup, badge_signups_start);
+                        continue;
+                    }
+
+                    found = true;
+                    break;
                 }
 
-                public void onFailure(Throwable caught) {
+                if (!found) {
+                    if (found_early) {
+                        signup_error.setText(chr.name + " can't sign up yet,"
+                                            + " but early signups start at "
+                                            + time_formatter.format(
+                                                new Date(earliest_signup))
+                                            + ".");
+                    }
+                    else {
+                        signup_error.setText(chr.name + " can't sign up yet,"
+                                            + " signups start at "
+                                            + time_formatter.format(
+                                                new Date(earliest_signup))
+                                            + ".");
+                    }
+                    throw new VetoDragException();
                 }
-            });
+            }
+
+            signup_error.setText("");
         }
     }
 
@@ -383,15 +954,25 @@ public class Events
 
         vpanel.add(new Label("You are not signed in."));
 
+        dragController = new PickupDragController(RootPanel.get(), true);
+        dragController.setBehaviorBoundaryPanelDrop(false);
+        dragController.setBehaviorConstrainedToBoundaryPanel(true);
+        dragController.setBehaviorDragStartSensitivity(1);
+
         initWidget(vpanel);
 
         setStyleName("Characters");
     }
 
     private ArrayList<Event> events = new ArrayList<Event>();
+    private Set<DragHandler> registered_drag_handlers = new HashSet<DragHandler>();
 
     public void refresh() {
         vpanel.clear();
+        for (DragHandler dh : registered_drag_handlers) {
+            dragController.removeDragHandler(dh);
+        }
+        registered_drag_handlers.clear();
 
         if (GoteFarm.sessionID == null) {
             vpanel.add(new Label("You are not signed in."));
@@ -407,6 +988,8 @@ public class Events
 
                 for (JSEvent e : result) {
                     Event event = new Event(e);
+                    dragController.addDragHandler(event);
+                    registered_drag_handlers.add(event);
                     events.add(event);
                     vpanel.add(event);
                 }
@@ -426,6 +1009,12 @@ public class Events
         characters = event.getCharacters();
         for (Event e : events) {
             e.charactersChanged();
+        }
+    }
+
+    public void resizeRows() {
+        for (Event e : events) {
+            e.resizeRows();
         }
     }
 }
