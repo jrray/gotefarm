@@ -18,4 +18,14 @@ public class JSCharacter implements IsSerializable {
 
     public JSCharacter() {
     }
+
+    public boolean hasBadge(long badgeid) {
+        for (JSChrBadge badge : badges) {
+            if (badge.badgeid == badgeid) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
