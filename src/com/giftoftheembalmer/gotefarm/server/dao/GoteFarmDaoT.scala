@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
   JSEvent,
   JSEventSchedule,
+  JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
   JSCharacter,
@@ -26,6 +27,7 @@ trait GoteFarmDaoT {
   def getCharacter(cid: Long): JSCharacter
 
   def getRoles: List[JSRole]
+  def getRole(roleid: Long): JSRole
   def addRole(name: String, restricted: Boolean): Long
   def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit
 
@@ -49,6 +51,13 @@ trait GoteFarmDaoT {
   def publishEvent(es: JSEventSchedule): Unit
 
   def getEvents: List[JSEvent]
+  def getEvent(eventid: Long): JSEvent
   def getEventSignups(eventid: Long,
                       if_changed_since: Date): Option[JSEventSignups]
+  def getEventSignup(eventsignupid: Long): JSEventSignup
+  def signupForEvent(eventid: Long, cid: Long, roleid: Long,
+                     signup_type: Int): Unit
+  def changeEventSignup(eventsignupid: Long, new_roleid: Long,
+                        new_signup_type: Int): Unit
+  def removeEventSignup(eventsignupid: Long): Unit
 }

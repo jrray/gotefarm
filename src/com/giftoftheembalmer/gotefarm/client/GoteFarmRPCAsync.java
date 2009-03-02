@@ -43,4 +43,12 @@ interface GoteFarmRPCAsync {
     public void getEventSignups(String sid, long eventid,
                                 Date if_changed_since,
                                 AsyncCallback<JSEventSignups> cb);
+    public void signupForEvent(String sid, long eventid, long cid, long roleid,
+                               int signup_type,
+                               AsyncCallback<JSEventSignups> cb);
+    public void changeEventSignup(String sid, long eventid, long eventsignupid,
+                                  long new_roleid, int new_signup_type,
+                                  AsyncCallback<JSEventSignups> cb);
+    public void removeEventSignup(String sid, long eventid, long eventsignupid,
+                                  AsyncCallback<JSEventSignups> cb);
 }

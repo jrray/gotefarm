@@ -5,6 +5,8 @@ import com.giftoftheembalmer.gotefarm.server.service._
 import com.giftoftheembalmer.gotefarm.client.{
   GoteFarmRPC,
   JSEventSchedule,
+  JSEventSignup,
+  JSEventSignups,
   JSEventTemplate,
   UserNotLoggedInError
 }
@@ -168,5 +170,40 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     val sess = getSession(sid)
     goteFarmService.getEventSignups(eventid, if_changed_since)
       .getOrElse(null)
+  }
+
+  private val time_zero = new Date(0L)
+  private def forceGetEvents(eventid: Long) = {
+    goteFarmService.getEventSignups(eventid, time_zero).getOrElse({
+      val r = new JSEventSignups
+      r.eventid = eventid
+      r.signups = new java.util.ArrayList[JSEventSignup]
+      r.asof = time_zero
+      r
+    })
+  }
+
+  def signupForEvent(sid: String, eventid: Long, cid: Long, roleid: Long,
+                     signup_type: Int) = {
+    val sess = getSession(sid)
+    val uid = sess.getValue("uid").asInstanceOf[Long]
+    goteFarmService.signupForEvent(uid, eventid, cid, roleid, signup_type)
+    forceGetEvents(eventid)
+  }
+
+  def changeEventSignup(sid: String, eventid: Long, eventsignupid: Long,
+                        new_roleid: Long, new_signup_type: Int) = {
+    val sess = getSession(sid)
+    val uid = sess.getValue("uid").asInstanceOf[Long]
+    goteFarmService.changeEventSignup(uid, eventsignupid, new_roleid,
+                                      new_signup_type)
+    forceGetEvents(eventid)
+  }
+
+  def removeEventSignup(sid: String, eventid: Long, eventsignupid: Long) = {
+    val sess = getSession(sid)
+    val uid = sess.getValue("uid").asInstanceOf[Long]
+    goteFarmService.removeEventSignup(uid, eventsignupid)
+    forceGetEvents(eventid)
   }
 }

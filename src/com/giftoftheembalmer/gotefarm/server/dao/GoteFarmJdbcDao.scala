@@ -234,6 +234,36 @@ object GoteFarmJdbcDao {
       e
     }
   }
+
+  val JSEventSignupMapper = new ParameterizedRowMapper[JSEventSignup] {
+    val prefix = ("select eventsignupid, eventid, " + JSCharacterMapper.columns
+          + ", " + JSRoleMapper.columns + """, signup_type, signup_time, note
+          from
+            eventsignup
+            join chr on eventsignup.chrid = chr.chrid
+            join race on chr.raceid = race.raceid
+            join class on chr.classid = class.classid
+            join role on eventsignup.roleid = role.roleid""")
+
+    override def mapRow(rs: ResultSet, rowNum: Int) = {
+      val r = new JSEventSignup
+      var col = 1
+      r.eventsignupid = rs.getLong(col)
+      col += 1
+      r.eventid = rs.getLong(col)
+      col += 1
+      r.chr = JSCharacterMapper.mapRow(rs, rowNum, col)
+      col += JSCharacterMapper.ncolumns
+      r.role = JSRoleMapper.mapRow(rs, rowNum, col)
+      col += JSRoleMapper.ncolumns
+      r.signup_type = rs.getInt(col)
+      col += 1
+      r.signup_time = rs.getTimestamp(col)
+      col += 1
+      r.note = rs.getString(col)
+      r
+    }
+  }
 }
 
 class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
@@ -892,6 +922,22 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       JSRoleMapper,
       Array[AnyRef](): _*
     )
+  }
+
+  def getRole(roleid: Long) = {
+    val jdbc = getSimpleJdbcTemplate()
+
+    try {
+      jdbc.queryForObject(
+        "select " + JSRoleMapper.columns + " from role where roleid = ?",
+        JSRoleMapper,
+        roleid: AnyRef
+      )
+    }
+    catch {
+      case _: IncorrectResultSizeDataAccessException =>
+        throw new NotFoundError("Role not found.")
+    }
   }
 
   def addRole(name: String, restricted: Boolean) = {
@@ -1581,6 +1627,29 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     events
   }
 
+  def getEvent(eventid: Long) = {
+    val jdbc = getSimpleJdbcTemplate
+
+    val event = try {
+      jdbc.queryForObject(
+        "select " + JSEventMapper.columns
+                  + " from "
+                  + JSEventMapper.tables
+                  + " where eventid = ?",
+        JSEventMapper,
+        eventid: AnyRef
+      )
+    }
+    catch {
+      case _: IncorrectResultSizeDataAccessException =>
+        throw new NotFoundError("No such event")
+    }
+
+    populateEvent(event)
+
+    event
+  }
+
   def getEventSignups(eventid: Long,
                       if_changed_since: Date): Option[JSEventSignups] = {
     val jdbc = getSimpleJdbcTemplate
@@ -1600,36 +1669,10 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       val r = new JSEventSignups
       r.eventid = eventid
       r.signups = jdbc.query(
-        "select eventsignupid, eventid, " + JSCharacterMapper.columns + ", "
-          + JSRoleMapper.columns + """, signup_type, signup_time, note
-          from
-            eventsignup
-            join chr on eventsignup.chrid = chr.chrid
-            join race on chr.raceid = race.raceid
-            join class on chr.classid = class.classid
-            join role on eventsignup.roleid = role.roleid
-          where eventid = ?
+        JSEventSignupMapper.prefix +
+          """ where eventid = ?
           order by signup_time""",
-        new ParameterizedRowMapper[JSEventSignup] {
-          override def mapRow(rs: ResultSet, rowNum: Int) = {
-            val r = new JSEventSignup
-            var col = 1
-            r.eventsignupid = rs.getLong(col)
-            col += 1
-            r.eventid = rs.getLong(col)
-            col += 1
-            r.chr = JSCharacterMapper.mapRow(rs, rowNum, col)
-            col += JSCharacterMapper.ncolumns
-            r.role = JSRoleMapper.mapRow(rs, rowNum, col)
-            col += JSRoleMapper.ncolumns
-            r.signup_type = rs.getInt(col)
-            col += 1
-            r.signup_time = rs.getTimestamp(col)
-            col += 1
-            r.note = rs.getString(col)
-            r
-          }
-        },
+        JSEventSignupMapper,
         eventid
       )
 
@@ -1644,6 +1687,99 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
     else {
       None
+    }
+  }
+
+  def getEventSignup(eventsignupid: Long) = {
+    val jdbc = getSimpleJdbcTemplate
+    try {
+      val r = jdbc.queryForObject(
+        JSEventSignupMapper.prefix +
+          " where eventsignupid = ?",
+        JSEventSignupMapper,
+        eventsignupid: AnyRef
+      )
+
+      r.chr.roles = getCharacterRoles(r.chr.cid).toArray
+      r.chr.badges = getCharacterBadges(r.chr.cid).toArray
+
+      r
+    }
+    catch {
+      case _: IncorrectResultSizeDataAccessException =>
+        throw new NotFoundError("No such event signup")
+    }
+  }
+
+  def signupForEvent(eventid: Long, cid: Long, roleid: Long,
+                     signup_type: Int): Unit = {
+    val jdbc = getSimpleJdbcTemplate
+    try {
+      jdbc.update(
+        """insert into eventsignup
+            (eventid, chrid, roleid, signup_type, signup_time)
+            values (?, ?, ?, ?, current_timestamp)""",
+        eventid, cid, roleid, signup_type
+      )
+    }
+    catch {
+      case e: DataIntegrityViolationException
+        if e.getMessage.contains("UNIQUE") =>
+          throw new AlreadyExistsError("Character already signed up")
+
+      case e: DataIntegrityViolationException
+        if e.getMessage.contains("EVENTID_FK") =>
+          throw new NotFoundError("No such event")
+
+      case e: DataIntegrityViolationException
+        if e.getMessage.contains("CHRID_FK") =>
+          throw new NotFoundError("No such character")
+
+      case e: DataIntegrityViolationException
+        if e.getMessage.contains("ROLEID_FK") =>
+          throw new NotFoundError("No such role")
+    }
+  }
+
+  def changeEventSignup(eventsignupid: Long, new_roleid: Long,
+                        new_signup_type: Int): Unit = {
+    // changing roles does not change signup time,
+    // but changing types does.
+    val jdbc = getSimpleJdbcTemplate
+    try {
+      val c = jdbc.update(
+        """update eventsignup
+            set signup_time = case
+                                when signup_type = ? then signup_time
+                                else current_timestamp
+                              END,
+                roleid = ?,
+                signup_type = ?
+            where eventsignupid = ?""",
+        new_signup_type, new_roleid, new_signup_type, eventsignupid
+      )
+
+      if (c == 0) {
+        throw new NotFoundError("Signup not found")
+      }
+    }
+    catch {
+      case e: DataIntegrityViolationException
+        if e.getMessage.contains("ROLEID_FK") =>
+          throw new NotFoundError("No such role")
+    }
+  }
+
+  def removeEventSignup(eventsignupid: Long): Unit = {
+    val jdbc = getSimpleJdbcTemplate
+    val c = jdbc.update(
+      """delete from eventsignup
+          where eventsignupid = ?""",
+      eventsignupid
+    )
+
+    if (c == 0) {
+      throw new NotFoundError("Signup not found")
     }
   }
 }

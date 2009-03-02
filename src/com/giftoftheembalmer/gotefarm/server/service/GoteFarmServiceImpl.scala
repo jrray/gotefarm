@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import com.giftoftheembalmer.gotefarm.server.dao.GoteFarmDaoT
 
 import com.giftoftheembalmer.gotefarm.client.{
+  JSCharacter,
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate
@@ -213,6 +214,71 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getEventSignups(eventid: Long, if_changed_since: Date)
     : Option[JSEventSignups] =
     goteFarmDao.getEventSignups(eventid, if_changed_since)
+
+  private def validateSignup(uid: Long, eventid: Long, chr: JSCharacter,
+                             roleid: Long) = {
+    // character must belong to user
+    if (chr.accountid != uid) {
+      throw new IllegalArgumentException("Signup does not belong to you.")
+    }
+
+    // character must have roleid
+    if (!chr.hasRole(roleid)) {
+      throw new IllegalArgumentException("Character missing role.")
+    }
+
+    // signups must not be closed
+    val event = goteFarmDao.getEvent(eventid)
+    val now = System.currentTimeMillis
+    if (now > event.signups_end.getTime) {
+      throw new IllegalArgumentException("Signups are closed for this event.")
+    }
+
+    // character must be able to signup
+    val signups_start = event.signups_start.getTime
+    if (now < signups_start) {
+      // character needs to qualify for an early signup
+      lazy val role = goteFarmDao.getRole(roleid)
+      if (!event.badges.exists({ badge =>
+           ((now >= signups_start - badge.earlySignup * 3600000L)
+        && ((badge.applyToRole eq null) || badge.applyToRole == role.name)
+        && chr.hasBadge(badge.badgeid))
+      })) {
+        throw new IllegalArgumentException("Character cannot sign up for this event yet.")
+      }
+    }
+  }
+
+  private def validateSignup(uid: Long, eventid: Long, cid: Long,
+                             roleid: Long): Unit = {
+    val chr = goteFarmDao.getCharacter(cid)
+    validateSignup(uid, eventid, chr, roleid)
+  }
+
+  @Transactional{val readOnly = false}
+  def signupForEvent(uid: Long, eventid: Long, cid: Long, roleid: Long,
+                     signup_type: Int) = {
+    validateSignup(uid, eventid, cid, roleid)
+    goteFarmDao.signupForEvent(eventid, cid, roleid, signup_type)
+  }
+
+  @Transactional{val readOnly = false}
+  def changeEventSignup(uid: Long, eventsignupid: Long, new_roleid: Long,
+                        new_signup_type: Int): Unit = {
+    val es = goteFarmDao.getEventSignup(eventsignupid)
+    validateSignup(uid, es.eventid, es.chr, new_roleid)
+    goteFarmDao.changeEventSignup(eventsignupid, new_roleid, new_signup_type)
+  }
+
+  @Transactional{val readOnly = false}
+  def removeEventSignup(uid: Long, eventsignupid: Long): Unit = {
+    // character must belong to user
+    val es = goteFarmDao.getEventSignup(eventsignupid)
+    if (es.chr.accountid != uid) {
+      throw new IllegalArgumentException("Signup does not belong to you.")
+    }
+    goteFarmDao.removeEventSignup(eventsignupid)
+  }
 
   @Transactional{val readOnly = false}
   def publishEvents() = synchronized {

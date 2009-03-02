@@ -80,6 +80,20 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   def getEventSignups(eventid: Long,
                       if_changed_since: Date): Option[JSEventSignups]
+  @throws(classOf[NotFoundError])
+  @throws(classOf[AlreadyExistsError])
+  @throws(classOf[IllegalArgumentException])
+  def signupForEvent(uid: Long, eventid: Long, cid: Long, roleid: Long,
+                     signup_type: Int): Unit
+  @throws(classOf[NotFoundError])
+  @throws(classOf[AlreadyExistsError])
+  @throws(classOf[IllegalArgumentException])
+  def changeEventSignup(uid: Long, eventsignupid: Long, new_roleid: Long,
+                        new_signup_type: Int): Unit
+  @throws(classOf[NotFoundError])
+  @throws(classOf[AlreadyExistsError])
+  @throws(classOf[IllegalArgumentException])
+  def removeEventSignup(uid: Long, eventsignupid: Long): Unit
 
   def publishEvents(): Unit
 }
