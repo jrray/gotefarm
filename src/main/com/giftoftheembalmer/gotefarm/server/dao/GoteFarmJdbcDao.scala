@@ -783,7 +783,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
           "insert into class (name) values (?)",
           Array[AnyRef](clazz): _*
         )
-        getRaceId(clazz)
+        getClassId(clazz)
     }
   }
 
