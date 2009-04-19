@@ -97,16 +97,18 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     goteFarmDao.getEventSchedules(name)
   @Transactional{val readOnly = false}
   def saveEventSchedule(es: JSEventSchedule) = {
-    if (es.repeat_size < 0 || es.repeat_size > 3) {
+    if (es.repeat_size < JSEventSchedule.REPEAT_NEVER || es.repeat_size > JSEventSchedule.REPEAT_MONTHLY) {
       throw new IllegalArgumentException("Illegal repeat size")
     }
-    if (es.repeat_size > 0 && es.repeat_freq < 1) {
+    if (es.repeat_size > JSEventSchedule.REPEAT_NEVER && es.repeat_freq < 1) {
       throw new IllegalArgumentException("Illegal repeat freq")
     }
-    if (es.repeat_size == 2 && (es.day_mask & 0x7F) == 0) {
+    if (es.repeat_size == JSEventSchedule.REPEAT_WEEKLY && (es.day_mask & 0x7F) == 0) {
       throw new IllegalArgumentException("Illegal day mask")
     }
-    if (es.repeat_size == 3 && (es.repeat_by < 0 || es.repeat_by > 1)) {
+    if (   es.repeat_size == JSEventSchedule.REPEAT_MONTHLY
+        && (   es.repeat_by < JSEventSchedule.REPEAT_BY_DAY_OF_MONTH
+            || es.repeat_by > JSEventSchedule.REPEAT_BY_DAY_OF_WEEK)) {
       throw new IllegalArgumentException("Illegal repeat by")
     }
 
@@ -128,14 +130,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     cal.setTime(event.start_time)
 
     event.repeat_size match {
-      case 0 => // repeat never
+      case JSEventSchedule.REPEAT_NEVER =>
         throw new IllegalStateException("Event does not repeat")
 
-      case 1 => // repeat daily
+      case JSEventSchedule.REPEAT_DAILY =>
         cal.add(Calendar.DAY_OF_MONTH, event.repeat_freq)
         cal.getTime
 
-      case 2 => // repeat weekly
+      case JSEventSchedule.REPEAT_WEEKLY =>
         // look for the next day this week, or skip ahead repeat_freq weeks
         if (event.day_mask == 0) {
           throw new IllegalStateException("Event repeats weekly but no days are set")
@@ -174,20 +176,20 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
           })
         })
 
-      case 3 => // repeat monthly
+      case JSEventSchedule.REPEAT_MONTHLY =>
         val orig_cal = new GregorianCalendar(TimeZone.getTimeZone(tz))
         orig_cal.setFirstDayOfWeek(Calendar.SUNDAY)
         orig_cal.setTime(event.orig_start_time)
 
         event.repeat_by match {
-          case 0 => // day of the month
+          case JSEventSchedule.REPEAT_BY_DAY_OF_MONTH =>
             val dom = orig_cal.get(Calendar.DAY_OF_MONTH)
             cal.add(Calendar.MONTH, event.repeat_freq)
             val max_dom = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
             cal.set(Calendar.DAY_OF_MONTH, if (dom > max_dom) max_dom else dom)
             cal.getTime
 
-          case 1 => // day of the week
+          case JSEventSchedule.REPEAT_BY_DAY_OF_WEEK =>
             val dow = orig_cal.get(Calendar.DAY_OF_WEEK)
             val dowim = orig_cal.get(Calendar.DAY_OF_WEEK_IN_MONTH)
             cal.add(Calendar.MONTH, event.repeat_freq)
@@ -297,7 +299,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         goteFarmDao.publishEvent(event)
 
         // update to next time
-        if (event.repeat_size > 0) {
+        if (event.repeat_size != JSEventSchedule.REPEAT_NEVER) {
           event.start_time = getEventNextOccurrence(event)
           logger.debug("Next: " + event.start_time)
 

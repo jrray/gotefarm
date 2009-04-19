@@ -94,10 +94,10 @@ public class ScheduleEditor extends Composite {
                 sched.signups_start = 2 * 86400;
                 sched.signups_end = 1800;
 
-                sched.repeat_size = 0;
+                sched.repeat_size = JSEventSchedule.REPEAT_NEVER;
                 sched.repeat_freq = 1;
                 sched.day_mask = 1 << sched.start_time.getDay();
-                sched.repeat_by = 0;
+                sched.repeat_by = JSEventSchedule.REPEAT_BY_DAY_OF_MONTH;
 
                 sched.active = true;
             }
@@ -346,15 +346,15 @@ public class ScheduleEditor extends Composite {
                 final ClickListener rptdayofchanged = new ClickListener() {
                     public void onClick(Widget sender) {
                         if (sender == rptdayofmonth) {
-                            Schedule.this.sched.repeat_by = 0;
+                            Schedule.this.sched.repeat_by = JSEventSchedule.REPEAT_BY_DAY_OF_MONTH;
                         }
                         else {
-                            Schedule.this.sched.repeat_by = 1;
+                            Schedule.this.sched.repeat_by = JSEventSchedule.REPEAT_BY_DAY_OF_WEEK;
                         }
                     }
                 };
 
-                if (sched.repeat_by == 0) {
+                if (sched.repeat_by == JSEventSchedule.REPEAT_BY_DAY_OF_MONTH) {
                     rptdayofmonth.setChecked(true);
                 }
                 else {
@@ -374,18 +374,18 @@ public class ScheduleEditor extends Composite {
             updateTimes();
 
             switch (sched.repeat_size) {
-                case 0:
+                case JSEventSchedule.REPEAT_NEVER:
                     rptnever.setChecked(true);
                     break;
-                case 1:
+                case JSEventSchedule.REPEAT_DAILY:
                     rptdaily.setChecked(true);
                     onClick(rptdaily);
                     break;
-                case 2:
+                case JSEventSchedule.REPEAT_WEEKLY:
                     rptweekly.setChecked(true);
                     onClick(rptweekly);
                     break;
-                case 3:
+                case JSEventSchedule.REPEAT_MONTHLY:
                     rptmonthly.setChecked(true);
                     onClick(rptmonthly);
                     break;
@@ -489,11 +489,11 @@ public class ScheduleEditor extends Composite {
         public void onClick(Widget sender) {
             Widget toshow = null;
 
-            int repeat_size = 0;
+            int repeat_size = JSEventSchedule.REPEAT_NEVER;
 
-            if      (sender == rptdaily)   { toshow = dailyrptpanel;   repeat_size = 1; }
-            else if (sender == rptweekly)  { toshow = weeklyrptpanel;  repeat_size = 2; }
-            else if (sender == rptmonthly) { toshow = monthlyrptpanel; repeat_size = 3; }
+            if      (sender == rptdaily)   { toshow = dailyrptpanel;   repeat_size = JSEventSchedule.REPEAT_DAILY; }
+            else if (sender == rptweekly)  { toshow = weeklyrptpanel;  repeat_size = JSEventSchedule.REPEAT_WEEKLY; }
+            else if (sender == rptmonthly) { toshow = monthlyrptpanel; repeat_size = JSEventSchedule.REPEAT_MONTHLY; }
 
             dailyrptpanel.setVisible(toshow == dailyrptpanel);
             weeklyrptpanel.setVisible(toshow == weeklyrptpanel);

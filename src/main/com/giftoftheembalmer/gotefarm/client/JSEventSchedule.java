@@ -6,6 +6,14 @@ import java.util.List;
 import java.util.Date;
 
 public class JSEventSchedule implements IsSerializable {
+    public static final int REPEAT_NEVER = 0;
+    public static final int REPEAT_DAILY = 1;
+    public static final int REPEAT_WEEKLY = 2;
+    public static final int REPEAT_MONTHLY = 3;
+
+    public static final int REPEAT_BY_DAY_OF_MONTH = 0;
+    public static final int REPEAT_BY_DAY_OF_WEEK = 1;
+
     public long esid;
     public long eid;
 
