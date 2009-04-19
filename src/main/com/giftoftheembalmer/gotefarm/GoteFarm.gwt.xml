@@ -1,4 +1,4 @@
-<module>
+<module rename-to="gotefarm">
 
       <!-- Inherit the core Web Toolkit stuff.                        -->
       <inherits name='com.google.gwt.user.User'/>
@@ -19,9 +19,6 @@
 
       <!-- Specify the app entry point class.                         -->
       <entry-point class='com.giftoftheembalmer.gotefarm.client.GoteFarm'/>
-
-      <!-- Specify the application specific style sheet.              -->
-      <stylesheet src='GoteFarm.css'/>
 
       <script src='http://www.wowhead.com/widgets/power.js' />
 	

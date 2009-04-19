@@ -1,4 +1,0 @@
-#!/bin/sh
-APPDIR=`dirname $0`;
-GWTDIR=/Users/jrray/java/gwt-mac-1.5.3
-java -XstartOnFirstThread -Xmx256M -cp "$APPDIR/src/main:$APPDIR/bin:$GWTDIR/gwt-user.jar:$GWTDIR/gwt-dev-mac.jar" com.google.gwt.dev.GWTCompiler -out "$APPDIR/www" "$@" com.giftoftheembalmer.GoteFarm;

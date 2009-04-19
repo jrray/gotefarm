@@ -66,9 +66,6 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     // Events wants to know when there are changes to the user's characters
     chars.addEventHandler(events);
 
-    final RootPanel login = RootPanel.get("login");
-    login.setVisible(false);
-
     final VerticalPanel vpanel = new VerticalPanel();
     vpanel.setWidth("100%");
 
@@ -78,6 +75,8 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
             public void onSuccess(String result) {
                 if (result != null) {
                     setSessionID(result);
+                    final RootPanel login = RootPanel.get("login");
+                    login.setVisible(false);
                 }
                 else {
                     showLogin();
@@ -116,15 +115,15 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
   }
 
   void showLogin() {
-        final RootPanel login = RootPanel.get("login");
-        login.setVisible(true);
-
         // login form widgets
-        final FormPanel loginForm = FormPanel.wrap(DOM.getElementById("loginform"), true);
         final TextBox username = TextBox.wrap(DOM.getElementById("login_username"));
         final PasswordTextBox password = PasswordTextBox.wrap(DOM.getElementById("login_password"));
         final SimpleCheckBox rememberme = SimpleCheckBox.wrap(DOM.getElementById("remember"));
         final Button submit = Button.wrap(DOM.getElementById("loginattempt"));
+        final FormPanel loginForm = FormPanel.wrap(DOM.getElementById("loginform"), true);
+
+        final RootPanel login = RootPanel.get("login");
+        login.setVisible(true);
 
         submit.setEnabled(true);
 

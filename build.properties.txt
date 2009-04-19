@@ -1,10 +1,9 @@
+gwt.sdk: /Users/jrray/java/gwt-mac-1.6.4
+
 catalina.home:  /opt/local/share/java/tomcat5
-manager.username: you
-manager.password: blah
 
 scala-compiler.jar: /opt/local/share/scala/lib/scala-compiler.jar
 scala-library.jar: /opt/local/share/scala/lib/scala-library.jar
-gwt.dev.tool.jar: /Users/jrray/java/gwt-mac-1.5.3/gwt-dev-mac.jar
 derby.jar: /Users/jrray/java/db-derby-10.4.2.0-lib/lib/derby.jar
 gwt-xml-ep.name: com.giftoftheembalmer.gotefarm.GoteFarm
 gwt-output.dir: gotefarm
