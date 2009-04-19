@@ -118,7 +118,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  private def getEventNextOccurrance(event: JSEventSchedule): Date = {
+  private def getEventNextOccurrence(event: JSEventSchedule): Date = {
     val h = event.timezone_offset / 60 * -1
     // FIXME: This ignores daylight saving time
     val m = Math.abs(event.timezone_offset % 60)
@@ -298,7 +298,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
         // update to next time
         if (event.repeat_size > 0) {
-          event.start_time = getEventNextOccurrance(event)
+          event.start_time = getEventNextOccurrence(event)
           logger.debug("Next: " + event.start_time)
 
           // save new start time
