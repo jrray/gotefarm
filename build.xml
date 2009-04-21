@@ -76,6 +76,7 @@
   build.home           The directory into which the "compile" target will
                        generate its output.
 
+  app.version          Version number of this iteration of the application.
 -->
 
   <property name="build.home"    value="${basedir}/war/WEB-INF/classes"/>
@@ -84,6 +85,19 @@
   <property name="test.build.home" value="${basedir}/test_build"/>
   <property name="lib.home"      value="${basedir}/lib"/>
 
+  <!-- Check that the SDK value is set and seems sane, so we can give a nicer
+       error if not.  -->
+  <fail message="Please define the appengine.sdk property to point to your SDK directory">
+    <condition>
+      <not> <and>
+          <isset property="appengine.sdk"/>
+          <available file="${appengine.sdk}/config/user/ant-macros.xml"/>
+      </and> </not>
+    </condition>
+  </fail>
+
+  <!-- Pick up the Ant macros and taskdefs for App Engine -->
+  <import file="${appengine.sdk}/config/user/ant-macros.xml"/>
 
 <!-- ================== Custom Ant Task Definitions ======================= -->
 
@@ -107,6 +121,15 @@
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
     <!-- Add any additional non-server libs (such as JUnit) -->
     <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
+  </path>
+
+  <path id="tools.class.path">
+    <path refid="project.class.path"/>
+    <pathelement location="${appengine.sdk}/lib/appengine-tools-api.jar"/>
+    <fileset dir="${appengine.sdk}/lib/tools">
+      <include name="**/asm-*.jar"/>
+      <include name="**/datanucleus-enhancer-*.jar"/>
+    </fileset>
   </path>
 
   <taskdef resource="scala/tools/ant/antlib.xml">
@@ -210,6 +233,10 @@
         <copy todir="war/WEB-INF/lib">
             <fileset dir="${lib.home}" excludes="junit.jar" />
         </copy>
+        <copy todir="war/WEB-INF/lib" flatten="true">
+            <fileset dir="${appengine.sdk}/lib/user" includes="**/*.jar"/>
+        </copy>
+        <copy todir="war/WEB-INF/lib" file="${scala-library.jar}" />
     </target>
 
     <target name="compile_java" depends="libs"
@@ -269,12 +296,15 @@
         <classpath>
             <pathelement location="${src.home}"/>
             <path refid="project.class.path"/>
+            <path refid="tools.class.path"/>
         </classpath>
         <jvmarg value="-Xmx256M"/>
         <jvmarg value="-XstartOnFirstThread"/>
         <arg value="-startupUrl"/>
         <arg value="GoteFarm.html"/>
         <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+        <arg value="-server"/>
+        <arg value="com.google.appengine.tools.development.gwt.AppEngineLauncher"/>
         <arg value="${gwt-xml-ep.name}"/>
         </java>
     </target>
@@ -289,6 +319,35 @@
 
     <target name="deploy" depends="war">
         <copy todir="${catalina.home}/webapps/" file="gotefarm.war"/>
+    </target>
+
+<!-- ==================== App Engine Tasks ================================== -->
+
+    <target name="update" depends="build"
+        description="Uploads the application to App Engine.">
+        <appcfg action="update" war="war" />
+    </target>
+
+    <target name="update_indexes" depends="build"
+        description="Uploads just the datastore index configuration to App Engine.">
+        <appcfg action="update_indexes" war="war" />
+    </target>
+
+    <target name="rollback" depends="build"
+        description="Rolls back an interrupted application update.">
+        <appcfg action="rollback" war="war" />
+    </target>
+
+    <target name="request_logs"
+        description="Downloads log data from App Engine for the application.">
+        <appcfg action="request_logs" war="war">
+        <options>
+            <arg value="--num_days=5"/>
+        </options>
+        <args>
+            <arg value="logs.txt"/>
+        </args>
+        </appcfg>
     </target>
 
 <!-- ==================== Tests Target =================================== -->

@@ -1,0 +1,5 @@
+#!/bin/sh
+APPDIR=`dirname $0`;
+LIBDIR="$APPDIR/lib";
+GWTDIR=/Users/jrray/java/gwt-mac-1.5.3
+java -XstartOnFirstThread -Xmx2G -cp "$APPDIR/src/main:$APPDIR/bin:$APPDIR/build/WEB-INF/classes:$GWTDIR/gwt-user.jar:$GWTDIR/gwt-dev-mac.jar:$LIBDIR/spring.jar:$LIBDIR/spring-webmvc.jar:/opt/local/share/scala/lib/scala-library.jar:$LIBDIR/c3p0.jar:$LIBDIR/sqlitejdbc-v044-nested.jar:$LIBDIR/gwt-sl.jar:$LIBDIR/gwt-datepicker.jar:$LIBDIR/gwt-dnd.jar" com.google.gwt.dev.GWTShell -out "$APPDIR/www" -noserver -port 8081 "$@" /gotefarm/;

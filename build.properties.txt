@@ -1,6 +1,5 @@
 gwt.sdk: /Users/jrray/java/gwt-mac-1.6.4
-
-catalina.home:  /opt/local/share/java/tomcat5
+appengine.sdk: /Users/jrray/java/appengine-java-sdk-1.2.0
 
 scala-compiler.jar: /opt/local/share/scala/lib/scala-compiler.jar
 scala-library.jar: /opt/local/share/scala/lib/scala-library.jar
