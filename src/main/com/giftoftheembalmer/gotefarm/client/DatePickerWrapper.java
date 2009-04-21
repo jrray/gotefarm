@@ -2,19 +2,9 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import org.zenika.widget.client.datePicker.DatePicker;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SourcesChangeEvents;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import java.util.Date;

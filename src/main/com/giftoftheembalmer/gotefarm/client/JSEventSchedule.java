@@ -2,7 +2,6 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-import java.util.List;
 import java.util.Date;
 
 public class JSEventSchedule implements IsSerializable {
