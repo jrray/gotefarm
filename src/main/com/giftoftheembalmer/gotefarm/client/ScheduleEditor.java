@@ -1,5 +1,7 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ChangeListener;
@@ -15,6 +17,7 @@ import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.datepicker.client.DateBox;
 
 import java.util.Date;
 import java.util.List;
@@ -22,7 +25,7 @@ import java.util.List;
 public class ScheduleEditor extends Composite {
     static int last_group_num = 0;
 
-    class Schedule extends Composite implements ChangeListener, ClickListener {
+    class Schedule extends Composite implements ChangeListener, ClickListener, ValueChangeHandler<Date> {
         JSEventSchedule sched;
 
         // append a distinct number to radio button group names, per schedule,
@@ -32,7 +35,7 @@ public class ScheduleEditor extends Composite {
         final String DAYOF_GROUP = "dayofGroup_" + radio_group_num;
 
         VerticalPanel vpanel = new VerticalPanel();
-        final DatePickerWrapper dp;
+        final DateBox db;
         final TimePicker tp;
         final DurationPicker display_start = new DurationPicker();
         final DurationPicker display_end = new DurationPicker();
@@ -105,9 +108,12 @@ public class ScheduleEditor extends Composite {
 
             vpanel.setWidth("100%");
 
-            dp = new DatePickerWrapper(sched.start_time);
-            dp.setYoungestDate(new Date());
-            dp.addChangeListener(this);
+            db = new DateBox();
+            db.setValue(sched.start_time);
+            db.setFormat(
+                new DateBox.DefaultFormat(DateTimeFormat.getShortDateFormat())
+            );
+            db.addValueChangeHandler(this);
             tp = new TimePicker(sched.start_time);
             tp.addChangeListener(this);
 
@@ -115,7 +121,7 @@ public class ScheduleEditor extends Composite {
                 HorizontalPanel hpanel = new HorizontalPanel();
                 hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
                 hpanel.add(new Label("Start Date:"));
-                hpanel.add(dp);
+                hpanel.add(db);
                 hpanel.add(new HTML("&nbsp;&nbsp;"));
                 hpanel.add(new Label("Start Time:"));
                 hpanel.add(tp);
@@ -443,13 +449,7 @@ public class ScheduleEditor extends Composite {
         public void onChange(Widget sender) {
             if (sched == null) return;
 
-            if (sender == dp) {
-                Date d = dp.getSelectedDate();
-                sched.start_time.setYear(d.getYear());
-                sched.start_time.setMonth(d.getMonth());
-                sched.start_time.setDate(d.getDate());
-            }
-            else if (sender == tp) {
+            if (sender == tp) {
                 Date d = tp.getSelectedDate();
                 sched.start_time.setHours(d.getHours());
                 sched.start_time.setMinutes(d.getMinutes());
@@ -501,6 +501,15 @@ public class ScheduleEditor extends Composite {
             monthlyrptpanel.setVisible(toshow == monthlyrptpanel);
 
             sched.repeat_size = repeat_size;
+        }
+
+        public void onValueChange(ValueChangeEvent<Date> event) {
+            Date d = event.getValue();
+            sched.start_time.setYear(d.getYear());
+            sched.start_time.setMonth(d.getMonth());
+            sched.start_time.setDate(d.getDate());
+
+            updateTimes();
         }
     }
 
