@@ -1,5 +1,6 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.ui.Button;
@@ -157,7 +158,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newinst.addKeyboardListener(new KeyboardListenerAdapter() {
             public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == (char)KEY_ENTER) {
+                if (keyCode == KeyCodes.KEY_ENTER) {
                     String inst = newinst.getText();
 
                     boolean found = false;
@@ -201,7 +202,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newboss.addKeyboardListener(new KeyboardListenerAdapter() {
             public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == (char)KEY_ENTER) {
+                if (keyCode == KeyCodes.KEY_ENTER) {
                     int selinst = instances.getSelectedIndex();
                     if (selinst == -1) {
                         // TODO: display error
@@ -264,7 +265,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newrole.addKeyboardListener(new KeyboardListenerAdapter() {
             public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == (char)KEY_ENTER) {
+                if (keyCode == KeyCodes.KEY_ENTER) {
                     String role = newrole.getText();
 
                     boolean found = false;
@@ -342,7 +343,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newbadge.addKeyboardListener(new KeyboardListenerAdapter() {
             public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == (char)KEY_ENTER) {
+                if (keyCode == KeyCodes.KEY_ENTER) {
                     String badge = newbadge.getText();
 
                     boolean found = false;

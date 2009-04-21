@@ -1,5 +1,6 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Window;
@@ -240,7 +241,7 @@ public class Characters
 
             character.addKeyboardListener(new KeyboardListenerAdapter() {
                 public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                    if (keyCode == (char)KEY_ENTER) {
+                    if (keyCode == KeyCodes.KEY_ENTER) {
                         addCharacter();
                     }
                 }
