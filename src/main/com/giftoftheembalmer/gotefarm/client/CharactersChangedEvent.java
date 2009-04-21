@@ -7,6 +7,7 @@ import java.util.List;
 
 public class CharactersChangedEvent
     extends EventObject {
+    private static final long serialVersionUID = 7927719920776819257L;
 
     private List<JSCharacter> characters;
 
