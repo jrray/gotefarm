@@ -1,12 +1,13 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 import java.util.List;
 
@@ -22,8 +23,8 @@ public class EventTemplates extends Composite {
         eventlb.setWidth("100%");
         eventlb.setVisibleItemCount(20);
 
-        eventlb.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        eventlb.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 int sel = eventlb.getSelectedIndex();
                 if (sel < 0) return;
 
@@ -43,8 +44,8 @@ public class EventTemplates extends Composite {
 
         vpanel.add(eventlb);
 
-        vpanel.add(new Button("New Event", new ClickListener() {
-            public void onClick(Widget sender) {
+        vpanel.add(new Button("New Event", new ClickHandler() {
+            public void onClick(ClickEvent event) {
                 eventlb.setSelectedIndex(-1);
                 EventTemplates.this.admin.setCenterWidget(new EventEditor(EventTemplates.this.admin));
             }

@@ -1,29 +1,31 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.KeyboardListenerAdapter;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-public class EventEditor extends Composite implements ChangeListener {
+public class EventEditor extends Composite implements ChangeHandler {
     Admin admin;
     JSEventTemplate et;
 
@@ -83,8 +85,8 @@ public class EventEditor extends Composite implements ChangeListener {
         size.setVisibleLength(2);
         minlevel.setVisibleLength(2);
 
-        size.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        size.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 try {
                     int sizen = Integer.parseInt(size.getText());
                     if (sizen < 0) {
@@ -99,8 +101,8 @@ public class EventEditor extends Composite implements ChangeListener {
             }
         });
 
-        minlevel.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        minlevel.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 try {
                     int minleveln = Integer.parseInt(minlevel.getText());
                     if (minleveln < 0) {
@@ -148,17 +150,17 @@ public class EventEditor extends Composite implements ChangeListener {
             }
         });
 
-        instances.addChangeListener(this);
-        roles.addChangeListener(this);
-        badges.addChangeListener(this);
+        instances.addChangeHandler(this);
+        roles.addChangeHandler(this);
+        badges.addChangeHandler(this);
 
         grid.setWidget(3, 2, newinst);
 
         newinst.setText(NEW_INSTANCE);
 
-        newinst.addKeyboardListener(new KeyboardListenerAdapter() {
-            public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == KeyCodes.KEY_ENTER) {
+        newinst.addKeyPressHandler(new KeyPressHandler() {
+            public void onKeyPress(KeyPressEvent event) {
+                if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     String inst = newinst.getText();
 
                     boolean found = false;
@@ -199,9 +201,9 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newboss.setText(NEW_BOSS);
 
-        newboss.addKeyboardListener(new KeyboardListenerAdapter() {
-            public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == KeyCodes.KEY_ENTER) {
+        newboss.addKeyPressHandler(new KeyPressHandler() {
+            public void onKeyPress(KeyPressEvent event) {
+                if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     int selinst = instances.getSelectedIndex();
                     if (selinst == -1) {
                         // TODO: display error
@@ -262,9 +264,9 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newrole.setText(NEW_ROLE);
 
-        newrole.addKeyboardListener(new KeyboardListenerAdapter() {
-            public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == KeyCodes.KEY_ENTER) {
+        newrole.addKeyPressHandler(new KeyPressHandler() {
+            public void onKeyPress(KeyPressEvent event) {
+                if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     String role = newrole.getText();
 
                     boolean found = false;
@@ -340,9 +342,9 @@ public class EventEditor extends Composite implements ChangeListener {
 
         newbadge.setText(NEW_BADGE);
 
-        newbadge.addKeyboardListener(new KeyboardListenerAdapter() {
-            public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                if (keyCode == KeyCodes.KEY_ENTER) {
+        newbadge.addKeyPressHandler(new KeyPressHandler() {
+            public void onKeyPress(KeyPressEvent event) {
+                if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     String badge = newbadge.getText();
 
                     boolean found = false;
@@ -410,8 +412,8 @@ public class EventEditor extends Composite implements ChangeListener {
         modify.addStyleName(modify.getStylePrimaryName() + "-bottom");
         modify.addStyleName(modify.getStylePrimaryName() + "-left");
 
-        Button save = new Button("Save", new ClickListener() {
-            public void onClick(Widget sender) {
+        Button save = new Button("Save", new ClickHandler() {
+            public void onClick(ClickEvent event) {
                 // clear error message
                 errmsg.setText("");
 
@@ -489,8 +491,8 @@ public class EventEditor extends Composite implements ChangeListener {
         save.addStyleName(save.getStylePrimaryName() + "-bottom");
         save.addStyleName(save.getStylePrimaryName() + "-left");
 
-        Button cancel = new Button("Cancel", new ClickListener() {
-            public void onClick(Widget sender) {
+        Button cancel = new Button("Cancel", new ClickHandler() {
+            public void onClick(ClickEvent event) {
                 EventEditor.this.admin.setCenterWidget(null);
             }
         });
@@ -606,8 +608,9 @@ public class EventEditor extends Composite implements ChangeListener {
         min.setVisibleLength(2);
         max.setVisibleLength(2);
 
-        ChangeListener minmax = new ChangeListener() {
-            public void onChange(Widget sender) {
+        ChangeHandler minmax = new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
+                final Object sender = event.getSource();
                 try {
                     Integer minv = Integer.parseInt(min.getText());
                     Integer maxv = Integer.parseInt(max.getText());
@@ -636,13 +639,14 @@ public class EventEditor extends Composite implements ChangeListener {
             }
         };
 
-        min.addChangeListener(minmax);
-        max.addChangeListener(minmax);
+        min.addChangeHandler(minmax);
+        max.addChangeHandler(minmax);
 
         roleft.setWidget(rows + 1, 1, min);
         roleft.setWidget(rows + 1, 2, max);
-        roleft.setWidget(rows + 1, 3, new Button("Remove", new ClickListener() {
-            public void onClick(Widget sender) {
+        roleft.setWidget(rows + 1, 3, new Button("Remove", new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                final Object sender = event.getSource();
                 final int rows = roleft.getRowCount() - 2;
                 for (int i = 0; i < rows; ++i) {
                     if (roleft.getWidget(i + 1, 3) == sender) {
@@ -702,8 +706,8 @@ public class EventEditor extends Composite implements ChangeListener {
             slots.setText("0");
         }
         badgeft.setWidget(rows + 1, 3, slots);
-        slots.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        slots.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 try {
                     int num = Integer.parseInt(slots.getText());
                     if (num < 0) {
@@ -716,8 +720,8 @@ public class EventEditor extends Composite implements ChangeListener {
             }
         });
 
-        cb.addClickListener(new ClickListener() {
-            public void onClick(Widget sender) {
+        cb.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
                 if (cb.getValue() && roles.getSelectedIndex() > 0) {
                     slots.setEnabled(true);
                 }
@@ -728,8 +732,8 @@ public class EventEditor extends Composite implements ChangeListener {
             }
         });
 
-        roles.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        roles.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 if (cb.getValue() && roles.getSelectedIndex() > 0) {
                     slots.setEnabled(true);
                 }
@@ -744,8 +748,8 @@ public class EventEditor extends Composite implements ChangeListener {
         early.setVisibleLength(2);
         early.setText("" + earlySignup);
         badgeft.setWidget(rows + 1, 4, early);
-        early.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        early.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 try {
                     int num = Integer.parseInt(early.getText());
                     if (num < 0) {
@@ -758,8 +762,9 @@ public class EventEditor extends Composite implements ChangeListener {
             }
         });
 
-        badgeft.setWidget(rows + 1, 5, new Button("Remove", new ClickListener() {
-            public void onClick(Widget sender) {
+        badgeft.setWidget(rows + 1, 5, new Button("Remove", new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                final Object sender = event.getSource();
                 final int rows = badgeft.getRowCount() - 1;
                 for (int i = 0; i < rows; ++i) {
                     if (badgeft.getWidget(i + 1, 5) == sender) {
@@ -860,7 +865,9 @@ public class EventEditor extends Composite implements ChangeListener {
         }
     }
 
-    public void onChange(Widget sender) {
+    public void onChange(ChangeEvent event) {
+        Object sender = event.getSource();
+
         if (sender == instances) {
             updateBosses();
         }

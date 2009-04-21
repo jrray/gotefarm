@@ -1,26 +1,26 @@
 package com.giftoftheembalmer.gotefarm.client;
 
-import com.google.gwt.user.client.ui.ClickListener;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.Window;
 
-abstract class BadgeAndRoleClickListener implements ClickListener {
+abstract class BadgeAndRoleClickHandler implements ClickHandler {
     String flavor1; // e.g., role
     private FlexTable flex;
     private int row;
     protected ChrBadgeAndRole role;
 
-    public BadgeAndRoleClickListener(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
+    public BadgeAndRoleClickHandler(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
         this.flavor1 = flavor1;
         this.flex = flex;
         this.row = row;
         this.role = role;
     }
 
-    public void onClick(Widget sender) {
-        SimpleCheckBox hasrole = (SimpleCheckBox)sender;
+    public void onClick(ClickEvent event) {
+        SimpleCheckBox hasrole = (SimpleCheckBox)event.getSource();
 
         boolean adding = true;
         if (hasrole.isChecked()) {

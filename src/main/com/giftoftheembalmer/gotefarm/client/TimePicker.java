@@ -1,31 +1,34 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.SourcesChangeEvents;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
 
 import java.util.Date;
-import java.util.HashSet;
 
 public class TimePicker extends Composite
-    implements ChangeListener, SourcesChangeEvents {
+    implements ChangeHandler, HasValue<Date> {
 
-    public class TimePickerTB extends TextBox implements ClickListener {
+    public class TimePickerTB extends TextBox implements ClickHandler {
 
         private final DateTimeFormat dateFormatter;
 
-        class PopupTime extends PopupPanel implements ChangeListener {
+        class PopupTime extends PopupPanel implements ChangeHandler {
             private boolean leave;
             private final TimePickerTB timePicker;
             private final ListBox lb;
@@ -39,7 +42,7 @@ public class TimePicker extends Composite
             public PopupTime(TimePickerTB timePicker) {
                 super(true);
                 this.timePicker = timePicker;
-                lb.addChangeListener(this);
+                lb.addChangeHandler(this);
                 lb.setVisibleItemCount(10);
                 Date d = new Date();
                 for (int hour = 0; hour < 24; ++hour) {
@@ -88,8 +91,8 @@ public class TimePicker extends Composite
                 }
             }
 
-            public void onChange(Widget sender) {
-                ListBox lb = (ListBox)sender;
+            public void onChange(ChangeEvent event) {
+                ListBox lb = (ListBox)event.getSource();
                 Date sel = dateFormatter.parse(lb.getItemText(lb.getSelectedIndex()));
                 timePicker.setSelectedDate(sel);
                 timePicker.synchronizeFromDate();
@@ -111,7 +114,7 @@ public class TimePicker extends Composite
             super();
             setText("");
             sinkEvents(Event.ONCHANGE | Event.ONKEYPRESS);
-            addClickListener(this);
+            addClickHandler(this);
         }
 
         public TimePickerTB(Date selectedDate) {
@@ -138,7 +141,7 @@ public class TimePicker extends Composite
             super.onBrowserEvent(event);
         }
 
-        public void onClick(Widget sender) {
+        public void onClick(ClickEvent event) {
             showPopup();
         }
 
@@ -180,38 +183,44 @@ public class TimePicker extends Composite
 
     TimePickerTB tptb;
 
-    private final HashSet<ChangeListener> changeListeners = new HashSet<ChangeListener>();
-
     public TimePicker(Date selectedDate) {
         tptb = new TimePickerTB(selectedDate);
-        tptb.addChangeListener(this);
+        tptb.addChangeHandler(this);
 
         initWidget(tptb);
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeListeners.add(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeListeners.remove(listener);
-    }
-
-    public void onChange(Widget sender) {
+    public void onChange(ChangeEvent event) {
         notifyListeners();
     }
 
-    public void setSelectedDate(Date value) {
-        tptb.setSelectedDate(value);
+    private void notifyListeners() {
+        ValueChangeEvent.fire(this, getValue());
     }
 
-    public Date getSelectedDate() {
+    public Date getValue() {
         return tptb.getSelectedDate();
     }
 
-    private void notifyListeners() {
-        for (ChangeListener cl : changeListeners) {
-            cl.onChange(this);
+    public void setValue(Date value) {
+        setValue(value, false);
+    }
+
+    public void setValue(Date value, boolean fireEvents) {
+        if (value == null) {
+            throw new IllegalArgumentException("value must not be null");
         }
+        if (getValue().equals(value)) {
+            return;
+        }
+        tptb.setSelectedDate(value);
+        if (fireEvents) {
+            ValueChangeEvent.fire(this, value);
+        }
+    }
+
+    public HandlerRegistration addValueChangeHandler(
+            ValueChangeHandler<Date> handler) {
+        return addHandler(handler, ValueChangeEvent.getType());
     }
 }

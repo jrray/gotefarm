@@ -1,22 +1,24 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 import java.util.Date;
@@ -25,7 +27,7 @@ import java.util.List;
 public class ScheduleEditor extends Composite {
     static int last_group_num = 0;
 
-    class Schedule extends Composite implements ChangeListener, ClickListener, ValueChangeHandler<Date> {
+    class Schedule extends Composite implements ClickHandler, ValueChangeHandler<Date> {
         JSEventSchedule sched;
 
         // append a distinct number to radio button group names, per schedule,
@@ -70,6 +72,30 @@ public class ScheduleEditor extends Composite {
         final Label monthlyrptmonthlabel = new Label("month");
         final RadioButton rptdayofmonth = new RadioButton(DAYOF_GROUP, "day of the month");
         final RadioButton rptdayofweek = new RadioButton(DAYOF_GROUP, "day of the week");
+
+        class DurationChangeHandler implements ValueChangeHandler<Integer> {
+
+            public void onValueChange(ValueChangeEvent<Integer> event) {
+                final Object sender = event.getSource();
+                if (sched == null) return;
+
+                if (sender == display_start) {
+                    sched.display_start = display_start.getValue();
+                }
+                else if (sender == display_end) {
+                    sched.display_end = display_end.getValue();
+                }
+                else if (sender == signups_start) {
+                    sched.signups_start = signups_start.getValue();
+                }
+                else if (sender == signups_end) {
+                    sched.signups_end = signups_end.getValue();
+                }
+
+                updateTimes();
+            }
+        }
+        final DurationChangeHandler dch = new DurationChangeHandler();
 
         @SuppressWarnings("deprecation")
         public Schedule(long eid, JSEventSchedule sched) {
@@ -116,7 +142,7 @@ public class ScheduleEditor extends Composite {
             );
             db.addValueChangeHandler(this);
             tp = new TimePicker(sched.start_time);
-            tp.addChangeListener(this);
+            tp.addValueChangeHandler(this);
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
@@ -130,9 +156,9 @@ public class ScheduleEditor extends Composite {
                 vpanel.add(hpanel);
             }
 
-            display_start.addChangeListener(this);
+            display_start.addValueChangeHandler(dch);
             display_start.setVisibleLength(6);
-            display_start.setDuration(sched.display_start);
+            display_start.setValue(sched.display_start);
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
@@ -146,9 +172,9 @@ public class ScheduleEditor extends Composite {
                 vpanel.add(hpanel);
             }
 
-            display_end.addChangeListener(this);
+            display_end.addValueChangeHandler(dch);
             display_end.setVisibleLength(6);
-            display_end.setDuration(sched.display_end);
+            display_end.setValue(sched.display_end);
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
@@ -162,9 +188,9 @@ public class ScheduleEditor extends Composite {
                 vpanel.add(hpanel);
             }
 
-            signups_start.addChangeListener(this);
+            signups_start.addValueChangeHandler(dch);
             signups_start.setVisibleLength(6);
-            signups_start.setDuration(sched.signups_start);
+            signups_start.setValue(sched.signups_start);
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
@@ -178,9 +204,9 @@ public class ScheduleEditor extends Composite {
                 vpanel.add(hpanel);
             }
 
-            signups_end.addChangeListener(this);
+            signups_end.addValueChangeHandler(dch);
             signups_end.setVisibleLength(6);
-            signups_end.setDuration(sched.signups_end);
+            signups_end.setValue(sched.signups_end);
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
@@ -203,10 +229,10 @@ public class ScheduleEditor extends Composite {
                 rptpanel.add(rptweekly);
                 rptpanel.add(rptmonthly);
 
-                rptnever.addClickListener(this);
-                rptdaily.addClickListener(this);
-                rptweekly.addClickListener(this);
-                rptmonthly.addClickListener(this);
+                rptnever.addClickHandler(this);
+                rptdaily.addClickHandler(this);
+                rptweekly.addClickHandler(this);
+                rptmonthly.addClickHandler(this);
 
                 vpanel.add(rptpanel);
             }
@@ -223,8 +249,8 @@ public class ScheduleEditor extends Composite {
                     dailyrptdays.addItem("" + i);
                 }
 
-                dailyrptdays.addChangeListener(new ChangeListener() {
-                    public void onChange(Widget sender) {
+                dailyrptdays.addChangeHandler(new ChangeHandler() {
+                    public void onChange(ChangeEvent event) {
                         final int index = dailyrptdays.getSelectedIndex();
 
                         Schedule.this.sched.repeat_freq = index + 1;
@@ -255,8 +281,8 @@ public class ScheduleEditor extends Composite {
                     weeklyrptweeks.addItem("" + i);
                 }
 
-                weeklyrptweeks.addChangeListener(new ChangeListener() {
-                    public void onChange(Widget sender) {
+                weeklyrptweeks.addChangeHandler(new ChangeHandler() {
+                    public void onChange(ChangeEvent event) {
                         final int index = weeklyrptweeks.getSelectedIndex();
 
                         Schedule.this.sched.repeat_freq = index + 1;
@@ -282,10 +308,10 @@ public class ScheduleEditor extends Composite {
                 HorizontalPanel hpanel = new HorizontalPanel();
                 hpanel.add(new Label("Repeat on"));
 
-                final ClickListener daychanged = new ClickListener() {
-                    public void onClick(Widget sender) {
-                        final boolean checked = ((CheckBox)sender).getValue();
-
+                final ValueChangeHandler<Boolean> daychanged = new ValueChangeHandler<Boolean>() {
+                    public void onValueChange(ValueChangeEvent<Boolean> event) {
+                        final Object sender = event.getSource();
+                        final boolean checked = event.getValue();
                         for (int i = 0; i < 7; ++i ) {
                             if (sender == weeklydays[i]) {
                                 if (checked) {
@@ -307,7 +333,7 @@ public class ScheduleEditor extends Composite {
                         weeklydays[i].setValue(true);
                     }
 
-                    weeklydays[i].addClickListener(daychanged);
+                    weeklydays[i].addValueChangeHandler(daychanged);
 
                     hpanel.add(weeklydays[i]);
                 }
@@ -324,8 +350,8 @@ public class ScheduleEditor extends Composite {
                     monthlyrptmonth.addItem("" + i);
                 }
 
-                monthlyrptmonth.addChangeListener(new ChangeListener() {
-                    public void onChange(Widget sender) {
+                monthlyrptmonth.addChangeHandler(new ChangeHandler() {
+                    public void onChange(ChangeEvent event) {
                         final int index = monthlyrptmonth.getSelectedIndex();
 
                         Schedule.this.sched.repeat_freq = index + 1;
@@ -351,12 +377,13 @@ public class ScheduleEditor extends Composite {
                 HorizontalPanel hpanel = new HorizontalPanel();
                 hpanel.add(new Label("Repeat by"));
 
-                final ClickListener rptdayofchanged = new ClickListener() {
-                    public void onClick(Widget sender) {
-                        if (sender == rptdayofmonth) {
+                final ValueChangeHandler<Boolean> rptdayofchanged = new ValueChangeHandler<Boolean>() {
+                    public void onValueChange(ValueChangeEvent<Boolean> event) {
+                        final Object sender = event.getSource();
+                        if (sender == rptdayofmonth && event.getValue()) {
                             Schedule.this.sched.repeat_by = JSEventSchedule.REPEAT_BY_DAY_OF_MONTH;
                         }
-                        else {
+                        else if (sender == rptdayofweek && event.getValue()) {
                             Schedule.this.sched.repeat_by = JSEventSchedule.REPEAT_BY_DAY_OF_WEEK;
                         }
                     }
@@ -369,8 +396,8 @@ public class ScheduleEditor extends Composite {
                     rptdayofweek.setValue(true);
                 }
 
-                rptdayofmonth.addClickListener(rptdayofchanged);
-                rptdayofweek.addClickListener(rptdayofchanged);
+                rptdayofmonth.addValueChangeHandler(rptdayofchanged);
+                rptdayofweek.addValueChangeHandler(rptdayofchanged);
 
                 hpanel.add(rptdayofmonth);
                 hpanel.add(rptdayofweek);
@@ -405,8 +432,8 @@ public class ScheduleEditor extends Composite {
             final Label errmsg = new Label();
             errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
 
-            Button save = new Button("Save", new ClickListener() {
-                public void onClick(Widget sender) {
+            Button save = new Button("Save", new ClickHandler() {
+                public void onClick(ClickEvent event) {
                     // clear error message
                     errmsg.setText("");
 
@@ -447,51 +474,24 @@ public class ScheduleEditor extends Composite {
             this(eid, null);
         }
 
-        @SuppressWarnings("deprecation")
-        public void onChange(Widget sender) {
-            if (sched == null) return;
-
-            if (sender == tp) {
-                Date d = tp.getSelectedDate();
-                sched.start_time.setHours(d.getHours());
-                sched.start_time.setMinutes(d.getMinutes());
-                sched.start_time.setSeconds(d.getSeconds());
-            }
-            else if (sender == display_start) {
-                sched.display_start = display_start.getDuration();
-            }
-            else if (sender == display_end) {
-                sched.display_end = display_end.getDuration();
-            }
-            else if (sender == signups_start) {
-                sched.signups_start = signups_start.getDuration();
-            }
-            else if (sender == signups_end) {
-                sched.signups_end = signups_end.getDuration();
-            }
-
-            updateTimes();
-        }
-
         private void updateTimes() {
             Date d = new Date();
 
-            d.setTime(sched.start_time.getTime() - display_start.getDuration() * 1000);
+            d.setTime(sched.start_time.getTime() - display_start.getValue() * 1000);
             display_start_time.setText(time_formatter.format(d));
 
-            d.setTime(sched.start_time.getTime() + display_end.getDuration() * 1000);
+            d.setTime(sched.start_time.getTime() + display_end.getValue() * 1000);
             display_end_time.setText(time_formatter.format(d));
 
-            d.setTime(sched.start_time.getTime() - signups_start.getDuration() * 1000);
+            d.setTime(sched.start_time.getTime() - signups_start.getValue() * 1000);
             signups_start_time.setText(time_formatter.format(d));
 
-            d.setTime(sched.start_time.getTime() - signups_end.getDuration() * 1000);
+            d.setTime(sched.start_time.getTime() - signups_end.getValue() * 1000);
             signups_end_time.setText(time_formatter.format(d));
         }
 
-        public void onClick(Widget sender) {
+        private void onClick(Object sender) {
             Widget toshow = null;
-
             int repeat_size = JSEventSchedule.REPEAT_NEVER;
 
             if      (sender == rptdaily)   { toshow = dailyrptpanel;   repeat_size = JSEventSchedule.REPEAT_DAILY; }
@@ -505,12 +505,26 @@ public class ScheduleEditor extends Composite {
             sched.repeat_size = repeat_size;
         }
 
+        public void onClick(ClickEvent event) {
+            final Object sender = event.getSource();
+            onClick(sender);
+        }
+
         @SuppressWarnings("deprecation")
         public void onValueChange(ValueChangeEvent<Date> event) {
-            Date d = event.getValue();
-            sched.start_time.setYear(d.getYear());
-            sched.start_time.setMonth(d.getMonth());
-            sched.start_time.setDate(d.getDate());
+            final Object sender = event.getSource();
+            final Date d = event.getValue();
+
+            if (sender == db) {
+                sched.start_time.setYear(d.getYear());
+                sched.start_time.setMonth(d.getMonth());
+                sched.start_time.setDate(d.getDate());
+            }
+            else if (sender == tp) {
+                sched.start_time.setHours(d.getHours());
+                sched.start_time.setMinutes(d.getMinutes());
+                sched.start_time.setSeconds(d.getSeconds());
+            }
 
             updateTimes();
         }

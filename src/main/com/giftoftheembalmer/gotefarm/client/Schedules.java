@@ -1,11 +1,11 @@
 package com.giftoftheembalmer.gotefarm.client;
 
-import com.google.gwt.user.client.ui.ChangeListener;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import java.util.List;
 
@@ -21,8 +21,8 @@ public class Schedules extends Composite {
         eventlb.setWidth("100%");
         eventlb.setVisibleItemCount(20);
 
-        eventlb.addChangeListener(new ChangeListener() {
-            public void onChange(Widget sender) {
+        eventlb.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
                 int sel = eventlb.getSelectedIndex();
                 if (sel < 0) return;
 

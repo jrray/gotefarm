@@ -2,36 +2,38 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.HistoryListener;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FormHandler;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.FormSubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormSubmitEvent;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
-import com.google.gwt.user.client.ui.SourcesTabEvents;
-import com.google.gwt.user.client.ui.TabListener;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
 
 import java.util.Date;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
+public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, SelectionHandler<Integer> {
 
   static final String COOKIE_NAME = "gotefarm_sid";
   static GoteFarmRPCAsync goteService = null;
@@ -88,7 +90,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
 
     tabpanel.setWidth("98%");
     tabpanel.addStyleName(tabpanel.getStylePrimaryName() + "-main");
-    tabpanel.addTabListener(this);
+    tabpanel.addSelectionHandler(this);
 
     tabpanel.add(events, "Events");
     tabpanel.add(chars, "Characters");
@@ -103,7 +105,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
         History.newItem("events");
     }
 
-    History.addHistoryListener(this);
+    History.addValueChangeHandler(this);
 
     History.fireCurrentHistoryState();
   }
@@ -132,8 +134,8 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
 
         login.add(hpanel);
 
-        loginForm.addFormHandler(new FormHandler() {
-            public void onSubmit(FormSubmitEvent event) {
+        loginForm.addSubmitHandler(new SubmitHandler() {
+            public void onSubmit(SubmitEvent event) {
                 errmsg.setVisible(false);
 
                 String u = username.getText();
@@ -142,7 +144,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
                     errmsg.setText("You must provide a username");
                     errmsg.setVisible(true);
                     username.setFocus(true);
-                    event.setCancelled(true);
+                    event.cancel();
                     return;
                 }
 
@@ -152,14 +154,15 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
                     errmsg.setText("You must provide a password");
                     errmsg.setVisible(true);
                     password.setFocus(true);
-                    event.setCancelled(true);
+                    event.cancel();
                     return;
                 }
 
                 submit.setEnabled(false);
             }
-
-            public void onSubmitComplete(FormSubmitCompleteEvent event) {
+        });
+        loginForm.addSubmitCompleteHandler(new SubmitCompleteHandler() {
+            public void onSubmitComplete(SubmitCompleteEvent event) {
                 submit.setEnabled(true);
 
                 String results = event.getResults();
@@ -203,7 +206,8 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
         admin.refresh();
     }
 
-    public void onHistoryChanged(String historyToken) {
+    public void onValueChange(ValueChangeEvent<String> event) {
+        final String historyToken = event.getValue();
         if (historyToken.equals("register")) {
             RootPanel.get("login").setVisible(false);
             final RegisterPanel popup = new RegisterPanel(this);
@@ -227,12 +231,8 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
         }
     }
 
-    public boolean onBeforeTabSelected(SourcesTabEvents sender, int tabIndex) {
-        return true;
-    }
-
-    public void onTabSelected(SourcesTabEvents sender, int tabIndex) {
-        switch (tabIndex) {
+    public void onSelection(SelectionEvent<Integer> event) {
+        switch (event.getSelectedItem()) {
             case 0:
                 History.newItem("events");
                 break;

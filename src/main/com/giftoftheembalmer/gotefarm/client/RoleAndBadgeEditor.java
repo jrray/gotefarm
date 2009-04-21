@@ -20,7 +20,7 @@ public class RoleAndBadgeEditor extends Composite {
         setStyleName("RoleAndBadgeEditor");
     }
 
-    public <A extends BadgeAndRole, B extends ChrBadgeAndRole, C extends BadgeAndRoleClickListenerFactory>
+    public <A extends BadgeAndRole, B extends ChrBadgeAndRole, C extends BadgeAndRoleClickHandlerFactory>
     void update(List<A> roles, B[] chrroles, C clickListener) {
         vpanel.clear();
 
@@ -38,8 +38,8 @@ public class RoleAndBadgeEditor extends Composite {
             for (B chrrole : chrroles) {
                 if (chrrole.getId() == role.getId()) {
                     has_role = true;
-                    hasrole.addClickListener(
-                        clickListener.newClickListener(flex, row, chrrole)
+                    hasrole.addClickHandler(
+                        clickListener.newClickHandler(flex, row, chrrole)
                     );
                     is_waiting = chrrole.isWaiting();
                     break;
@@ -53,7 +53,7 @@ public class RoleAndBadgeEditor extends Composite {
                 }
             }
             else {
-                hasrole.addClickListener(clickListener.newClickListener(
+                hasrole.addClickHandler(clickListener.newClickHandler(
                     flex, row, new ChrBadgeAndRole() {
                     public long getId() { return role.getId(); }
                     public String getName() { return role.getName(); }

@@ -1,24 +1,25 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.KeyboardListenerAdapter;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.NamedNodeMap;
@@ -136,8 +137,8 @@ public class Characters
             setStyleName("Character");
         }
 
-        class RoleClickListener extends BadgeAndRoleClickListener {
-            public RoleClickListener(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
+        class RoleClickHandler extends BadgeAndRoleClickHandler {
+            public RoleClickHandler(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
                 super(flavor1, flex, row, role);
             }
 
@@ -158,16 +159,16 @@ public class Characters
             }
         }
 
-        class RoleClickListenerFactory extends BadgeAndRoleClickListenerFactory {
-            public BadgeAndRoleClickListener newClickListener(FlexTable flex,
+        class RoleClickHandlerFactory extends BadgeAndRoleClickHandlerFactory {
+            public BadgeAndRoleClickHandler newClickHandler(FlexTable flex,
                                                               int row,
                                                               ChrBadgeAndRole role) {
-                return new RoleClickListener("role", flex, row, role);
+                return new RoleClickHandler("role", flex, row, role);
             }
         }
 
-        class BadgeClickListener extends BadgeAndRoleClickListener {
-            public BadgeClickListener(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
+        class BadgeClickHandler extends BadgeAndRoleClickHandler {
+            public BadgeClickHandler(String flavor1, FlexTable flex, int row, ChrBadgeAndRole role) {
                 super(flavor1, flex, row, role);
             }
 
@@ -188,20 +189,20 @@ public class Characters
             }
         }
 
-        class BadgeClickListenerFactory extends BadgeAndRoleClickListenerFactory {
-            public BadgeAndRoleClickListener newClickListener(FlexTable flex,
+        class BadgeClickHandlerFactory extends BadgeAndRoleClickHandlerFactory {
+            public BadgeAndRoleClickHandler newClickHandler(FlexTable flex,
                                                               int row,
                                                               ChrBadgeAndRole role) {
-                return new BadgeClickListener("badge", flex, row, role);
+                return new BadgeClickHandler("badge", flex, row, role);
             }
         }
 
         public void updateRoles() {
-            role_editor.update(roles, chr.roles, new RoleClickListenerFactory());
+            role_editor.update(roles, chr.roles, new RoleClickHandlerFactory());
         }
 
         public void updateBadges() {
-            badge_editor.update(badges, chr.badges, new BadgeClickListenerFactory());
+            badge_editor.update(badges, chr.badges, new BadgeClickHandlerFactory());
         }
     }
 
@@ -239,22 +240,22 @@ public class Characters
             HorizontalPanel hpanel = new HorizontalPanel();
             hpanel.setWidth("100%");
 
-            character.addKeyboardListener(new KeyboardListenerAdapter() {
-                public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-                    if (keyCode == KeyCodes.KEY_ENTER) {
+            character.addKeyPressHandler(new KeyPressHandler() {
+                public void onKeyPress(KeyPressEvent event) {
+                    if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                         addCharacter();
                     }
                 }
             });
 
-            hpanel.add(new Button("Submit", new ClickListener() {
-                public void onClick(Widget sender) {
+            hpanel.add(new Button("Submit", new ClickHandler() {
+                public void onClick(ClickEvent event) {
                     addCharacter();
                 }
             }));
 
-            hpanel.add(new Button("Cancel", new ClickListener() {
-                public void onClick(Widget sender) {
+            hpanel.add(new Button("Cancel", new ClickHandler() {
+                public void onClick(ClickEvent event) {
                     hide();
                 }
             }));
@@ -314,8 +315,8 @@ public class Characters
 
         vpanel.add(chrpanel);
 
-        enrollbtn = new Button("Enroll Character", new ClickListener() {
-            public void onClick(Widget sender) {
+        enrollbtn = new Button("Enroll Character", new ClickHandler() {
+            public void onClick(ClickEvent event) {
                 final NewCharPanel popup = new NewCharPanel();
                 popup.setPopupPositionAndShow(new NewCharPanel.PositionCallback() {
                 public void setPosition(int offsetWidth, int offsetHeight) {

@@ -1,18 +1,19 @@
 package com.giftoftheembalmer.gotefarm.client;
 
-import com.google.gwt.user.client.ui.ChangeListener;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.SourcesChangeEvents;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Widget;
-
-import java.util.HashSet;
 
 public class DurationPicker extends Composite
-    implements ChangeListener, SourcesChangeEvents {
+    implements ChangeHandler, HasValue<Integer> {
 
     private int duration = 0;
     private TextBox tb = new TextBox();
@@ -23,16 +24,16 @@ public class DurationPicker extends Composite
     private final int MINUTES = 2;
     private final int SECONDS = 3;
 
-    private final HashSet<ChangeListener> changeListeners = new HashSet<ChangeListener>();
-
     public DurationPicker() {
+        setValue(0);
+
         HorizontalPanel hpanel = new HorizontalPanel();
         hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
-        tb.addChangeListener(this);
+        tb.addChangeHandler(this);
         tb.setText("0");
 
-        lb.addChangeListener(this);
+        lb.addChangeHandler(this);
         lb.addItem("Days");
         lb.addItem("Hours");
         lb.addItem("Minutes");
@@ -49,15 +50,22 @@ public class DurationPicker extends Composite
 
     public DurationPicker(int seconds) {
         this();
-        setDuration(seconds);
+        setValue(seconds);
     }
 
     public void setVisibleLength(int len) {
         tb.setVisibleLength(len);
     }
 
-    public void setDuration(int seconds) {
-        this.duration = seconds;
+    public void setValue(Integer seconds, boolean fireEvents) {
+        if (seconds == null) {
+            throw new IllegalArgumentException("value must not be null");
+        }
+        if (duration == seconds) {
+            return;
+        }
+
+        duration = seconds;
 
         if ((seconds % 86400) == 0) {
             int days = seconds / 86400;
@@ -82,39 +90,38 @@ public class DurationPicker extends Composite
             lb.setSelectedIndex(SECONDS);
             current_unit = SECONDS;
         }
+
+        if (fireEvents) {
+            ValueChangeEvent.fire(this, duration);
+        }
     }
 
-    public int getDuration() {
-        return duration;
+    public void setValue(Integer value) {
+        setValue(value, false);
     }
 
-    public void onChange(Widget sender) {
+    public void onChange(ChangeEvent event) {
+        Object sender = event.getSource();
         if (sender == tb) {
             try {
-                int old_duration = duration;
-
                 int amount = Integer.parseInt(tb.getText());
                 switch (lb.getSelectedIndex()) {
                     case DAYS:
-                        duration = amount * 86400;
+                        setValue(amount * 86400, true);
                         break;
                     case HOURS:
-                        duration = amount * 3600;
+                        setValue(amount * 3600, true);
                         break;
                     case MINUTES:
-                        duration = amount * 60;
+                        setValue(amount * 60, true);
                         break;
                     case SECONDS:
-                        duration = amount;
+                        setValue(amount, true);
                         break;
-                }
-
-                if (duration != old_duration) {
-                    notifyListeners();
                 }
             }
             catch (NumberFormatException e) {
-                setDuration(duration);
+                setValue(getValue());
             }
         }
         else if (sender == lb) {
@@ -133,47 +140,36 @@ public class DurationPicker extends Composite
                     break;
             }
 
-            int old_duration = duration;
-
             int unit = lb.getSelectedIndex();
             switch (unit) {
                 case DAYS:
                     amount /= 86400;
-                    duration = amount * 86400;
+                    setValue(amount * 86400, true);
                     break;
                 case HOURS:
                     amount /= 3600;
-                    duration = amount * 3600;
+                    setValue(amount * 3600, true);
                     break;
                 case MINUTES:
                     amount /= 60;
-                    duration = amount * 60;
+                    setValue(amount * 60, true);
                     break;
                 case SECONDS:
-                    duration = amount;
+                    setValue(amount, true);
                     break;
             }
 
             tb.setText("" + amount);
             current_unit = unit;
-
-            if (duration != old_duration) {
-                notifyListeners();
-            }
         }
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeListeners.add(listener);
+    public Integer getValue() {
+        return duration;
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        changeListeners.remove(listener);
-    }
-
-    private void notifyListeners() {
-        for (ChangeListener cl : changeListeners) {
-            cl.onChange(this);
-        }
+    public HandlerRegistration addValueChangeHandler(
+            ValueChangeHandler<Integer> handler) {
+        return addHandler(handler, ValueChangeEvent.getType());
     }
 }
