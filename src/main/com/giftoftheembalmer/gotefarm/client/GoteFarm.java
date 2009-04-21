@@ -201,7 +201,7 @@ public class GoteFarm implements EntryPoint, HistoryListener, TabListener {
     }
 
     void setSessionID(String sessionID) {
-        this.sessionID = sessionID;
+        GoteFarm.sessionID = sessionID;
 
         // refresh UI elements that depend on the sessionID
         events.refresh();

@@ -261,8 +261,7 @@ public class Characters
 
             vpanel.add(hpanel);
 
-            DeferredCommand dc = new DeferredCommand();
-            dc.addCommand(new Command() {
+            DeferredCommand.addCommand(new Command() {
                 public void execute() {
                     character.setFocus(true);
                 }

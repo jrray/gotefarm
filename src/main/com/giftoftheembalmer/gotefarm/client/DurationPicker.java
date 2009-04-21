@@ -2,6 +2,7 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SourcesChangeEvents;
@@ -26,7 +27,7 @@ public class DurationPicker extends Composite
 
     public DurationPicker() {
         HorizontalPanel hpanel = new HorizontalPanel();
-        hpanel.setVerticalAlignment(hpanel.ALIGN_MIDDLE);
+        hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
         tb.addChangeListener(this);
         tb.setText("0");

@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -112,7 +113,7 @@ public class ScheduleEditor extends Composite {
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
-                hpanel.setVerticalAlignment(hpanel.ALIGN_MIDDLE);
+                hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
                 hpanel.add(new Label("Start Date:"));
                 hpanel.add(dp);
                 hpanel.add(new HTML("&nbsp;&nbsp;"));
@@ -128,7 +129,7 @@ public class ScheduleEditor extends Composite {
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
-                hpanel.setVerticalAlignment(hpanel.ALIGN_MIDDLE);
+                hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
                 hpanel.setSpacing(5);
                 hpanel.add(new Label("Display event "));
                 hpanel.add(display_start);
@@ -144,7 +145,7 @@ public class ScheduleEditor extends Composite {
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
-                hpanel.setVerticalAlignment(hpanel.ALIGN_MIDDLE);
+                hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
                 hpanel.setSpacing(5);
                 hpanel.add(new Label("Remove event "));
                 hpanel.add(display_end);
@@ -160,7 +161,7 @@ public class ScheduleEditor extends Composite {
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
-                hpanel.setVerticalAlignment(hpanel.ALIGN_MIDDLE);
+                hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
                 hpanel.setSpacing(5);
                 hpanel.add(new Label("Signups open "));
                 hpanel.add(signups_start);
@@ -176,7 +177,7 @@ public class ScheduleEditor extends Composite {
 
             {
                 HorizontalPanel hpanel = new HorizontalPanel();
-                hpanel.setVerticalAlignment(hpanel.ALIGN_MIDDLE);
+                hpanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
                 hpanel.setSpacing(5);
                 hpanel.add(new Label("Signups end "));
                 hpanel.add(signups_end);

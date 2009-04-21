@@ -440,11 +440,11 @@ public class Events
                     }
 
                     // user not coming
-                    if (es.signup_type == es.SIGNUP_TYPE_MAYBE) {
+                    if (es.signup_type == JSEventSignup.SIGNUP_TYPE_MAYBE) {
                         rsup.maybe.add(es);
                         continue;
                     }
-                    else if (es.signup_type == es.SIGNUP_TYPE_NOT_COMING) {
+                    else if (es.signup_type == JSEventSignup.SIGNUP_TYPE_NOT_COMING) {
                         rsup.not_coming.add(es);
                         continue;
                     }

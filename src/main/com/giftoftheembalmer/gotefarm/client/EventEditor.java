@@ -521,8 +521,7 @@ public class EventEditor extends Composite implements ChangeListener {
         if (et == null) {
             name.setText(NEW_EVENT);
 
-            DeferredCommand dc = new DeferredCommand();
-            dc.addCommand(new Command() {
+            DeferredCommand.addCommand(new Command() {
                 public void execute() {
                     name.setFocus(true);
                     name.setSelectionRange(0, NEW_EVENT.length());

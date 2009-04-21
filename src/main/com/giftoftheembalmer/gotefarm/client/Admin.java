@@ -35,7 +35,7 @@ public class Admin extends Composite {
         sp.add(new Label("Roles"), "Roles");
         sp.add(new Label("Badges"), "Badges");
 
-        dpanel.add(sp, dpanel.WEST);
+        dpanel.add(sp, DockPanel.WEST);
 
         initWidget(dpanel);
 
@@ -50,7 +50,7 @@ public class Admin extends Composite {
         }
 
         if (widget != null) {
-            dpanel.add(widget, dpanel.CENTER);
+            dpanel.add(widget, DockPanel.CENTER);
         }
 
         centerWidget = widget;
