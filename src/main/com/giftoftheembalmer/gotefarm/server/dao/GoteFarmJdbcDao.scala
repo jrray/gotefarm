@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
   JSBadge,
+  JSCharacter,
   JSChrBadge,
   JSChrRole,
   JSEvent,
@@ -13,7 +14,6 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
-  JSCharacter,
   JSRole,
   NotFoundError
 }

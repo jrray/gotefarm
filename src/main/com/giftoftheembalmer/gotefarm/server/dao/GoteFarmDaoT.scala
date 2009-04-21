@@ -2,12 +2,12 @@ package com.giftoftheembalmer.gotefarm.server.dao
 
 import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
+  JSCharacter,
   JSEvent,
   JSEventSchedule,
   JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
-  JSCharacter,
   JSRole
 }
 

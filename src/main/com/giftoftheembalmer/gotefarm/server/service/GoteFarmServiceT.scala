@@ -3,12 +3,12 @@ package com.giftoftheembalmer.gotefarm.server.service
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSCharacter,
   JSBadge,
   JSEvent,
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
-  JSCharacter,
   JSRole,
   NotFoundError
 }
