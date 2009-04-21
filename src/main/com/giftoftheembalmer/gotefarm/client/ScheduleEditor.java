@@ -71,6 +71,7 @@ public class ScheduleEditor extends Composite {
         final RadioButton rptdayofmonth = new RadioButton(DAYOF_GROUP, "day of the month");
         final RadioButton rptdayofweek = new RadioButton(DAYOF_GROUP, "day of the week");
 
+        @SuppressWarnings("deprecation")
         public Schedule(long eid, JSEventSchedule sched) {
             this.sched = sched;
 
@@ -446,6 +447,7 @@ public class ScheduleEditor extends Composite {
             this(eid, null);
         }
 
+        @SuppressWarnings("deprecation")
         public void onChange(Widget sender) {
             if (sched == null) return;
 
@@ -503,6 +505,7 @@ public class ScheduleEditor extends Composite {
             sched.repeat_size = repeat_size;
         }
 
+        @SuppressWarnings("deprecation")
         public void onValueChange(ValueChangeEvent<Date> event) {
             Date d = event.getValue();
             sched.start_time.setYear(d.getYear());

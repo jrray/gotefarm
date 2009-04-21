@@ -35,6 +35,7 @@ public class TimePicker extends Composite
                 lb = new ListBox();
             }
 
+            @SuppressWarnings("deprecation")
             public PopupTime(TimePickerTB timePicker) {
                 super(true);
                 this.timePicker = timePicker;
