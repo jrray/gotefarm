@@ -1,5 +1,7 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
@@ -36,7 +38,7 @@ import java.util.Set;
 
 public class Events
     extends Composite
-    implements CharactersChangedHandler {
+    implements ValueChangeHandler<List<JSCharacter>> {
 
     VerticalPanel vpanel = new VerticalPanel();
     VerticalPanel vmsgpanel = new VerticalPanel();
@@ -1063,8 +1065,8 @@ public class Events
         });
     }
 
-    public void onCharactersChanged(CharactersChangedEvent event) {
-        characters = event.getCharacters();
+    public void onValueChange(ValueChangeEvent<List<JSCharacter>> event) {
+        characters = event.getValue();
         for (Event e : events) {
             e.charactersChanged();
         }

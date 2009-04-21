@@ -5,6 +5,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Window;
@@ -15,6 +18,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -28,12 +32,11 @@ import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class Characters
     extends Composite
-    implements FiresCharactersChangedEvents {
+    implements HasValue<List<JSCharacter>> {
 
     VerticalPanel vpanel = new VerticalPanel();
     VerticalPanel chrpanel = new VerticalPanel();
@@ -57,11 +60,11 @@ public class Characters
     }
 
     private void fireCharacterChangedEvent() {
-        CharactersChangedEvent event = new CharactersChangedEvent(this, characters);
-
-        for (CharactersChangedHandler handler : handlers) {
-            handler.onCharactersChanged(event);
-        }
+        // Send out a copy of the list so our copy is still
+        // safe to change.
+        List<JSCharacter> c = new ArrayList<JSCharacter>(characters.size());
+        c.addAll(characters);
+        ValueChangeEvent.fire(this, c);
     }
 
     public class Character extends Composite {
@@ -352,8 +355,7 @@ public class Characters
 
         GoteFarm.goteService.getCharacters(GoteFarm.sessionID, new AsyncCallback<List<JSCharacter>>() {
             public void onSuccess(List<JSCharacter> result) {
-                characters = result;
-                fireCharacterChangedEvent();
+                setValue(result, true);
 
                 character_widgets.clear();
 
@@ -393,13 +395,31 @@ public class Characters
         });
     }
 
-    private HashSet<CharactersChangedHandler> handlers = new HashSet<CharactersChangedHandler>();
-
-    public void addEventHandler(CharactersChangedHandler handler) {
-        handlers.add(handler);
+    public List<JSCharacter> getValue() {
+        return characters;
     }
 
-    public void removeEventHandler(CharactersChangedHandler handler) {
-        handlers.remove(handler);
+    public void setValue(List<JSCharacter> value) {
+        setValue(value, false);
+    }
+
+    public void setValue(List<JSCharacter> value, boolean fireEvents) {
+        if (value == null) {
+            throw new IllegalArgumentException("value must not be null");
+        }
+        if (value.equals(characters)) {
+            return;
+        }
+
+        characters = value;
+
+        if (fireEvents) {
+            fireCharacterChangedEvent();
+        }
+    }
+
+    public HandlerRegistration addValueChangeHandler(
+            ValueChangeHandler<List<JSCharacter>> handler) {
+        return addHandler(handler, ValueChangeEvent.getType());
     }
 }

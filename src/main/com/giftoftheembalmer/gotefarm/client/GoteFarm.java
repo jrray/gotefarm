@@ -60,7 +60,7 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
     admin = new Admin();
 
     // Events wants to know when there are changes to the user's characters
-    chars.addEventHandler(events);
+    chars.addValueChangeHandler(events);
 
     final VerticalPanel vpanel = new VerticalPanel();
     vpanel.setWidth("100%");
