@@ -47,7 +47,7 @@ public class RegisterPanel extends PopupPanel {
         grid.setWidth("100%");
 
         CellFormatter cf = grid.getCellFormatter();
-        // right align field lables
+        // right align field labels
         cf.setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
         cf.setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
         cf.setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);

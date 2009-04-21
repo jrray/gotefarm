@@ -223,7 +223,7 @@ public class Characters
             grid.setWidth("100%");
 
             CellFormatter cf = grid.getCellFormatter();
-            // right align field lables
+            // right align field labels
             cf.setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
             cf.setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 
