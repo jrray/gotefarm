@@ -3,6 +3,5 @@ appengine.sdk: /Users/jrray/java/appengine-java-sdk-1.2.0
 
 scala-compiler.jar: /opt/local/share/scala/lib/scala-compiler.jar
 scala-library.jar: /opt/local/share/scala/lib/scala-library.jar
-derby.jar: /Users/jrray/java/db-derby-10.4.2.0-lib/lib/derby.jar
 gwt-xml-ep.name: com.giftoftheembalmer.gotefarm.GoteFarm
 gwt-output.dir: gotefarm

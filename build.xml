@@ -104,7 +104,6 @@
   <path id="scala.classpath">
     <pathelement location="${scala-compiler.jar}"/>
     <pathelement location="${scala-library.jar}"/>
-    <pathelement location="${derby.jar}"/>
   </path>
 
   <path id="test.classpath">

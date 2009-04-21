@@ -37,45 +37,7 @@
 	</bean>
 	-->
 
-        <context:property-placeholder location="classpath:gotefarm.properties"/>
-
-        <bean id="sysprops" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-            <property name="targetClass" value="java.lang.System" />
-            <property name="targetMethod" value="getProperties" />
-        </bean>
-
-        <!-- set the derby system home to the user-configured path -->
-        <bean id="derbysystemhome" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-            <property name="targetObject"><ref local="sysprops"/></property>
-            <property name="targetMethod" value="setProperty"/>
-            <property name="arguments">
-                <list>
-                    <value>derby.system.home</value>
-                    <value>${gotefarm.derby.system.home}</value>
-                </list>
-            </property>
-        </bean>
-
         <tx:annotation-driven transaction-manager="txManager"/>
-
-        <bean id="createDerbyDatabase"
-              init-method="initialize"
-              class="com.giftoftheembalmer.gotefarm.server.dao.DerbyCreator"
-              depends-on="derbysystemhome">
-            <!-- create=true needed here -->
-            <property name="jdbcUrl" value="jdbc:derby:gotefarm;create=true"/>
-        </bean>
-
-        <bean id="dataSource"
-              destroy-method="close"
-              class="com.mchange.v2.c3p0.ComboPooledDataSource"
-              depends-on="createDerbyDatabase">
-            <property name="driverClass" value="org.apache.derby.jdbc.EmbeddedDriver"/>
-            <!-- no create=true needed here -->
-            <property name="jdbcUrl" value="jdbc:derby:gotefarm"/>
-            <property name="autoCommitOnClose" value="false"/>
-            <property name="maxStatementsPerConnection" value="16"/>
-        </bean>
 
         <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
               <property name="dataSource" ref="dataSource"/>
