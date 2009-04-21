@@ -33,7 +33,7 @@ public class EventEditor extends Composite implements ChangeListener {
     TextBox minlevel = new TextBox();
     ListBox instances = new ListBox();
     TextBox newinst = new TextBox();
-    ListBox bosses = new ListBox();
+    ListBox bosses = new ListBox(true);
     TextBox newboss = new TextBox();
     ListBox roles = new ListBox();
     TextBox newrole = new TextBox();
@@ -196,7 +196,6 @@ public class EventEditor extends Composite implements ChangeListener {
 
         bosses.setWidth("100%");
         bosses.setVisibleItemCount(10);
-        bosses.setMultipleSelect(true);
 
         newboss.setText(NEW_BOSS);
 
