@@ -407,7 +407,7 @@ public class EventEditor extends Composite implements ChangeListener {
         errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
 
         final CheckBox modify = new CheckBox("Modify published events (can change signups)");
-        modify.setChecked(true);
+        modify.setValue(true);
         modify.addStyleName(modify.getStylePrimaryName() + "-bottom");
         modify.addStyleName(modify.getStylePrimaryName() + "-left");
 
@@ -458,7 +458,7 @@ public class EventEditor extends Composite implements ChangeListener {
                     JSEventBadge eb = new JSEventBadge();
                     eb.name = badgeft.getText(i + 1, 0);
                     CheckBox cb = (CheckBox)badgeft.getWidget(i + 1, 1);
-                    eb.requireForSignup = cb.isChecked();
+                    eb.requireForSignup = cb.getValue();
                     ListBox lb = (ListBox)badgeft.getWidget(i + 1, 2);
                     String role = lb.getItemText(lb.getSelectedIndex());
                     if (!role.equals(ALL_ROLES)) {
@@ -472,7 +472,7 @@ public class EventEditor extends Composite implements ChangeListener {
                     t.badges.add(eb);
                 }
 
-                t.modifyEvents = modify.isChecked();
+                t.modifyEvents = modify.getValue();
 
                 GoteFarm.goteService.saveEventTemplate(GoteFarm.sessionID, t, new AsyncCallback<Boolean>() {
                     public void onSuccess(Boolean result) {
@@ -672,7 +672,7 @@ public class EventEditor extends Composite implements ChangeListener {
         badgeft.setText(rows + 1, 0, badge);
 
         final CheckBox cb = new CheckBox();
-        cb.setChecked(requireForSignup);
+        cb.setValue(requireForSignup);
         badgeft.setWidget(rows + 1, 1, cb);
 
         final ListBox roles = new ListBox();
@@ -719,7 +719,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         cb.addClickListener(new ClickListener() {
             public void onClick(Widget sender) {
-                if (cb.isChecked() && roles.getSelectedIndex() > 0) {
+                if (cb.getValue() && roles.getSelectedIndex() > 0) {
                     slots.setEnabled(true);
                 }
                 else {
@@ -731,7 +731,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
         roles.addChangeListener(new ChangeListener() {
             public void onChange(Widget sender) {
-                if (cb.isChecked() && roles.getSelectedIndex() > 0) {
+                if (cb.getValue() && roles.getSelectedIndex() > 0) {
                     slots.setEnabled(true);
                 }
                 else {
@@ -848,7 +848,7 @@ public class EventEditor extends Composite implements ChangeListener {
 
             if (selected_index > 0) {
                 CheckBox cb = (CheckBox)badgeft.getWidget(i + 1, 1);
-                if (cb.isChecked()) {
+                if (cb.getValue()) {
                     enable = true;
                 }
             }

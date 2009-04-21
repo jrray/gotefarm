@@ -283,7 +283,7 @@ public class ScheduleEditor extends Composite {
 
                 final ClickListener daychanged = new ClickListener() {
                     public void onClick(Widget sender) {
-                        final boolean checked = ((CheckBox)sender).isChecked();
+                        final boolean checked = ((CheckBox)sender).getValue();
 
                         for (int i = 0; i < 7; ++i ) {
                             if (sender == weeklydays[i]) {
@@ -303,7 +303,7 @@ public class ScheduleEditor extends Composite {
                     weeklydays[i].addStyleName("padleft");
 
                     if ((sched.day_mask & (1 << i)) > 0) {
-                        weeklydays[i].setChecked(true);
+                        weeklydays[i].setValue(true);
                     }
 
                     weeklydays[i].addClickListener(daychanged);
@@ -362,10 +362,10 @@ public class ScheduleEditor extends Composite {
                 };
 
                 if (sched.repeat_by == JSEventSchedule.REPEAT_BY_DAY_OF_MONTH) {
-                    rptdayofmonth.setChecked(true);
+                    rptdayofmonth.setValue(true);
                 }
                 else {
-                    rptdayofweek.setChecked(true);
+                    rptdayofweek.setValue(true);
                 }
 
                 rptdayofmonth.addClickListener(rptdayofchanged);
@@ -382,18 +382,18 @@ public class ScheduleEditor extends Composite {
 
             switch (sched.repeat_size) {
                 case JSEventSchedule.REPEAT_NEVER:
-                    rptnever.setChecked(true);
+                    rptnever.setValue(true);
                     break;
                 case JSEventSchedule.REPEAT_DAILY:
-                    rptdaily.setChecked(true);
+                    rptdaily.setValue(true);
                     onClick(rptdaily);
                     break;
                 case JSEventSchedule.REPEAT_WEEKLY:
-                    rptweekly.setChecked(true);
+                    rptweekly.setValue(true);
                     onClick(rptweekly);
                     break;
                 case JSEventSchedule.REPEAT_MONTHLY:
-                    rptmonthly.setChecked(true);
+                    rptmonthly.setValue(true);
                     onClick(rptmonthly);
                     break;
             }
