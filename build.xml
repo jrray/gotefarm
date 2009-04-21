@@ -80,6 +80,8 @@
 
   <property name="build.home"    value="${basedir}/war/WEB-INF/classes"/>
   <property name="src.home"      value="${basedir}/src/main"/>
+  <property name="test.src.home" value="${basedir}/src/test"/>
+  <property name="test.build.home" value="${basedir}/test_build"/>
   <property name="lib.home"      value="${basedir}/lib"/>
 
 
@@ -89,6 +91,12 @@
     <pathelement location="${scala-compiler.jar}"/>
     <pathelement location="${scala-library.jar}"/>
     <pathelement location="${derby.jar}"/>
+  </path>
+
+  <path id="test.classpath">
+    <path refid="scala.classpath"/>
+    <path location="${build.home}"/>
+    <path location="${lib.home}/junit.jar"/>
   </path>
 
   <path id="project.class.path">
@@ -200,7 +208,7 @@
         <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
         <!-- Add any additional server libs that need to be copied -->
         <copy todir="war/WEB-INF/lib">
-            <fileset dir="${lib.home}" />
+            <fileset dir="${lib.home}" excludes="junit.jar" />
         </copy>
     </target>
 
@@ -281,6 +289,50 @@
 
     <target name="deploy" depends="war">
         <copy todir="${catalina.home}/webapps/" file="gotefarm.war"/>
+    </target>
+
+<!-- ==================== Tests Target =================================== -->
+
+    <target name="test_compile" depends="compile">
+        <mkdir dir="${test.build.home}"/>
+        <scalac srcdir="${test.src.home}"
+                destdir="${test.build.home}"
+                classpathref="test.classpath"
+                target="jvm-1.5"
+                unchecked="on"
+                deprecation="on"
+                optimise="on">
+            <include name="**/*.scala"/>
+        </scalac>
+    </target>
+
+    <macrodef name="tests_macro">
+        <attribute name="test.classes.regex"/>
+        <sequential>
+            <mkdir dir="test"/>
+            <mkdir dir="test/classes"/>
+            <copy file="test-log4j.properties"
+                  tofile="test/classes/log4j.properties"/>
+
+            <junit printsummary="yes" haltonerror="yes" haltonfailure="yes">
+                <classpath>
+                    <path refid="test.classpath"/>
+                    <path location="${test.build.home}"/>
+                    <path location="test/classes"/>
+                </classpath>
+
+                <formatter type="plain" usefile="false"/>
+
+                <batchtest>
+                    <fileset dir="${test.build.home}"
+                             includes="@{test.classes.regex}"/>
+                </batchtest>
+            </junit>
+        </sequential>
+    </macrodef>
+
+    <target name="tests" depends="test_compile">
+        <tests_macro test.classes.regex="**/*Test.class"/>
     </target>
 
 </project>
