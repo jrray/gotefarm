@@ -224,6 +224,7 @@ public class EventEditor extends Composite implements ChangeHandler {
 
                     for (int i = 0; i < bosses.getItemCount(); ++i) {
                         if (bosses.getItemText(i).equals(boss)) {
+                            focusBoss();
                             found = true;
                             break;
                         }
@@ -247,8 +248,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                         });
                     }
 
-                    newboss.setText(NEW_BOSS);
-                    newboss.setSelectionRange(0, NEW_BOSS.length());
+                    focusBoss();
                 }
             }
         });
