@@ -164,12 +164,6 @@ public class EventEditor extends Composite implements ChangeHandler {
         newinst.setText(NEW_INSTANCE);
 
         newinst.addKeyPressHandler(new KeyPressHandler() {
-            private void focusBoss() {
-                newboss.setFocus(true);
-                newboss.setText(NEW_BOSS);
-                newboss.setSelectionRange(0, NEW_BOSS.length());
-            }
-
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     final String inst = newinst.getText();
@@ -558,6 +552,12 @@ public class EventEditor extends Composite implements ChangeHandler {
 
     public EventEditor(Admin admin) {
         this(admin, null);
+    }
+
+    private void focusBoss() {
+        newboss.setFocus(true);
+        newboss.setText(NEW_BOSS);
+        newboss.setSelectionRange(0, NEW_BOSS.length());
     }
 
     public void updateBosses() {
