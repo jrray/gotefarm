@@ -566,12 +566,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     mkList(goteFarmDao.getRoles(guild), role2JSRole)
   }
 
-  /*
-  @Transactional{val readOnly = false}
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def addRole(name: String, restricted: Boolean) =
-    goteFarmDao.addRole(name, restricted)
+  def addRole(user: User, guild: Key, name: String, restricted: Boolean)
+    : JSRole = {
+    // TODO: make sure user is an officer of the guild
+    goteFarmDao.addRole(guild, name, restricted)
+  }
 
+  /*
   @Transactional{val readOnly = false}
   override
   def updateCharacterRole(uid: Long, cid: Long, roleid: Long,

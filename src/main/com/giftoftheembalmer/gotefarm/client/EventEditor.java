@@ -275,34 +275,42 @@ public class EventEditor extends Composite implements ChangeHandler {
         newrole.setText(NEW_ROLE);
 
         newrole.addKeyPressHandler(new KeyPressHandler() {
+            private void focusRole() {
+                newrole.setFocus(true);
+                newrole.setText(NEW_ROLE);
+                newrole.setSelectionRange(0, NEW_ROLE.length());
+            }
+
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getCharCode() == KeyCodes.KEY_ENTER) {
-                    String role = newrole.getText();
+                    final String role = newrole.getText();
 
                     boolean found = false;
 
                     for (int i = 0; i < roles.getItemCount(); ++i) {
                         if (roles.getItemText(i).equals(role)) {
+                            roles.setSelectedIndex(i);
+                            addRole(role);
+                            focusRole();
                             found = true;
                             break;
                         }
                     }
 
                     if (!found) {
-                        roles.addItem(role);
-                        roles.setSelectedIndex(roles.getItemCount()-1);
+                        GoteFarm.goteService.addRole(admin.current_guild.key,
+                                                     role, true,
+                                                     new AsyncCallback<JSRole>() {
+                            public void onSuccess(JSRole result) {
+                                roles.addItem(role);
+                                roles.setSelectedIndex(roles.getItemCount()-1);
 
-                        newrole.setFocus(true);
-                        newrole.setText(NEW_ROLE);
-                        newrole.setSelectionRange(0, NEW_ROLE.length());
-
-                        addRole(role);
-
-                        GoteFarm.goteService.addRole(GoteFarm.sessionID, role, true, new AsyncCallback<Boolean>() {
-                            public void onSuccess(Boolean result) {
+                                addRole(role);
+                                focusRole();
                             }
 
                             public void onFailure(Throwable caught) {
+                                errmsg.setText(caught.getMessage());
                             }
                         });
                     }

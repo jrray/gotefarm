@@ -323,28 +323,16 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
         throw new NotFoundError("Role not found.")
     }
   }
+  */
 
   override
-  def addRole(name: String, restricted: Boolean) = {
-    val jdbc = getSimpleJdbcTemplate()
-    try {
-      jdbc.update(
-        """insert into role (name, restricted)
-                     values (?,    ?         )""",
-        Array[AnyRef](name, boolchar(restricted)): _*
-      )
-    }
-    catch {
-      case _: DataIntegrityViolationException =>
-        throw new AlreadyExistsError("Role '" + name + "' already exists.")
-    }
-
-    jdbc.queryForLong(
-      "select roleid from role where name = ?",
-      Array[AnyRef](name): _*
-    )
+  def addRole(guild: Key, name: String, restricted: Boolean): Role = {
+    val nr = new Role(guild, name, restricted)
+    getJdoTemplate.makePersistent(nr)
+    nr
   }
 
+  /*
   override
   def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit = {
     val jdbc = getSimpleJdbcTemplate()

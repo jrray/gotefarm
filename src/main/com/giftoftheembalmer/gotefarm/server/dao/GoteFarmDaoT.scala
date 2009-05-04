@@ -62,7 +62,11 @@ trait GoteFarmDaoT {
 
   /*
   def getRole(roleid: Long): JSRole
-  def addRole(name: String, restricted: Boolean): Long
+  */
+
+  def addRole(guild: Key, name: String, restricted: Boolean): Role
+
+  /*
   def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit
 
   def getBadges: List[JSBadge]

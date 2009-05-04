@@ -133,13 +133,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def addRole(sid: String, name: String, restricted: Boolean) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.addRole(name, restricted)
-    true
-    */
-    false
+  def addRole(guild_key: String, name: String, restricted: Boolean): JSRole = {
+    goteFarmService.addRole(getUser, guild_key, name, restricted)
   }
 
   override

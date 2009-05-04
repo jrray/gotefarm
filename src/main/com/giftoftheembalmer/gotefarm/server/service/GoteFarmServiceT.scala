@@ -73,10 +73,11 @@ trait GoteFarmServiceT {
 
   @throws(classOf[NotFoundError])
   def getRoles(guild: Key): List[JSRole]
-  /*
-  @throws(classOf[AlreadyExistsError])
-  def addRole(name: String, restricted: Boolean): Long
+  @throws(classOf[NotFoundError])
+  def addRole(user: User, guild: Key, name: String, restricted: Boolean)
+    : JSRole
 
+  /*
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
   def updateCharacterRole(uid: Long, cid: Long, roleid: Long, adding: Boolean): Unit
