@@ -114,9 +114,6 @@ public class ScheduleEditor extends Composite {
                 );
                 sched.orig_start_time = sched.start_time;
 
-                // FIXME: this doesn't handle daylight saving time properly
-                sched.timezone_offset = sched.start_time.getTimezoneOffset();
-
                 sched.duration = 120 * 60;
 
                 sched.display_start = 7 * 86400;
@@ -436,9 +433,6 @@ public class ScheduleEditor extends Composite {
                 public void onClick(ClickEvent event) {
                     // clear error message
                     errmsg.setText("");
-
-                    // update timezone_offset when saving
-                    Schedule.this.sched.timezone_offset = Schedule.this.sched.start_time.getTimezoneOffset();
 
                     // clone start_time into orig_start_time
                     Schedule.this.sched.orig_start_time = Schedule.this.sched.start_time;

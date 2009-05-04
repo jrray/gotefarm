@@ -18,7 +18,7 @@ public class JSEventSchedule implements IsSerializable {
 
     public Date start_time;
     public Date orig_start_time;
-    public int timezone_offset;
+    public String time_zone;
     public int duration;
 
     public int display_start;
