@@ -160,6 +160,12 @@ public class EventEditor extends Composite implements ChangeHandler {
         newinst.setText(NEW_INSTANCE);
 
         newinst.addKeyPressHandler(new KeyPressHandler() {
+            private void focusBoss() {
+                newboss.setFocus(true);
+                newboss.setText(NEW_BOSS);
+                newboss.setSelectionRange(0, NEW_BOSS.length());
+            }
+
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     String inst = newinst.getText();
@@ -169,6 +175,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                     for (int i = 0; i < instances.getItemCount(); ++i) {
                         if (instances.getItemText(i).equals(inst)) {
                             instances.setSelectedIndex(i);
+                            focusBoss();
                             found = true;
                             break;
                         }
@@ -179,9 +186,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                         instances.setSelectedIndex(instances.getItemCount()-1);
                         bosses.clear();
 
-                        newboss.setFocus(true);
-                        newboss.setText(NEW_BOSS);
-                        newboss.setSelectionRange(0, NEW_BOSS.length());
+                        focusBoss();
 
                         GoteFarm.goteService.addInstance(GoteFarm.sessionID, inst, new AsyncCallback<Boolean>() {
                             public void onSuccess(Boolean result) {
