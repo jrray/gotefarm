@@ -277,17 +277,9 @@ public class Characters
         public void addCharacter() {
             errmsg.setText("");
 
-            GoteFarm.goteService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<Long>() {
-                public void onSuccess(Long result) {
-                    GoteFarm.goteService.getCharacter(GoteFarm.sessionID, result.longValue(), new AsyncCallback<JSCharacter>() {
-                        public void onSuccess(JSCharacter chr) {
-                            Characters.this.addCharacter(chr);
-                        }
-
-                        public void onFailure(Throwable caught) {
-                        }
-                    });
-
+            GoteFarm.goteService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<JSCharacter>() {
+                public void onSuccess(JSCharacter chr) {
+                    Characters.this.addCharacter(chr);
                     hide();
                 }
 

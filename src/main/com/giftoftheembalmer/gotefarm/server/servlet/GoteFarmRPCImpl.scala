@@ -15,6 +15,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   UserNotLoggedInError
 }
 
+import com.google.appengine.api.datastore.Key
+import com.google.appengine.api.users.User
 import com.google.appengine.api.users.UserServiceFactory
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
@@ -27,7 +29,6 @@ import java.util.Date
 
 class GoteFarmRPCImpl extends RemoteServiceServlet
   with GoteFarmRPC {
-
   private val logger = LogFactory.getLog(this.getClass)
   logger.debug("Servlet running")
 
@@ -79,13 +80,14 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     }
   }
 
-  def newCharacter(sid: String, realm: String, character: String) = {
-    /*
+  private def getUser: User = {
     val user = userService.getCurrentUser
     if (user eq null) throw new UserNotLoggedInError
-    goteFarmService.newCharacter(user, realm, character)
-    */
-    -1L
+    user
+  }
+
+  def newCharacter(sid: String, realm: String, character: String) = {
+    goteFarmService.newCharacter(getUser, realm, character)
   }
 
   def getCharacters(sid: String) = {

@@ -1,22 +1,36 @@
 package com.giftoftheembalmer.gotefarm.server.service
 
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.annotation.{
+  Propagation,
+  Transactional
+}
 
 import com.giftoftheembalmer.gotefarm.server.dao.{
+  Chr,
+  ChrClass,
   GoteFarmDaoT,
+  Race,
   ScalaTransactionTemplate
 }
 
 import com.giftoftheembalmer.gotefarm.client.{
+  AlreadyExistsError,
   JSCharacter,
   JSEventSchedule,
   JSEventSignups,
-  JSEventTemplate
+  JSEventTemplate,
+  NotFoundError
 }
 
+import com.google.appengine.api.datastore.Key
 import com.google.appengine.api.users.User
 
 import org.apache.commons.logging.LogFactory
+
+import java.net.{
+  URL,
+  URLEncoder
+}
 
 import java.util.{
   Calendar,
@@ -36,6 +50,28 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   @scala.reflect.BeanProperty
   private var transactionTemplate: ScalaTransactionTemplate = null
 
+  implicit def key2Race(key: Key): Race = {
+    getRace(key)
+  }
+
+  implicit def key2ChrClass(key: Key): ChrClass = {
+    getChrClass(key)
+  }
+
+  implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
+    val r = new JSCharacter
+    r.realm = chr.getRealm
+    r.name = chr.getName
+    r.race = key2Race(chr.getRace).getName
+    r.clazz = key2ChrClass(chr.getChrClass).getName
+    r.level = chr.getLevel.shortValue
+    r.characterxml = chr.getChrXml
+    r.created = chr.getCreated
+    r.roles = Array()
+    r.badges = Array()
+    r
+  }
+
   /*
   def login(username: String, password: String) =
     goteFarmDao.validateUser(username, password)
@@ -43,10 +79,92 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   @Transactional{val readOnly = false}
   def newUser(username: String, email: String, password: String) =
     goteFarmDao.createUser(username, email, password)
-  @Transactional{val readOnly = false}
-  def newCharacter(user: User, realm: String, character: String) =
-    goteFarmDao.createCharacter(user, realm, character)
+  */
 
+  def getChrClass(key: Key): ChrClass = goteFarmDao.getChrClass(key).getOrElse(
+    throw new NotFoundError
+  )
+
+  def getRace(key: Key): Race = goteFarmDao.getRace(key).getOrElse(
+    throw new NotFoundError
+  )
+
+  @Transactional{val propagation = Propagation.NEVER}
+  def newCharacter(user: User, realm: String, character: String) = {
+    // Character already in use?
+    {
+      val chr = goteFarmDao.getCharacter(realm, character)
+      if (chr.isDefined) {
+        throw new AlreadyExistsError("Character '" + character + "' already exists.")
+      }
+    }
+
+    // Fetch the character from the armory
+    val conn = new URL("http://www.wowarmory.com/character-sheet.xml?r=" +
+      URLEncoder.encode(realm, "UTF-8") + "&n=" +
+      URLEncoder.encode(character, "UTF-8")).openConnection
+
+    conn.setRequestProperty(
+      "User-Agent",
+      "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9) Gecko/20008061004 Firefox/3.0"
+    )
+    conn.setRequestProperty(
+      "Accept-Language",
+      "en-us,en;q=0.5"
+    )
+    conn.setRequestProperty(
+      "Accept-Charset",
+      "ISO-8859-1,utf-8;q=0.7,*;q=0.7"
+    )
+
+    conn.connect()
+
+    val charxml = scala.xml.XML.load(conn.getInputStream())
+
+    val charInfo = charxml \ "characterInfo"
+
+    // check if the character was found
+    if (!(charInfo \ "@errCode").isEmpty) {
+      throw new NotFoundError("Character '" + character + "' not found.")
+    }
+
+    val char = charInfo \ "character"
+
+    val race = char \ "@race"
+    val clazz = char \ "@class"
+    val level = (char \ "@level").toString.toInt
+
+    // get (or create) the race object
+    val race_obj = transactionTemplate.execute {
+      goteFarmDao.getRace(race.toString)
+    }
+
+    // get (or create) the class object
+    val class_obj = transactionTemplate.execute {
+      goteFarmDao.getChrClass(clazz.toString)
+    }
+
+    val chr = transactionTemplate.execute {
+      goteFarmDao.createCharacter(user, realm, character, race_obj, class_obj,
+                                  level, charxml.toString)
+    }
+
+    // XXX: Duplicates chr2JSCharacter but don't need to re-query
+    // race and class here
+    val r = new JSCharacter
+    r.realm = chr.getRealm
+    r.name = chr.getName
+    r.race = race_obj.getName
+    r.clazz = class_obj.getName
+    r.level = chr.getLevel.shortValue
+    r.characterxml = chr.getChrXml
+    r.created = chr.getCreated
+    r.roles = Array()
+    r.badges = Array()
+    r
+  }
+
+  /*
   def getCharacters(uid: Long) = goteFarmDao.getCharacters(uid)
   def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
 

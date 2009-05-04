@@ -18,14 +18,10 @@ import com.giftoftheembalmer.gotefarm.client.{
   NotFoundError
 }
 
+import com.google.appengine.api.datastore.Key
 import com.google.appengine.api.users.User
 
 import org.apache.commons.logging.LogFactory;
-
-import java.net.{
-  URL,
-  URLEncoder
-}
 
 import java.util.Date
 
@@ -90,120 +86,66 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       Array[AnyRef](username): _*
     )
   }
+  */
 
-  private def getRaceId(race: String): Long = {
-    val jdbc = getSimpleJdbcTemplate()
-    try {
-      jdbc.queryForLong(
-        "select raceid from race where name = ?",
-        Array[AnyRef](race): _*
-      )
+  def getChrClass(key: Key): Option[ChrClass] = {
+    getObjectById(classOf[ChrClass], key)
+  }
+
+  def getRace(key: Key): Option[Race] = {
+    getObjectById(classOf[Race], key)
+  }
+
+  def getRace(race: String): Race = {
+    val r = find(classOf[Race], "name == nameParam",
+                 "java.lang.String nameParam")(race)
+    if (r.isEmpty) {
+      // add it
+      val nr = new Race(race)
+      getJdoTemplate.makePersistent(nr)
+      nr
     }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        jdbc.update(
-          "insert into race (name) values (?)",
-          Array[AnyRef](race): _*
-        )
-        getRaceId(race)
+    else {
+      r.iterator.next
     }
   }
 
-  private def getClassId(clazz: String): Long = {
-    val jdbc = getSimpleJdbcTemplate()
-    try {
-      jdbc.queryForLong(
-        "select classid from class where name = ?",
-        Array[AnyRef](clazz): _*
-      )
+  def getChrClass(clazz: String): ChrClass = {
+    val r = find(classOf[ChrClass], "name == nameParam",
+                 "java.lang.String nameParam")(clazz)
+    if (r.isEmpty) {
+      // add it
+      val nr = new ChrClass(clazz)
+      getJdoTemplate.makePersistent(nr)
+      nr
     }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        jdbc.update(
-          "insert into class (name) values (?)",
-          Array[AnyRef](clazz): _*
-        )
-        getClassId(clazz)
+    else {
+      r.iterator.next
     }
   }
 
-  def createCharacter(user: User, realm: String, character: String) = {
-    */
-    /*
-    val jdbc = getSimpleJdbcTemplate()
-
-    try {
-      val cid = jdbc.queryForLong(
-        """select chrid from chr where realm = ? and name = ?""",
-        Array[AnyRef](realm, character): _*
-      )
-
-      throw new AlreadyExistsError("Character '" + character + "' already exists.")
+  def getCharacter(realm: String, name: String): Option[Chr] = {
+    val r = find(classOf[Chr], "realm == realmName && name == nameParam",
+                 "java.lang.String realmName, java.lang.String nameParam")(
+                 realm, name)
+    if (r.isEmpty) {
+      None
     }
-    catch {
-      case _ =>
+    else {
+      Some(r.iterator.next)
     }
-
-    val conn = new URL("http://www.wowarmory.com/character-sheet.xml?r=" +
-      URLEncoder.encode(realm, "UTF-8") + "&n=" +
-      URLEncoder.encode(character, "UTF-8")).openConnection
-
-    conn.setAllowUserInteraction(false)
-    conn.setRequestProperty(
-      "User-Agent",
-      "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9) Gecko/20008061004 Firefox/3.0"
-    )
-    conn.setRequestProperty(
-      "Accept-Language",
-      "en-us,en;q=0.5"
-    )
-    conn.setRequestProperty(
-      "Accept-Charset",
-      "ISO-8859-1,utf-8;q=0.7,*;q=0.7"
-    )
-
-    conn.connect()
-
-    val charxml = scala.xml.XML.load(conn.getInputStream())
-
-    val charInfo = charxml \ "characterInfo"
-
-    // check if the character was found
-    if (!(charInfo \ "@errCode").isEmpty) {
-      throw new NotFoundError("Character '" + character + "' not found.")
-    }
-
-    val char = charInfo \ "character"
-
-    val race = char \ "@race"
-    val clazz = char \ "@class"
-    val level = (char \ "@level").toString.toInt
-
-    val raceid = getRaceId(race.toString)
-    val classid = getClassId(clazz.toString)
-
-    try {
-      jdbc.update(
-        """insert into chr (accountid, realm, name, raceid, classid, level, chrxml, created)
-                    values (?,         ?,     ?,    ?,      ?,       ?,     ?,      CURRENT_TIMESTAMP)""",
-        Array[AnyRef](uid, realm, character, raceid, classid, level, charxml.toString): _*
-      )
-    }
-    catch {
-      case _: DataIntegrityViolationException =>
-        throw new AlreadyExistsError("Character '" + character + "' already exists.")
-    }
-
-    jdbc.queryForLong(
-      """select chrid from chr where realm = ? and name = ?""",
-      Array[AnyRef](realm, character): _*
-    )
-    */
-    /*
-
-    -1L
   }
 
+  def createCharacter(user: User, realm: String, character: String, race: Race,
+                      clazz: ChrClass, level: Int, chrxml: String) = {
+    val jdo = getJdoTemplate
+    val c = new Chr(user, realm, character, race.getKey, clazz.getKey, level,
+                    chrxml.toString, new Date)
+    jdo.makePersistent(c)
+    c
+  }
+
+  /*
   def getCharacterRoles(cid: Long): Seq[JSChrRole] = {
     val jdbc = getSimpleJdbcTemplate()
     jdbc.query(

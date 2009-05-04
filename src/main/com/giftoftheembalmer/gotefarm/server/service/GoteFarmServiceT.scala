@@ -12,6 +12,13 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSRole,
   NotFoundError
 }
+import com.giftoftheembalmer.gotefarm.server.dao.{
+  Chr,
+  ChrClass,
+  Race
+}
+
+import com.google.appengine.api.datastore.Key
 
 import com.google.appengine.api.users.User
 
@@ -27,11 +34,16 @@ trait GoteFarmServiceT {
 
   @throws(classOf[AlreadyExistsError])
   def newUser(username: String, email: String, password: String): Long
+  */
+  @throws(classOf[NotFoundError])
+  def getChrClass(key: Key): ChrClass
+  @throws(classOf[NotFoundError])
+  def getRace(key: Key): Race
 
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
-  def newCharacter(user: User, realm: String, character: String): Long
-
+  def newCharacter(user: User, realm: String, character: String): JSCharacter
+  /*
   def getCharacters(uid: Long): List[JSCharacter]
 
   @throws(classOf[NotFoundError])

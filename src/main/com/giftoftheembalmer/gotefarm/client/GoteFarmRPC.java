@@ -8,7 +8,7 @@ import java.util.List;
 public interface GoteFarmRPC extends RemoteService {
     public String newUser(String username, String email, String password) throws AlreadyExistsError;
     public String validateSID(String sid);
-    public Long newCharacter(String sid, String realm, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
+    public JSCharacter newCharacter(String sid, String realm, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
 
     public List<JSCharacter> getCharacters(String sid) throws UserNotLoggedInError;
     public JSCharacter getCharacter(String sid, long cid) throws UserNotLoggedInError, NotFoundError;

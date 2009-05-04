@@ -11,6 +11,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSRole
 }
 
+import com.google.appengine.api.datastore.Key
 import com.google.appengine.api.users.User
 
 import java.util.{
@@ -22,8 +23,19 @@ trait GoteFarmDaoT {
   /*
   def validateUser(username: String, password: String): Long
   def createUser(username: String, email: String, password: String): Long
-  def createCharacter(user: User, realm: String, character: String): Long
+  */
 
+  def getChrClass(key: Key): Option[ChrClass]
+  def getChrClass(clazz: String): ChrClass
+
+  def getRace(key: Key): Option[Race]
+  def getRace(race: String): Race
+
+  def getCharacter(realm: String, name: String): Option[Chr]
+  def createCharacter(user: User, realm: String, character: String, race: Race,
+                      clazz: ChrClass, level: Int, chrxml: String): Chr
+
+  /*
   def getCharacters(uid: Long): List[JSCharacter]
   def getCharacter(cid: Long): JSCharacter
 
