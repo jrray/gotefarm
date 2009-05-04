@@ -84,10 +84,10 @@ trait GoteFarmServiceT {
   */
 
   def getBadges(guild: Key): List[JSBadge]
-  /*
-  @throws(classOf[AlreadyExistsError])
-  def addBadge(name: String, score: Int): Long
+  @throws(classOf[NotFoundError])
+  def addBadge(user: User, guild: Key, name: String, score: Int): JSBadge
 
+  /*
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
   def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long, adding: Boolean): Unit

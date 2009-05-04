@@ -368,28 +368,14 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
-  /*
   override
-  def addBadge(name: String, score: Int) = {
-    val jdbc = getSimpleJdbcTemplate()
-    try {
-      jdbc.update(
-        """insert into badge (name, score)
-                      values (?,    ?    )""",
-        Array[AnyRef](name, score): _*
-      )
-    }
-    catch {
-      case _: DataIntegrityViolationException =>
-        throw new AlreadyExistsError("Badge '" + name + "' already exists.")
-    }
-
-    jdbc.queryForLong(
-      "select badgeid from badge where name = ?",
-      Array[AnyRef](name): _*
-    )
+  def addBadge(guild: Key, name: String, score: Int): Badge = {
+    val nb = new Badge(guild, name, score)
+    getJdoTemplate.makePersistent(nb)
+    nb
   }
 
+  /*
   override
   def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit = {
     val jdbc = getSimpleJdbcTemplate()

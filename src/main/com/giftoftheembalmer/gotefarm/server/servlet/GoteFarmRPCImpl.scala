@@ -155,13 +155,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def addBadge(sid: String, name: String, score: Int) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.addBadge(name, score)
-    true
-    */
-    false
+  def addBadge(guild_key: String, name: String, score: Int): JSBadge = {
+    goteFarmService.addBadge(getUser, guild_key, name, score)
   }
 
   override

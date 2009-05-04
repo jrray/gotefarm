@@ -362,34 +362,41 @@ public class EventEditor extends Composite implements ChangeHandler {
         newbadge.setText(NEW_BADGE);
 
         newbadge.addKeyPressHandler(new KeyPressHandler() {
+            private void focusBadge() {
+                newbadge.setFocus(true);
+                newbadge.setText(NEW_BADGE);
+                newbadge.setSelectionRange(0, NEW_BADGE.length());
+            }
+
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getCharCode() == KeyCodes.KEY_ENTER) {
-                    String badge = newbadge.getText();
+                    final String badge = newbadge.getText();
 
                     boolean found = false;
 
                     for (int i = 0; i < badges.getItemCount(); ++i) {
                         if (badges.getItemText(i).equals(badge)) {
+                            addBadge(badge);
+                            focusBadge();
                             found = true;
                             break;
                         }
                     }
 
                     if (!found) {
-                        badges.addItem(badge);
-                        badges.setSelectedIndex(badges.getItemCount()-1);
+                        GoteFarm.goteService.addBadge(admin.current_guild.key,
+                                                      badge, 0,
+                                                      new AsyncCallback<JSBadge>() {
+                            public void onSuccess(JSBadge result) {
+                                badges.addItem(badge);
+                                badges.setSelectedIndex(badges.getItemCount()-1);
 
-                        newbadge.setFocus(true);
-                        newbadge.setText(NEW_BADGE);
-                        newbadge.setSelectionRange(0, NEW_BADGE.length());
-
-                        addBadge(badge);
-
-                        GoteFarm.goteService.addBadge(GoteFarm.sessionID, badge, 0, new AsyncCallback<Boolean>() {
-                            public void onSuccess(Boolean result) {
+                                addBadge(badge);
+                                focusBadge();
                             }
 
                             public void onFailure(Throwable caught) {
+                                errmsg.setText(caught.getMessage());
                             }
                         });
                     }

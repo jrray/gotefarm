@@ -603,11 +603,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     mkList(goteFarmDao.getBadges(guild), badge2JSBadge)
   }
 
-  /*
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def addBadge(name: String, score: Int) =
-    goteFarmDao.addBadge(name, score)
+  def addBadge(user: User, guild: Key, name: String, score: Int)
+    : JSBadge = {
+    // TODO: make sure user is an officer of the guild
+    goteFarmDao.addBadge(guild, name, score)
+  }
 
+  /*
   @Transactional{val readOnly = false}
   override
   def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long,

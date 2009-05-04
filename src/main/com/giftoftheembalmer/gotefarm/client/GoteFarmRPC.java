@@ -31,7 +31,8 @@ public interface GoteFarmRPC extends RemoteService {
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public List<JSBadge> getBadges(String guild_key);
-    public Boolean addBadge(String sid, String name, int score) throws UserNotLoggedInError, AlreadyExistsError;
+    public JSBadge addBadge(String guild_key, String name, int score)
+        throws UserNotLoggedInError;
     public JSCharacter updateCharacterBadge(String sid, long cid,
                                             String badge_key, boolean adding)
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
