@@ -32,11 +32,19 @@ import java.net.{
   URLEncoder
 }
 
+import java.io.Serializable
+
 import java.util.{
   Calendar,
+  Collections,
   Date,
   GregorianCalendar,
   TimeZone
+}
+
+import javax.cache.{
+  Cache,
+  CacheManager
 }
 
 import scala.collection.jcl.Conversions._
@@ -50,24 +58,54 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   @scala.reflect.BeanProperty
   private var transactionTemplate: ScalaTransactionTemplate = null
 
-  implicit def key2Race(key: Key): Race = {
+  private val cache: java.util.Map[AnyRef, AnyRef] = (
+    CacheManager.getInstance.getCacheFactory.createCache(
+      Collections.emptyMap[Any,Any]
+    ).asInstanceOf[java.util.Map[AnyRef, AnyRef]]
+  )
+
+  def cached[K <: Serializable, R <: Serializable](key: K, f: K => R): R = {
+    val r = cache.get(key).asInstanceOf[R]
+    if (r ne null) {
+      r
+    }
+    else {
+      val r = f(key)
+      cache.put(key, r)
+      r
+    }
+  }
+
+  def key2Race(key: Key): Race = {
     getRace(key)
   }
 
-  implicit def key2ChrClass(key: Key): ChrClass = {
+  def key2RaceName(key: Key): String = {
+    cached(key, { key: Key =>
+      transactionTemplate.execute {
+        key2Race(key)
+      }.getName
+    })
+  }
+
+  def key2ChrClass(key: Key): ChrClass = {
     getChrClass(key)
+  }
+
+  def key2ChrClassName(key: Key): String = {
+    cached(key, { key: Key =>
+      transactionTemplate.execute {
+        key2ChrClass(key)
+      }.getName
+    })
   }
 
   implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
     val r = new JSCharacter
     r.realm = chr.getRealm
     r.name = chr.getName
-    r.race = transactionTemplate.execute {
-      key2Race(chr.getRace)
-    }.getName
-    r.clazz = transactionTemplate.execute {
-      key2ChrClass(chr.getChrClass)
-    }.getName
+    r.race = key2RaceName(chr.getRace)
+    r.clazz = key2ChrClassName(chr.getChrClass)
     r.level = chr.getLevel.shortValue
     r.characterxml = chr.getChrXml
     r.created = chr.getCreated
