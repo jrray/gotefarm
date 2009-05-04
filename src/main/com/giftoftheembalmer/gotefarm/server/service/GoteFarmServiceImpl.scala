@@ -559,9 +559,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
     goteFarmDao.updateCharacterBadge(cid, badgeid, adding)
   }
+  */
 
-  @Transactional{val readOnly = false}
-  def addInstance(name: String) = goteFarmDao.addInstance(name)
+  @Transactional{val propagation = Propagation.REQUIRED}
+  def addInstance(user: User, guild: Key, name: String): JSInstance = {
+    // TODO: make sure user is an officer of the guild
+    goteFarmDao.addInstance(guild, name)
+  }
+
+  /*
   @Transactional{val readOnly = false}
   def addBoss(instance: String, boss: String) =
     goteFarmDao.addBoss(instance, boss)

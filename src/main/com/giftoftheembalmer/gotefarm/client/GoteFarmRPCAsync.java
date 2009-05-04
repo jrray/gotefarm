@@ -33,7 +33,7 @@ interface GoteFarmRPCAsync {
                                      boolean adding,
                                      AsyncCallback<JSCharacter> cb);
 
-    public void addInstance(String sid, String name, AsyncCallback<Boolean> cb);
+    public void addInstance(String guild_key, String name, AsyncCallback<JSInstance> cb);
     public void addBoss(String sid, String instance, String boss, AsyncCallback<Boolean> cb);
 
     public void getInstances(String guild_key, AsyncCallback<List<JSInstance>> cb);

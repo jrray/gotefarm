@@ -163,13 +163,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new JSCharacter
   }
 
-  def addInstance(sid: String, name: String) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.addInstance(name)
-    true
-    */
-    false
+  def addInstance(guild_key: String, name: String): JSInstance = {
+    goteFarmService.addInstance(getUser, guild_key, name)
   }
 
   def addBoss(sid: String, instance: String, boss: String) = {

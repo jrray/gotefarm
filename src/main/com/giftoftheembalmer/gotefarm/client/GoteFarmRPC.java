@@ -35,7 +35,8 @@ public interface GoteFarmRPC extends RemoteService {
                                             boolean adding)
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
-    public Boolean addInstance(String sid, String name) throws UserNotLoggedInError, AlreadyExistsError;
+    public JSInstance addInstance(String guild_key, String name)
+        throws UserNotLoggedInError, NotFoundError;
     public Boolean addBoss(String sid, String instance, String boss) throws UserNotLoggedInError, NotFoundError, AlreadyExistsError;
 
     public List<JSInstance> getInstances(String guild_key)

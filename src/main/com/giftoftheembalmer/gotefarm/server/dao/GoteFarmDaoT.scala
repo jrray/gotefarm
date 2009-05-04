@@ -63,8 +63,11 @@ trait GoteFarmDaoT {
   def getBadges: List[JSBadge]
   def addBadge(name: String, score: Int): Long
   def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit
+  */
 
-  def addInstance(name: String): Long
+  def addInstance(guild: Key, name: String): Instance
+
+  /*
   def addBoss(instance: String, boss: String): Long
   */
 

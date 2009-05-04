@@ -54,7 +54,7 @@ public class EventEditor extends Composite implements ChangeHandler {
     final String ALL_ROLES = "All roles";
     final String MAX_LEVEL = "80";
 
-    public EventEditor(Admin admin, JSEventTemplate et) {
+    public EventEditor(final Admin admin, JSEventTemplate et) {
         this.admin = admin;
         this.et = et;
 
@@ -186,14 +186,12 @@ public class EventEditor extends Composite implements ChangeHandler {
                     }
 
                     if (!found) {
-                        GoteFarm.goteService.addInstance(GoteFarm.sessionID, inst, new AsyncCallback<Boolean>() {
-                            public void onSuccess(Boolean result) {
-                                if (!result) {
-                                    errmsg.setText("Failed to add instance");
-                                    return;
-                                }
-
-                                instances.addItem(inst);
+                        GoteFarm.goteService.addInstance(
+                                            admin.current_guild.key,
+                                            inst,
+                                            new AsyncCallback<JSInstance>() {
+                            public void onSuccess(JSInstance result) {
+                                instances.addItem(result.name, result.key);
                                 instances.setSelectedIndex(instances.getItemCount()-1);
                                 bosses.clear();
 
@@ -201,16 +199,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                             }
 
                             public void onFailure(Throwable caught) {
-                                try {
-                                    throw caught;
-                                }
-                                catch (AlreadyExistsError e) {
-                                    // Someone else added it?
-                                    onSuccess(true);
-                                }
-                                catch (Throwable e) {
-                                    errmsg.setText(e.getMessage());
-                                }
+                                errmsg.setText(caught.getMessage());
                             }
                         });
                     }

@@ -405,27 +405,16 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
                   cid, badgeid)
     }
   }
+  */
 
-  def addInstance(name: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-    try {
-      jdbc.update(
-        """insert into instance (name)
-                         values (?   )""",
-        Array[AnyRef](name): _*
-      )
-    }
-    catch {
-      case _: DataIntegrityViolationException =>
-        throw new AlreadyExistsError("Instance '" + name + "' already exists.")
-    }
-
-    jdbc.queryForLong(
-      "select instanceid from instance where name = ?",
-      Array[AnyRef](name): _*
-    )
+  override
+  def addInstance(guild: Key, name: String): Instance = {
+    val ni = new Instance(guild, name)
+    getJdoTemplate.makePersistent(ni)
+    ni
   }
 
+  /*
   def addBoss(instance: String, boss: String) = {
     val jdbc = getSimpleJdbcTemplate()
 
