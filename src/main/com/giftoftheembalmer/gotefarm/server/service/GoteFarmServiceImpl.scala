@@ -1,10 +1,5 @@
 package com.giftoftheembalmer.gotefarm.server.service
 
-import org.springframework.transaction.annotation.{
-  Propagation,
-  Transactional
-}
-
 import com.giftoftheembalmer.gotefarm.server.dao.{
   Chr,
   ChrClass,
@@ -25,6 +20,11 @@ import com.giftoftheembalmer.gotefarm.client.{
 import com.google.appengine.api.datastore.Key
 import com.google.appengine.api.users.User
 
+import org.springframework.transaction.annotation.{
+  Propagation,
+  Transactional
+}
+
 import org.apache.commons.logging.LogFactory
 
 import java.net.{
@@ -41,7 +41,7 @@ import java.util.{
 
 import scala.collection.jcl.Conversions._
 
-@Transactional{val readOnly = true}
+@Transactional{val propagation = Propagation.NEVER}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
   private val logger = LogFactory.getLog(this.getClass)
 
@@ -89,7 +89,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     throw new NotFoundError
   )
 
-  @Transactional{val propagation = Propagation.NEVER}
   def newCharacter(user: User, realm: String, character: String) = {
     // Character already in use?
     {
