@@ -67,7 +67,7 @@ public class Events
         Label signup_error = new Label();
 
         private Set<DropController> registered_drop_controllers = new HashSet<DropController>();
-        Map<Long, RoleSignup> role_signups = new HashMap<Long, RoleSignup>();
+        Map<String, RoleSignup> role_signups = new HashMap<String, RoleSignup>();
         private DropController removeSignupDC;
 
         public Event(JSEvent event) {
@@ -220,7 +220,7 @@ public class Events
                 }
 
                 // character must have this role
-                if (!chr.hasRole(role.roleid)) {
+                if (!chr.hasRole(role.role_key)) {
                     signup_error.setText(chr.name + " is missing the role '"
                                          + role.name + ".'");
                     return false;
@@ -237,7 +237,7 @@ public class Events
                     long earliest_signup = signups_start;
 
                     for (JSEventBadge badge : Event.this.event.badges) {
-                        if (!chr.hasBadge(badge.badgeid)) {
+                        if (!chr.hasBadge(badge.badge_key)) {
                             continue;
                         }
 
@@ -330,7 +330,7 @@ public class Events
                 // is this no-op drop?
                 if (   sup.sup != null
                     && role != null
-                    && sup.sup.role.roleid == role.roleid
+                    && sup.sup.role.key.equals(role.role_key)
                     && sup.sup.signup_type == signupType) {
                     throw new VetoDragException();
                 }
@@ -346,7 +346,7 @@ public class Events
                     // new signup
                     GoteFarm.goteService.signupForEvent(GoteFarm.sessionID,
                                                         event.eid,
-                                                        sup.chr.cid, role.roleid,
+                                                        sup.chr.cid, role.role_key,
                                                         signupType,
                                                         signupCallback);
                 }
@@ -363,7 +363,7 @@ public class Events
                     GoteFarm.goteService.changeEventSignup(GoteFarm.sessionID,
                                                            event.eid,
                                                            sup.sup.eventsignupid,
-                                                           role.roleid,
+                                                           role.role_key,
                                                            signupType,
                                                            signupCallback);
                 }
@@ -408,7 +408,7 @@ public class Events
             for (JSEventRole role : event.roles) {
                 RoleSignup rsup = new RoleSignup(event, role);
                 rsup.spaces_left = role.max;
-                role_signups.put(role.roleid, rsup);
+                role_signups.put(role.role_key, rsup);
 
                 for (JSEventBadge badge : event.badges) {
                     if (   badge.requireForSignup
@@ -433,7 +433,7 @@ public class Events
                         have_character_signed_up = true;
                     }
 
-                    RoleSignup rsup = role_signups.get(es.role.roleid);
+                    RoleSignup rsup = role_signups.get(es.role.key);
 
                     // role does not exist: limbo
                     if (rsup == null) {
@@ -466,7 +466,7 @@ public class Events
                     // character missing required badges?
                     boolean standby = false;
                     for (JSEventBadge req_badge : rsup.badges_required) {
-                        if (!es.chr.hasBadge(req_badge.badgeid)) {
+                        if (!es.chr.hasBadge(req_badge.badge_key)) {
                             rsup.standby.add(es);
                             standby = true;
                             break;
@@ -478,7 +478,7 @@ public class Events
                     for (Map.Entry<JSEventBadge, Integer> needed : rsup.badges_needed.entrySet()) {
                         if (needed.getValue() >= role_spots_left) {
                             // character must have this badge to sign up
-                            if (!es.chr.hasBadge(needed.getKey().badgeid)) {
+                            if (!es.chr.hasBadge(needed.getKey().badge_key)) {
                                 rsup.standby.add(es);
                                 standby = true;
                                 break;
@@ -498,7 +498,7 @@ public class Events
                     List<JSEventBadge> to_delete = new ArrayList<JSEventBadge>();
                     for (Map.Entry<JSEventBadge, Integer> needed : rsup.badges_needed.entrySet()) {
                         int num = needed.getValue();
-                        if (es.chr.hasBadge(needed.getKey().badgeid)) {
+                        if (es.chr.hasBadge(needed.getKey().badge_key)) {
                             if (num == 1) {
                                 to_delete.add(needed.getKey());
                             }
@@ -529,7 +529,7 @@ public class Events
 
             int column = 1;
             for (JSEventRole role : event.roles) {
-                RoleSignup rsup = role_signups.get(role.roleid);
+                RoleSignup rsup = role_signups.get(role.role_key);
                 rsup.column = column;
 
                 flex.setText(0, column, role.name);
@@ -833,7 +833,7 @@ public class Events
             FlexCellFormatter formatter = flex.getFlexCellFormatter();
 
             // show which drop targets are viable
-            for (Map.Entry<Long, RoleSignup> rsup : role_signups.entrySet()) {
+            for (Map.Entry<String, RoleSignup> rsup : role_signups.entrySet()) {
                 if (!chr.hasRole(rsup.getKey())) {
                     formatter.addStyleName(0, rsup.getValue().column, "bad-drop-target");
                 }
@@ -893,7 +893,7 @@ public class Events
             boolean role_found = false;
             for (JSEventRole role : Event.this.event.roles) {
                 for (JSChrRole chrrole : chr.roles) {
-                    if (role.roleid == chrrole.roleid) {
+                    if (role.role_key.equals(chrrole.key)) {
                         role_found = true;
                         break;
                     }
@@ -915,7 +915,7 @@ public class Events
                 long earliest_signup = signups_start;
 
                 for (JSEventBadge badge : Event.this.event.badges) {
-                    if (!chr.hasBadge(badge.badgeid)) {
+                    if (!chr.hasBadge(badge.badge_key)) {
                         continue;
                     }
 

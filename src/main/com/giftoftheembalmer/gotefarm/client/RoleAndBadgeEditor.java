@@ -36,7 +36,7 @@ public class RoleAndBadgeEditor extends Composite {
             boolean has_role = false;
             boolean is_waiting = false;
             for (B chrrole : chrroles) {
-                if (chrrole.getId() == role.getId()) {
+                if (chrrole.getKey() == role.getKey()) {
                     has_role = true;
                     hasrole.addClickHandler(
                         clickListener.newClickHandler(flex, row, chrrole)
@@ -55,7 +55,7 @@ public class RoleAndBadgeEditor extends Composite {
             else {
                 hasrole.addClickHandler(clickListener.newClickHandler(
                     flex, row, new ChrBadgeAndRole() {
-                    public long getId() { return role.getId(); }
+                    public String getKey() { return role.getKey(); }
                     public String getName() { return role.getName(); }
                     public String getMessage() { return null; }
                     public boolean isRestricted() { return role.isRestricted(); }

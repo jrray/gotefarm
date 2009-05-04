@@ -25,14 +25,14 @@ public interface GoteFarmRPC extends RemoteService {
     public List<JSRole> getRoles();
     public Boolean addRole(String sid, String name, boolean restricted) throws UserNotLoggedInError, AlreadyExistsError;
     // public List<JSCharRole> getCharacterRoles(long cid);
-    public JSCharacter updateCharacterRole(String sid, long cid, long roleid,
-                                           boolean adding)
+    public JSCharacter updateCharacterRole(String sid, long cid,
+                                           String role_key, boolean adding)
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public List<JSBadge> getBadges();
     public Boolean addBadge(String sid, String name, int score) throws UserNotLoggedInError, AlreadyExistsError;
-    public JSCharacter updateCharacterBadge(String sid, long cid, long badgeid,
-                                            boolean adding)
+    public JSCharacter updateCharacterBadge(String sid, long cid,
+                                            String badge_key, boolean adding)
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public JSInstance addInstance(String guild_key, String name)
@@ -61,13 +61,13 @@ public interface GoteFarmRPC extends RemoteService {
                                           Date if_changed_since)
         throws UserNotLoggedInError, NotFoundError;
     public JSEventSignups signupForEvent(String sid, long eventid,
-                                         long cid, long roleid,
+                                         long cid, String role_key,
                                          int signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
     public JSEventSignups changeEventSignup(String sid, long eventid,
                                             long eventsignupid,
-                                            long new_roleid,
+                                            String new_role_key,
                                             int new_signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;

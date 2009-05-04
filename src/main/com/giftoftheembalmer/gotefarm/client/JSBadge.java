@@ -3,7 +3,7 @@ package com.giftoftheembalmer.gotefarm.client;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class JSBadge implements IsSerializable, BadgeAndRole {
-    public long badgeid;
+    public String key;
     public String name;
     public int score;
 
@@ -14,8 +14,8 @@ public class JSBadge implements IsSerializable, BadgeAndRole {
         return name;
     }
 
-    public long getId() {
-        return badgeid;
+    public String getKey() {
+        return key;
     }
 
     public boolean isRestricted() {

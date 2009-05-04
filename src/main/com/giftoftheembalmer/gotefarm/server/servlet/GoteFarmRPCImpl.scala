@@ -142,7 +142,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def updateCharacterRole(sid: String, cid: Long, roleid: Long, adding: Boolean) = {
+  def updateCharacterRole(sid: String, cid: Long, role_key: String,
+                          adding: Boolean): JSCharacter = {
     /*
     val sess = getSession(sid)
     val uid = sess.getValue("uid").asInstanceOf[Long]
@@ -167,7 +168,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def updateCharacterBadge(sid: String, cid: Long, badgeid: Long, adding: Boolean) = {
+  def updateCharacterBadge(sid: String, cid: Long, badge_key: String,
+                           adding: Boolean): JSCharacter = {
     /*
     val sess = getSession(sid)
     val uid = sess.getValue("uid").asInstanceOf[Long]
@@ -278,8 +280,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def signupForEvent(sid: String, eventid: Long, cid: Long, roleid: Long,
-                     signup_type: Int) = {
+  def signupForEvent(sid: String, eventid: Long, cid: Long,
+                     role_key: String, signup_type: Int) = {
     /*
     val sess = getSession(sid)
     val uid = sess.getValue("uid").asInstanceOf[Long]
@@ -291,7 +293,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
 
   override
   def changeEventSignup(sid: String, eventid: Long, eventsignupid: Long,
-                        new_roleid: Long, new_signup_type: Int) = {
+                        new_role_key: String, new_signup_type: Int) = {
     /*
     val sess = getSession(sid)
     val uid = sess.getValue("uid").asInstanceOf[Long]

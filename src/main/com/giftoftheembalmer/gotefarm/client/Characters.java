@@ -149,7 +149,7 @@ public class Characters
             public void updateCharacterRole(boolean adding) {
                 GoteFarm.goteService.updateCharacterRole(GoteFarm.sessionID,
                                                          chr.cid,
-                                                         role.getId(),
+                                                         role.getKey(),
                                                          adding,
                                                          new AsyncCallback<JSCharacter>() {
                     public void onSuccess(JSCharacter result) {
@@ -179,7 +179,7 @@ public class Characters
             public void updateCharacterRole(boolean adding) {
                 GoteFarm.goteService.updateCharacterBadge(GoteFarm.sessionID,
                                                           chr.cid,
-                                                          role.getId(),
+                                                          role.getKey(),
                                                           adding,
                                                           new AsyncCallback<JSCharacter>() {
                     public void onSuccess(JSCharacter result) {

@@ -3,7 +3,7 @@ package com.giftoftheembalmer.gotefarm.client;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class JSRole implements IsSerializable, BadgeAndRole {
-    public long roleid;
+    public String key;
     public String name;
     public boolean restricted;
 
@@ -14,8 +14,8 @@ public class JSRole implements IsSerializable, BadgeAndRole {
         return name;
     }
 
-    public long getId() {
-        return roleid;
+    public String getKey() {
+        return key;
     }
 
     public boolean isRestricted() {

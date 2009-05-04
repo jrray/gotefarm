@@ -19,9 +19,9 @@ public class JSCharacter implements IsSerializable {
     public JSCharacter() {
     }
 
-    public boolean hasBadge(long badgeid) {
+    public boolean hasBadge(String key) {
         for (JSChrBadge badge : badges) {
-            if (badge.badgeid == badgeid) {
+            if (badge.key.equals(key)) {
                 return badge.approved;
             }
         }
@@ -29,9 +29,9 @@ public class JSCharacter implements IsSerializable {
         return false;
     }
 
-    public boolean hasRole(long roleid) {
+    public boolean hasRole(String key) {
         for (JSChrRole role : roles) {
-            if (role.roleid == roleid) {
+            if (role.key.equals(key)) {
                 return role.approved;
             }
         }
@@ -39,7 +39,7 @@ public class JSCharacter implements IsSerializable {
         return false;
     }
 
-    public boolean hasRole(String name) {
+    public boolean hasRoleName(String name) {
         for (JSChrRole role : roles) {
             if (role.name.equals(name)) {
                 return role.approved;

@@ -3,7 +3,7 @@ package com.giftoftheembalmer.gotefarm.client;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class JSEventBadge implements IsSerializable {
-    public long badgeid;
+    public String badge_key;
     public String name;
     public boolean requireForSignup;
     public String applyToRole;
@@ -17,7 +17,7 @@ public class JSEventBadge implements IsSerializable {
     public boolean equals(Object obj) {
         if ((obj != null) && (obj.getClass().equals(getClass()))) {
             JSEventBadge o = (JSEventBadge)obj;
-            if (   o.badgeid == badgeid
+            if (   o.badge_key.equals(badge_key)
                 && o.name.equals(name)
                 && o.requireForSignup == requireForSignup
                 && ((   o.applyToRole == null && applyToRole == null)
@@ -33,7 +33,7 @@ public class JSEventBadge implements IsSerializable {
     @Override
     public int hashCode() {
         int code = 317;
-        code = 17 * code + (int)(badgeid^(badgeid >>> 32));
+        code = 17 * code + badge_key.hashCode();
         code = 17 * code + name.hashCode();
         code = 17 * code + (requireForSignup ? 1 : 0);
         code = 17 * code + (applyToRole == null ? 0 : applyToRole.hashCode());
