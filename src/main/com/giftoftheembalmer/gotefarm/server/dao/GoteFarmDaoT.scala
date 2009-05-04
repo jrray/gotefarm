@@ -58,6 +58,7 @@ trait GoteFarmDaoT {
   def getCharacter(cid: Long): JSCharacter
   */
 
+  def getRole(key: Key): Option[Role]
   def getRoles(guild: Key): Collection[Role]
 
   /*

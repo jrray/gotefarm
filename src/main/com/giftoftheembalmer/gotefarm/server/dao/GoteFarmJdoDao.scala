@@ -301,6 +301,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   */
 
   override
+  def getRole(key: Key): Option[Role] = {
+    getObjectById(classOf[Role], key)
+  }
+
+  override
   def getRoles(guild: Key): java.util.Collection[Role] = {
     find(classOf[Role], "guild == guildParam",
          "com.google.appengine.api.datastore.Key guildParam")(guild)
