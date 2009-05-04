@@ -238,6 +238,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     if (officers ne null) {
       jsg.officers ++= officers.map(key2String)
     }
+    jsg.time_zone = g.getTimeZone
   }
 
   implicit def guild2JSGuild(g: Guild): JSGuild = {

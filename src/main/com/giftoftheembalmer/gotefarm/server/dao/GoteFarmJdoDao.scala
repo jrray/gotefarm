@@ -204,7 +204,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )(region, realm, name)
     if (r.isEmpty) {
       // add it
-      val nr = new Guild(region, realm, name, account)
+      val nr = new Guild(region, realm, name, account, null)
       getJdoTemplate.makePersistent(nr)
       nr
     }

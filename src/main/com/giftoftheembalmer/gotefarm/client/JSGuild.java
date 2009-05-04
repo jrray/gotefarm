@@ -12,6 +12,7 @@ public class JSGuild implements IsSerializable {
     public String name;
     public String owner;
     public Set<String> officers;
+    public String time_zone;
 
     public JSGuild() {
     }

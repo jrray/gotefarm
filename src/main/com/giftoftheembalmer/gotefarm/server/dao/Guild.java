@@ -36,13 +36,18 @@ public class Guild {
     @Persistent
     private Date lastUpdate;
 
-    public Guild(String region, String realm, String name, Key owner) {
+    @Persistent
+    private String timeZone;
+
+    public Guild(String region, String realm, String name, Key owner,
+                 String timeZone) {
         this.region = region;
         this.realm = realm;
         this.name = name;
         this.owner = owner;
         officers = new HashSet<Key>();
         lastUpdate = new Date();
+        this.timeZone = timeZone;
     }
 
     public Key getKey() {
@@ -73,6 +78,10 @@ public class Guild {
         return region;
     }
 
+    public String getTimeZone() {
+        return timeZone;
+    }
+
     public void setLastUpdate(Date lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
@@ -83,5 +92,9 @@ public class Guild {
 
     public void setOwner(Key owner) {
         this.owner = owner;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }
