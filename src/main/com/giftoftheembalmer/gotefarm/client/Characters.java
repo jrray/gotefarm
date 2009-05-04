@@ -362,7 +362,8 @@ public class Characters
             }
         });
 
-        GoteFarm.goteService.getRoles(new AsyncCallback<List<JSRole>>() {
+        GoteFarm.goteService.getRoles(current_guild.key,
+                                      new AsyncCallback<List<JSRole>>() {
             public void onSuccess(List<JSRole> result) {
                 roles = result;
                 for (Character c : character_widgets) {

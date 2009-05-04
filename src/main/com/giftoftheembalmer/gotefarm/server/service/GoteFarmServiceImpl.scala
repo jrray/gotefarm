@@ -9,6 +9,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Instance,
   Race,
   Region,
+  Role,
   ScalaTransactionTemplate
 }
 
@@ -23,6 +24,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSInstance,
   JSGuild,
   JSRegion,
+  JSRole,
   NotFoundError
 }
 
@@ -178,6 +180,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     val r = new JSInstance
     r.key = instance.getKey
     r.name = instance.getName
+    r
+  }
+
+  implicit def role2JSRole(role: Role): JSRole = {
+    val r = new JSRole
+    r.key = role.getKey
+    r.name = role.getName
+    r.restricted = role.getRestricted.booleanValue
     r
   }
 
@@ -548,9 +558,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   /*
   override
   def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
+  */
 
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def getRoles = goteFarmDao.getRoles
+  def getRoles(guild: Key): java.util.List[JSRole] = {
+    mkList(goteFarmDao.getRoles(guild), role2JSRole)
+  }
+
+  /*
   @Transactional{val readOnly = false}
   override
   def addRole(name: String, restricted: Boolean) =

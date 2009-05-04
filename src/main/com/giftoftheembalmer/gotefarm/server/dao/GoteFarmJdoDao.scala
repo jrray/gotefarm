@@ -298,18 +298,15 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
         throw new NotFoundError("Character not found.")
     }
   }
+  */
 
   override
-  def getRoles = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    jdbc.query(
-      "select " + JSRoleMapper.columns + " from role order by name",
-      JSRoleMapper,
-      Array[AnyRef](): _*
-    )
+  def getRoles(guild: Key): java.util.Collection[Role] = {
+    find(classOf[Role], "guild == guildParam",
+         "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
+  /*
   override
   def getRole(roleid: Long) = {
     val jdbc = getSimpleJdbcTemplate()

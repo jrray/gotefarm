@@ -56,8 +56,11 @@ trait GoteFarmDaoT {
   def getCharacters(user: User, guild: Key): Collection[Chr]
   /*
   def getCharacter(cid: Long): JSCharacter
+  */
 
-  def getRoles: List[JSRole]
+  def getRoles(guild: Key): Collection[Role]
+
+  /*
   def getRole(roleid: Long): JSRole
   def addRole(name: String, restricted: Boolean): Long
   def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit

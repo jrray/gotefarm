@@ -128,8 +128,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def getRoles =
-    new java.util.ArrayList[JSRole] // goteFarmService.getRoles
+  def getRoles(guild_key: String): java.util.List[JSRole] = {
+    goteFarmService.getRoles(guild_key)
+  }
 
   override
   def addRole(sid: String, name: String, restricted: Boolean) = {

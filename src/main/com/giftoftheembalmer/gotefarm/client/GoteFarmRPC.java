@@ -22,7 +22,7 @@ public interface GoteFarmRPC extends RemoteService {
     public List<JSCharacter> getCharacters(String guild_key) throws UserNotLoggedInError;
     public JSCharacter getCharacter(String sid, long cid) throws UserNotLoggedInError, NotFoundError;
 
-    public List<JSRole> getRoles();
+    public List<JSRole> getRoles(String guild_key) throws NotFoundError;
     public Boolean addRole(String sid, String name, boolean restricted) throws UserNotLoggedInError, AlreadyExistsError;
     // public List<JSCharRole> getCharacterRoles(long cid);
     public JSCharacter updateCharacterRole(String sid, long cid,

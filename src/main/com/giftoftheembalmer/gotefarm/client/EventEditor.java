@@ -258,7 +258,8 @@ public class EventEditor extends Composite implements ChangeHandler {
 
         roles.addItem(SELECT_A_ROLE);
 
-        GoteFarm.goteService.getRoles(new AsyncCallback<List<JSRole>>() {
+        GoteFarm.goteService.getRoles(admin.current_guild.key,
+                                      new AsyncCallback<List<JSRole>>() {
             public void onSuccess(List<JSRole> results) {
                 for (JSRole i : results) {
                     roles.addItem(i.name);
