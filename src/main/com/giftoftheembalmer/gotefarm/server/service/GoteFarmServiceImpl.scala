@@ -232,6 +232,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     val clazz = char \ "@class"
     val level = (char \ "@level").toString.toInt
 
+    // Character already in use?
+    transactionTemplate.execute {
+      val chr = goteFarmDao.getCharacter(realm.toString, name.toString)
+      if (chr.isDefined) {
+        throw new AlreadyExistsError("Character '" + name.toString + "' already exists.")
+      }
+    }
+
     // get (or create) the race object
     val race_obj = transactionTemplate.execute {
       goteFarmDao.getRace(race.toString)
@@ -263,14 +271,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   def newCharacter(user: User, realm: String, character: String) = {
-    // Character already in use?
-    {
-      val chr = goteFarmDao.getCharacter(realm, character)
-      if (chr.isDefined) {
-        throw new AlreadyExistsError("Character '" + character + "' already exists.")
-      }
-    }
-
     val charxml = fetchCharacterFromArmory(
       "http://www.wowarmory.com/character-sheet.xml?r=" +
       URLEncoder.encode(realm, "UTF-8") + "&n=" +
