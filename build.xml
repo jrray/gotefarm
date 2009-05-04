@@ -251,6 +251,15 @@
             <compilerarg value="-Xlint:deprecation"/>
             <classpath refid="project.class.path"/>
         </javac>
+        <taskdef
+            name="datanucleusenhancer"
+            classpathref="tools.class.path"
+            classname="org.datanucleus.enhancer.tools.EnhancerTask" />
+        <datanucleusenhancer
+            classpathref="tools.class.path"
+            failonerror="true">
+            <fileset dir="war/WEB-INF/classes" includes="**/*.class" />
+        </datanucleusenhancer>
     </target>
 
     <target name="compile_scala" depends="compile_java"

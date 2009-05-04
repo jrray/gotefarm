@@ -39,19 +39,25 @@
 
         <tx:annotation-driven transaction-manager="txManager"/>
 
-        <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-              <property name="dataSource" ref="dataSource"/>
+        <bean id="jdoFactory" class="org.springframework.orm.jdo.LocalPersistenceManagerFactoryBean">
+            <!-- The name of the PMF is in META-INF/jdoconfig.xml -->
+            <property name="persistenceManagerFactoryName" value="transactions-optional"/>
+        </bean>
+
+        <bean id="txManager" class="org.springframework.orm.jdo.JdoTransactionManager">
+            <property name="persistenceManagerFactory" ref="jdoFactory"/>
         </bean>
 
 	<!-- ========================= BUSINESS OBJECT DEFINITIONS ======================== -->
 
+        <!--
         <bean id="goteFarmDao" class="com.giftoftheembalmer.gotefarm.server.dao.GoteFarmJdbcDao">
             <property name="dataSource" ref="dataSource"/>
         </bean>
+        -->
 
-        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl"
-            init-method="generateTables">
-            <property name="goteFarmDao" ref="goteFarmDao"/>
+        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl">
+            <!-- <property name="goteFarmDao" ref="goteFarmDao"/> -->
         </bean>
 
 	<!-- AOP advice used to send confirmation email after order has been submitted -->
