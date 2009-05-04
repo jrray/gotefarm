@@ -214,16 +214,18 @@ public class EventEditor extends Composite implements ChangeHandler {
                 if (event.getCharCode() == KeyCodes.KEY_ENTER) {
                     int selinst = instances.getSelectedIndex();
                     if (selinst == -1) {
-                        // TODO: display error
+                        errmsg.setText(  "You need to select and instance to "
+                                       + "add a boss.");
                         return;
                     }
 
-                    String boss = newboss.getText();
+                    final String boss = newboss.getText();
 
                     boolean found = false;
 
                     for (int i = 0; i < bosses.getItemCount(); ++i) {
                         if (bosses.getItemText(i).equals(boss)) {
+                            bosses.setItemSelected(i, true);
                             focusBoss();
                             found = true;
                             break;
@@ -231,24 +233,23 @@ public class EventEditor extends Composite implements ChangeHandler {
                     }
 
                     if (!found) {
-                        bosses.addItem(boss);
-                        bosses.setItemSelected(bosses.getItemCount()-1, true);
-
                         GoteFarm.goteService.addBoss(
-                            GoteFarm.sessionID,
-                            instances.getItemText(selinst),
+                            instances.getValue(selinst),
                             boss,
-                            new AsyncCallback<Boolean>() {
+                            new AsyncCallback<JSBoss>() {
 
-                            public void onSuccess(Boolean result) {
+                            public void onSuccess(JSBoss result) {
+                                bosses.addItem(result.name, result.key);
+                                bosses.setItemSelected(bosses.getItemCount()-1, true);
+
+                                focusBoss();
                             }
 
                             public void onFailure(Throwable caught) {
+                                errmsg.setText(caught.getMessage());
                             }
                         });
                     }
-
-                    focusBoss();
                 }
             }
         });

@@ -168,13 +168,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     goteFarmService.addInstance(getUser, guild_key, name)
   }
 
-  def addBoss(sid: String, instance: String, boss: String) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.addBoss(instance, boss)
-    true
-    */
-    false
+  def addBoss(instance_key: String, name: String): JSBoss = {
+    goteFarmService.addBoss(getUser, instance_key, name)
   }
 
   def getInstances(guild_key: String): java.util.List[JSInstance] = {

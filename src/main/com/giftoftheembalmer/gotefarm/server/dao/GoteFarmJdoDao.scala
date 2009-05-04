@@ -418,39 +418,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     ni
   }
 
-  /*
-  def addBoss(instance: String, boss: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    val iid = try {
-      getInstanceId(instance)
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("Instance '" + instance + "' not found.")
-    }
-
-    val parms = Array[AnyRef](iid, boss)
-
-    try {
-      jdbc.update(
-        """insert into boss (instanceid, name)
-                     values (?,          ?   )""",
-        parms: _*
-      )
-    }
-    catch {
-      case _: DataIntegrityViolationException =>
-        throw new AlreadyExistsError("Boss '" + boss + "' already exists.")
-    }
-
-    jdbc.queryForLong(
-      "select bossid from boss where instanceid = ? and name = ?",
-      parms: _*
-    )
-  }
-  */
-
   override
   def getInstances(guild: Key): java.util.Collection[Instance] = {
     find(classOf[Instance], "guild == guildParam",

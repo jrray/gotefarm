@@ -68,11 +68,6 @@ trait GoteFarmDaoT {
   */
 
   def addInstance(guild: Key, name: String): Instance
-
-  /*
-  def addBoss(instance: String, boss: String): Long
-  */
-
   def getInstances(guild: Key): Collection[Instance]
 
   /*

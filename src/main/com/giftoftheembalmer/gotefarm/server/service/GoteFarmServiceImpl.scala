@@ -577,11 +577,18 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     goteFarmDao.addInstance(guild, name)
   }
 
-  /*
-  @Transactional{val readOnly = false}
-  def addBoss(instance: String, boss: String) =
-    goteFarmDao.addBoss(instance, boss)
-  */
+  @Transactional{val propagation = Propagation.REQUIRED}
+  def addBoss(user: User, instance: Key, name: String): JSBoss = {
+    // TODO: make sure user is an officer of the guild
+
+    val i = goteFarmDao.getInstance(instance).getOrElse(
+      throw new NotFoundError("Instance not found")
+    )
+
+    val nb = new Boss(name)
+    listAdd(nb, i.getBosses, i.setBosses)
+    nb
+  }
 
   @Transactional{val propagation = Propagation.REQUIRED}
   def getInstances(guild: Key): java.util.List[JSInstance] = {

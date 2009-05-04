@@ -90,11 +90,8 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   def addInstance(user: User, guild: Key, name: String): JSInstance
 
-  /*
-  @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
-  def addBoss(instance: String, name: String): Long
-  */
+  def addBoss(user: User, instance: Key, name: String): JSBoss
 
   @throws(classOf[NotFoundError])
   def getInstances(guild: Key): List[JSInstance]
