@@ -3,6 +3,7 @@ package com.giftoftheembalmer.gotefarm.server.service
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
+  JSAccount,
   JSCharacter,
   JSBadge,
   JSEvent,
@@ -29,6 +30,8 @@ import java.util.{
 }
 
 trait GoteFarmServiceT {
+  def getAccount(user: User): JSAccount
+
   /*
   @throws(classOf[InvalidCredentialsError])
   def login(username: String, password: String): Long

@@ -21,6 +21,8 @@ import java.util.{
 }
 
 trait GoteFarmDaoT {
+  def getAccount(user: User): Account
+
   /*
   def validateUser(username: String, password: String): Long
   def createUser(username: String, email: String, password: String): Long

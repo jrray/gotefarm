@@ -11,10 +11,12 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
 
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
+  JSAccount,
   JSCharacter,
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
+  JSGuild,
   JSRegion,
   NotFoundError
 }
@@ -148,6 +150,19 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  private def populateJSGuild(jsg: JSGuild, g: Guild): Unit = {
+    jsg.key = g.getKey
+    jsg.region = g.getRegion
+    jsg.realm = g.getRealm
+    jsg.name = g.getName
+    jsg.owner = g.getOwner
+    jsg.officers = new java.util.HashSet[String]
+    val officers = g.getOfficers
+    if (officers ne null) {
+      jsg.officers ++= officers.map(key2String)
+    }
+  }
+
   private def mkList[A](col: java.util.Collection[A]): java.util.List[A] = {
     val r = new java.util.ArrayList[A]
     if (col ne null) {
@@ -199,6 +214,52 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     else {
       existing_list.add(element)
     }
+  }
+
+  override
+  def getAccount(user: User): JSAccount = {
+    val r = transactionTemplate.execute {
+      val account = goteFarmDao.getAccount(user)
+
+      val r = new JSAccount
+      r.key = account.getKey
+      r.email = user.getEmail
+
+      r.guilds = new java.util.ArrayList[JSGuild]
+
+      val guilds = account.getGuilds
+      if (guilds ne null) {
+        for (g <- guilds) {
+          val jsg = new JSGuild
+          jsg.key = g
+          r.guilds.add(jsg)
+        }
+      }
+
+      val ag = account.getActiveGuild
+      if (ag ne null) {
+        val key: String = ag
+        // point active_guild at one of the existing JSGuild instances
+        r.active_guild = r.guilds.find(_.key == key).getOrElse(null)
+      }
+
+      r
+    }
+
+    // populate the JSGuild objects
+    for (jsg <- r.guilds) {
+      transactionTemplate.execute {
+        goteFarmDao.getGuild(jsg.key) match {
+          case Some(g) =>
+            populateJSGuild(jsg, g)
+
+          case None =>
+            jsg.name = "Guild no longer exists"
+        }
+      }
+    }
+
+    r
   }
 
   /*

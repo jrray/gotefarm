@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 interface GoteFarmRPCAsync {
+    public void getAccount(AsyncCallback<JSAccount> cb);
+
     public void newUser(String username, String email, String password, AsyncCallback<String> cb);
     public void validateSID(String sid, AsyncCallback<String> cb);
 

@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 public interface GoteFarmRPC extends RemoteService {
+    public JSAccount getAccount() throws UserNotLoggedInError;
+
     public String newUser(String username, String email, String password) throws AlreadyExistsError;
     public String validateSID(String sid);
 

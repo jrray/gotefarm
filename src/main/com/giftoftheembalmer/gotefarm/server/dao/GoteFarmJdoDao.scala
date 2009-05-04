@@ -35,6 +35,24 @@ import scala.Predef.{
 
 class GoteFarmJdoDao extends ScalaJdoDaoSupport
   with GoteFarmDaoT {
+
+  override
+  def getAccount(user: User): Account = {
+    val r = find(classOf[Account], "user == userParam",
+                 "com.google.appengine.api.users.User userParam")(user)
+    if (r.isEmpty) {
+      // add it
+      val nr = new Account(user)
+      getJdoTemplate.makePersistent(nr)
+      nr
+    }
+    else {
+      val a = r.iterator.next
+      a.setLastUpdate(new Date)
+      a
+    }
+  }
+
   /*
   def validateUser(username: String, password: String) = {
     val jdbc = getSimpleJdbcTemplate()

@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.server.service._
 
 import com.giftoftheembalmer.gotefarm.client.{
   GoteFarmRPC,
+  JSAccount,
   JSBadge,
   JSCharacter,
   JSEvent,
@@ -50,6 +51,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     sess.putValue("uid", uid)
     logger.debug("Returning new sessionID: " + sess.getId())
     sess.getId()
+  }
+
+  override
+  def getAccount: JSAccount = {
+    goteFarmService.getAccount(getUser)
   }
 
   def newUser(username: String, email: String, password: String) = {
