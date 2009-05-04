@@ -34,6 +34,8 @@ trait GoteFarmDaoT {
   def getChrClass(key: Key): Option[ChrClass]
   def getChrClass(clazz: String): ChrClass
 
+  def getInstance(key: Key): Option[Instance]
+
   def getRace(key: Key): Option[Race]
   def getRace(race: String): Race
 

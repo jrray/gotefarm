@@ -114,6 +114,10 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[ChrClass], key)
   }
 
+  def getInstance(key: Key): Option[Instance] = {
+    getObjectById(classOf[Instance], key)
+  }
+
   def getRace(key: Key): Option[Race] = {
     getObjectById(classOf[Race], key)
   }
