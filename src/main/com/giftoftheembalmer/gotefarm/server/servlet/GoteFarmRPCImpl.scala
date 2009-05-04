@@ -210,13 +210,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def saveEventTemplate(sid: String, et: JSEventTemplate) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.saveEventTemplate(et)
-    true
-    */
-    false
+  def saveEventTemplate(guild_key: String, et: JSEventTemplate)
+    : JSEventTemplate = {
+    goteFarmService.saveEventTemplate(getUser, guild_key, et)
   }
 
   override

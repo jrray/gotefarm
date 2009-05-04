@@ -5,6 +5,9 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Boss,
   Chr,
   ChrClass,
+  EventBadge,
+  EventBoss,
+  EventRole,
   GoteFarmDaoT,
   Guild,
   Instance,
@@ -115,6 +118,26 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
+  def key2BadgeName(key: Key): String = {
+    cached(key, { key: Key =>
+      transactionTemplate.execute {
+        goteFarmDao.getBadge(key).getOrElse(
+          throw new NotFoundError("Badge not found")
+        )
+      }.getName
+    })
+  }
+
+  def key2BossName(key: Key): String = {
+    cached(key, { key: Key =>
+      transactionTemplate.execute {
+        goteFarmDao.getBoss(key).getOrElse(
+          throw new NotFoundError("Boss not found")
+        )
+      }.getName
+    })
+  }
+
   def key2Race(key: Key): Race = {
     getRace(key)
   }
@@ -135,6 +158,26 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     cached(key, { key: Key =>
       transactionTemplate.execute {
         key2ChrClass(key)
+      }.getName
+    })
+  }
+
+  def key2InstanceName(key: Key): String = {
+    cached(key, { key: Key =>
+      transactionTemplate.execute {
+        goteFarmDao.getInstance(key).getOrElse(
+          throw new NotFoundError("Instance not found")
+        )
+      }.getName
+    })
+  }
+
+  def key2RoleName(key: Key): String = {
+    cached(key, { key: Key =>
+      transactionTemplate.execute {
+        goteFarmDao.getRole(key).getOrElse(
+          throw new NotFoundError("Role not found")
+        )
       }.getName
     })
   }
@@ -672,11 +715,98 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
   override
   def getEventTemplates = goteFarmDao.getEventTemplates
-  @Transactional{val readOnly = false}
-  override
-  def saveEventTemplate(et: JSEventTemplate) =
-    goteFarmDao.saveEventTemplate(et)
+  */
 
+  override
+  def saveEventTemplate(user: User, guild: Key,
+                        jset: JSEventTemplate): JSEventTemplate = {
+    // TODO: make sure user is an officer of the guild
+    val event_is_new = jset.key eq null
+
+    val instance = key2InstanceName(jset.instance_key)
+
+    // Map the badge, boss and role keys from the client to their current
+    // names.
+    val badge_map = new scala.collection.mutable.HashMap[String, String]
+    for {
+      badge <- jset.badges
+      key: Key = badge.badge_key
+      name = key2BadgeName(key)
+    } {
+      badge_map.put(badge.badge_key, name)
+    }
+
+    val boss_map = new scala.collection.mutable.HashMap[String, String]
+    for {
+      boss <- jset.boss_keys
+      key: Key = boss
+      name = key2BossName(key)
+    } {
+      boss_map.put(boss, name)
+    }
+
+    val role_map = new scala.collection.mutable.HashMap[String, String]
+    for {
+      role <- jset.roles
+      key: Key = role.role_key
+      name = key2RoleName(key)
+    } {
+      role_map.put(role.role_key, name)
+    }
+
+    transactionTemplate.execute {
+      val et = if (event_is_new) {
+        val et = goteFarmDao.addEventTemplate(guild, jset.name, jset.size,
+                                              jset.minimumLevel, instance,
+                                              jset.instance_key)
+        jset.key = et.getKey
+        et
+      }
+      else {
+        val et = goteFarmDao.getEventTemplate(jset.key).getOrElse(
+          throw new NotFoundError("Event not found")
+        )
+        et.setName(jset.name)
+        et.setSize(jset.size)
+        et.setMinimumLevel(jset.minimumLevel)
+        et.setInstance(instance, jset.instance_key)
+        et
+      }
+
+      // Update bosses
+      val bosses = new java.util.ArrayList[EventBoss]
+      bosses.addAll(jset.boss_keys.map(x => {
+        val name = boss_map.get(x).get
+        new EventBoss(name, x)
+      }))
+      et.setBosses(bosses)
+
+      // Update roles
+      val roles = new java.util.ArrayList[EventRole]
+      roles.addAll(jset.roles.map(x => {
+        val name = role_map.get(x.role_key).get
+        new EventRole(name, x.role_key, x.min, x.max)
+      }))
+      et.setRoles(roles)
+
+      // Update badges
+      val badges = new java.util.ArrayList[EventBadge]
+      badges.addAll(jset.badges.map(x => {
+        val name = badge_map.get(x.badge_key).get
+        new EventBadge(name, x.badge_key, x.requireForSignup, x.applyToRole,
+                       x.numSlots, x.earlySignup)
+      }))
+      et.setBadges(badges)
+    }
+
+    if (!event_is_new && jset.modifyEvents) {
+      // TODO: rebuild events
+    }
+
+    jset
+  }
+
+  /*
   override
   def getEventSchedules(name: String) =
     goteFarmDao.getEventSchedules(name)

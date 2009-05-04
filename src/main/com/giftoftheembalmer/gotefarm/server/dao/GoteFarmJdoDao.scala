@@ -432,6 +432,15 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
+  override
+  def addEventTemplate(guild: Key, name: String, size: Int, min_level: Int,
+                       instance: String, instance_key: Key): EventTemplate = {
+    val ne = new EventTemplate(guild, name, size, min_level, instance,
+                               instance_key)
+    getJdoTemplate.makePersistent(ne)
+    ne
+  }
+
   /*
   private def populateEventTemplate[T <: JSEventTemplate](et: T,
                                                           eventstub: String)
@@ -567,167 +576,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       jdbc.update("delete from eventboss where eventid = ?", eventid)
       populateEventBosses(eventid, et.eid)
     }
-  }
-
-  override
-  def saveEventTemplate(et: JSEventTemplate) = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    val iid = getInstanceId(et.instance)
-
-    val new_event = et.eid == -1
-
-    if (new_event) {
-      try {
-        jdbc.update(
-          """insert into eventtmpl (name, size, minimum_level, instanceid)
-                            values (?,    ?,    ?,             ?         )""",
-          Array[AnyRef](et.name, et.size, et.minimumLevel, iid): _*
-        )
-
-        et.eid = jdbc.queryForLong(
-          "select eventtmplid from eventtmpl where name = ?",
-          Array[AnyRef](et.name): _*
-        )
-      }
-      catch {
-        case _: DataIntegrityViolationException =>
-          throw new AlreadyExistsError("Template '" + et.name + "' already exists.")
-      }
-    }
-    else {
-      try {
-        val c = jdbc.update(
-          """update eventtmpl set name = ?, size = ?, minimum_level = ?, instanceid = ? where eventtmplid = ?""",
-          Array[AnyRef](et.name, et.size, et.minimumLevel, iid, et.eid): _*
-        )
-
-        if (c == 0) {
-          throw new NotFoundError("Template " + et.eid + " not found.")
-        }
-      }
-      catch {
-        case _: DataIntegrityViolationException =>
-          throw new AlreadyExistsError("Template '" + et.name + "' already exists.")
-      }
-    }
-
-    jdbc.update(
-      """delete from eventtmplboss where eventtmplid = ?""",
-      Array[AnyRef](et.eid): _*
-    )
-
-    for (boss <- et.bosses) {
-      val bossid = try {
-        jdbc.queryForLong(
-          "select bossid from boss where instanceid = ? and name = ?",
-          Array[AnyRef](iid, boss): _*
-        )
-      }
-      catch {
-        case _: IncorrectResultSizeDataAccessException =>
-          throw new NotFoundError("Boss '" + boss + "' not found.")
-      }
-
-      jdbc.update(
-        """insert into eventtmplboss (eventtmplid, bossid)
-                              VALUES (?,           ?     )""",
-        Array[AnyRef](et.eid, bossid): _*
-      )
-    }
-
-    jdbc.update(
-      """delete from eventtmplrole where eventtmplid = ?""",
-      Array[AnyRef](et.eid): _*
-    )
-
-    for (role <- et.roles) {
-      val roleid = try {
-        jdbc.queryForLong(
-          "select roleid from role where name = ?",
-          Array[AnyRef](role.name): _*
-        )
-      }
-      catch {
-        case _: IncorrectResultSizeDataAccessException =>
-          throw new NotFoundError("Role '" + role.name + "' not found.")
-      }
-
-      try {
-        jdbc.update(
-          """insert into eventtmplrole (eventtmplid, roleid, min_count, max_count)
-                                VALUES (?,           ?,      ?,         ?        )""",
-          Array[AnyRef](et.eid, roleid, role.min, role.max): _*
-        )
-      }
-      catch {
-        case e: DataIntegrityViolationException
-          if e.getMessage.contains("MIN_COUNT_GE_ZERO") =>
-            throw new IllegalArgumentException(
-                "Role '"
-              + role.name
-              + "' must have a non-negative min value.")
-
-        case e: DataIntegrityViolationException
-          if e.getMessage.contains("MAX_COUNT_GT_ZERO") =>
-            throw new IllegalArgumentException(
-                "Role '"
-              + role.name
-              + "' must have a max value greater than zero.")
-      }
-    }
-
-    jdbc.update(
-      """delete from eventtmplbadge where eventtmplid = ?""",
-      Array[AnyRef](et.eid): _*
-    )
-
-    // XXX: JCL wrapper creating weird compiler errors for et.badges
-    val iter = et.badges.iterator
-    while (iter.hasNext) {
-      val badge = iter.next
-
-      val badgeid = try {
-        jdbc.queryForLong(
-          "select badgeid from badge where name = ?",
-          Array[AnyRef](badge.name): _*
-        )
-      }
-      catch {
-        case _: IncorrectResultSizeDataAccessException =>
-          throw new NotFoundError("Badge '" + badge.name + "' not found.")
-      }
-
-      val roleid: Option[java.lang.Long] = if (badge.applyToRole ne null) {
-        try {
-          Some(jdbc.queryForLong(
-            "select roleid from role where name = ?",
-            Array[AnyRef](badge.applyToRole): _*
-          ))
-        }
-        catch {
-          case _: IncorrectResultSizeDataAccessException =>
-            throw new NotFoundError("Role '" + badge.applyToRole + "' not found.")
-        }
-      }
-      else {
-        None
-      }
-
-      jdbc.update(
-        """insert into eventtmplbadge (eventtmplid, badgeid, require_for_signup, roleid, num_slots, early_signup)
-                               VALUES (?,           ?,       ?,                  ?,      ?,         ?           )""",
-        Array[AnyRef](et.eid, badgeid, boolchar(badge.requireForSignup), roleid.getOrElse(null), badge.numSlots, badge.earlySignup): _*
-      )
-
-      ()
-    }
-
-    if (!new_event && et.modifyEvents) {
-      rebuildEvents(et);
-    }
-
-    et.eid
   }
 
   override

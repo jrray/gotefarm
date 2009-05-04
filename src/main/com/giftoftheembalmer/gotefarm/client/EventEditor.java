@@ -263,7 +263,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                                       new AsyncCallback<List<JSRole>>() {
             public void onSuccess(List<JSRole> results) {
                 for (JSRole i : results) {
-                    roles.addItem(i.name);
+                    roles.addItem(i.name, i.key);
                 }
             }
 
@@ -303,7 +303,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                                                      role, true,
                                                      new AsyncCallback<JSRole>() {
                             public void onSuccess(JSRole result) {
-                                roles.addItem(role);
+                                roles.addItem(role, result.key);
                                 roles.setSelectedIndex(roles.getItemCount()-1);
 
                                 addRole(role);
@@ -350,7 +350,7 @@ public class EventEditor extends Composite implements ChangeHandler {
             new AsyncCallback<List<JSBadge>>() {
             public void onSuccess(List<JSBadge> results) {
                 for (JSBadge badge : results) {
-                    badges.addItem(badge.name);
+                    badges.addItem(badge.name, badge.key);
                 }
             }
 
@@ -389,7 +389,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                                                       badge, 0,
                                                       new AsyncCallback<JSBadge>() {
                             public void onSuccess(JSBadge result) {
-                                badges.addItem(badge);
+                                badges.addItem(badge, result.key);
                                 badges.setSelectedIndex(badges.getItemCount()-1);
 
                                 addBadge(badge);
@@ -470,6 +470,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                 for (int i = 0; i < roleft.getRowCount() - 2; ++i) {
                     JSEventRole er = new JSEventRole();
                     er.name = roleft.getText(i + 1, 0);
+                    er.role_key = getRoleKey(er.name);
                     TextBox minmax;
                     minmax = (TextBox)roleft.getWidget(i + 1, 1);
                     er.min = Integer.parseInt(minmax.getText());
@@ -482,6 +483,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                 for (int i = 0; i < badgeft.getRowCount() - 1; ++i) {
                     JSEventBadge eb = new JSEventBadge();
                     eb.name = badgeft.getText(i + 1, 0);
+                    eb.badge_key = getBadgeKey(eb.name);
                     CheckBox cb = (CheckBox)badgeft.getWidget(i + 1, 1);
                     eb.requireForSignup = cb.getValue();
                     ListBox lb = (ListBox)badgeft.getWidget(i + 1, 2);
@@ -499,8 +501,11 @@ public class EventEditor extends Composite implements ChangeHandler {
 
                 t.modifyEvents = modify.getValue();
 
-                GoteFarm.goteService.saveEventTemplate(GoteFarm.sessionID, t, new AsyncCallback<Boolean>() {
-                    public void onSuccess(Boolean result) {
+                GoteFarm.goteService.saveEventTemplate(
+                                        admin.current_guild.key,
+                                        t,
+                                        new AsyncCallback<JSEventTemplate>() {
+                    public void onSuccess(JSEventTemplate result) {
                         EventEditor.this.admin.eventAdded();
                         EventEditor.this.admin.setCenterWidget(null);
                     }
@@ -815,6 +820,24 @@ public class EventEditor extends Composite implements ChangeHandler {
         catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    private String getBadgeKey(String name) {
+        for (int i = 0; i < badges.getItemCount(); ++i) {
+            if (badges.getItemText(i).equals(name)) {
+                return badges.getValue(i);
+            }
+        }
+        return null;
+    }
+
+    private String getRoleKey(String name) {
+        for (int i = 0; i < roles.getItemCount(); ++i) {
+            if (roles.getItemText(i).equals(name)) {
+                return roles.getValue(i);
+            }
+        }
+        return null;
     }
 
     public void updateRoleTotals() {
