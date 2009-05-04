@@ -21,6 +21,7 @@ import java.util.{
 }
 
 trait GoteFarmServiceT {
+  /*
   def generateTables(): Unit
 
   @throws(classOf[InvalidCredentialsError])
@@ -98,4 +99,5 @@ trait GoteFarmServiceT {
   def removeEventSignup(uid: Long, eventsignupid: Long): Unit
 
   def publishEvents(): Unit
+  */
 }

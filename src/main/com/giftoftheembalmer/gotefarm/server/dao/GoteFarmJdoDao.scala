@@ -272,6 +272,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
   with GoteFarmDaoT {
   import GoteFarmJdbcDao._
 
+  /*
   def generateTables() = {
     val jdbc = getSimpleJdbcTemplate
     val jdbco = jdbc.getJdbcOperations
@@ -790,6 +791,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
   }
 
   def createCharacter(user: User, realm: String, character: String) = {
+    */
     /*
     val jdbc = getSimpleJdbcTemplate()
 
@@ -860,6 +862,7 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       Array[AnyRef](realm, character): _*
     )
     */
+    /*
 
     -1L
   }
@@ -1788,4 +1791,5 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       throw new NotFoundError("Signup not found")
     }
   }
+  */
 }

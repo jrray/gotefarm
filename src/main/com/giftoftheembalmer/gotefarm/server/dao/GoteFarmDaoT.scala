@@ -19,6 +19,7 @@ import java.util.{
 }
 
 trait GoteFarmDaoT {
+  /*
   def generateTables(): Unit
 
   def validateUser(username: String, password: String): Long
@@ -62,4 +63,5 @@ trait GoteFarmDaoT {
   def changeEventSignup(eventsignupid: Long, new_roleid: Long,
                         new_signup_type: Int): Unit
   def removeEventSignup(eventsignupid: Long): Unit
+  */
 }

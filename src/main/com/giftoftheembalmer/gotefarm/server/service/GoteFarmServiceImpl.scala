@@ -36,6 +36,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   @scala.reflect.BeanProperty
   private var transactionTemplate: ScalaTransactionTemplate = null
 
+  /*
   @Transactional{val readOnly = false}
   def generateTables() = goteFarmDao.generateTables()
 
@@ -328,4 +329,5 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       keepPublishing(event)
     }
   }
+  */
 }
