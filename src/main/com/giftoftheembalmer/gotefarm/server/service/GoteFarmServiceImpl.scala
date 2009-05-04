@@ -17,7 +17,10 @@ import com.giftoftheembalmer.gotefarm.client.{
   NotFoundError
 }
 
-import com.google.appengine.api.datastore.Key
+import com.google.appengine.api.datastore.{
+  Key,
+  KeyFactory
+}
 import com.google.appengine.api.users.User
 
 import org.springframework.transaction.annotation.{
@@ -49,8 +52,30 @@ import javax.cache.{
 
 import scala.collection.jcl.Conversions._
 
+object GoteFarmServiceImpl {
+  implicit def key2String(key: Key): String = {
+    if (key eq null) {
+      null
+    }
+    else {
+      KeyFactory.keyToString(key)
+    }
+  }
+
+  implicit def string2Key(key: String): Key = {
+    if (key eq null) {
+      null
+    }
+    else {
+      KeyFactory.stringToKey(key)
+    }
+  }
+}
+
 @Transactional{val propagation = Propagation.NEVER}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
+  import GoteFarmServiceImpl._
+
   private val logger = LogFactory.getLog(this.getClass)
 
   @scala.reflect.BeanProperty
