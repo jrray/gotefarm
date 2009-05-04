@@ -10,7 +10,14 @@ class ScalaTransactionTemplate extends TransactionTemplate {
   def execute[T <: AnyRef](f: => T): T = {
     super.execute(new TransactionCallback {
       def doInTransaction(status: TransactionStatus) = {
-        f
+        try {
+          f
+        }
+        catch {
+          case e: Throwable =>
+            status.setRollbackOnly()
+            throw e
+        }
       }
     }).asInstanceOf[T]
   }
@@ -18,7 +25,14 @@ class ScalaTransactionTemplate extends TransactionTemplate {
   def execute(f: => Unit): Unit = {
     super.execute(new TransactionCallback {
       def doInTransaction(status: TransactionStatus) = {
-        f
+        try {
+          f
+        }
+        catch {
+          case e: Throwable =>
+            status.setRollbackOnly()
+            throw e
+        }
       }
     })
   }

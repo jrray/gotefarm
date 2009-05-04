@@ -79,7 +79,8 @@ object GoteFarmServiceImpl {
   }
 }
 
-@Transactional{val propagation = Propagation.NEVER}
+@Transactional{val propagation = Propagation.NEVER,
+               val rollbackFor = Array(classOf[Throwable])}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
   import GoteFarmServiceImpl._
 
