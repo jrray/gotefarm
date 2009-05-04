@@ -54,6 +54,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
 
   /*
+  override
   def validateUser(username: String, password: String) = {
     val jdbc = getSimpleJdbcTemplate()
     val acct = jdbc.query(
@@ -78,6 +79,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     acct(0)._1
   }
 
+  override
   def createUser(username: String, email: String, password: String) = {
     val crypt = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
@@ -106,22 +108,27 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
   */
 
+  override
   def getRegions: java.util.Collection[Region] = {
     find(classOf[Region])
   }
 
+  override
   def getChrClass(key: Key): Option[ChrClass] = {
     getObjectById(classOf[ChrClass], key)
   }
 
+  override
   def getInstance(key: Key): Option[Instance] = {
     getObjectById(classOf[Instance], key)
   }
 
+  override
   def getRace(key: Key): Option[Race] = {
     getObjectById(classOf[Race], key)
   }
 
+  override
   def getRace(race: String): Race = {
     val r = find(classOf[Race], "name == nameParam",
                  "java.lang.String nameParam")(race)
@@ -136,10 +143,12 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getRegion(key: Key): Option[Region] = {
     getObjectById(classOf[Region], key)
   }
 
+  override
   def getRegion(code: String): Region = {
     val r = find(classOf[Region], "code == codeParam",
                  "java.lang.String codeParam")(code)
@@ -154,10 +163,12 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getRealm(key: Key): Option[Realm] = {
     getObjectById(classOf[Realm], key)
   }
 
+  override
   def getRealm(region: String, name: String): Realm = {
     val r = find(
       classOf[Realm], "region == regionParam && name == nameParam",
@@ -179,6 +190,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[Guild], key)
   }
 
+  override
   def getGuild(region: String, realm: String, name: String, account: Key)
     : Guild = {
     val r = find(
@@ -198,6 +210,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getChrClass(clazz: String): ChrClass = {
     val r = find(classOf[ChrClass], "name == nameParam",
                  "java.lang.String nameParam")(clazz)
@@ -212,6 +225,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getCharacter(guild: Key, name: String): Option[Chr] = {
     val r = find(classOf[Chr], "guild == guildParam && name == nameParam",
                    "com.google.appengine.api.datastore.Key guildParam, "
@@ -224,6 +238,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def createCharacter(user: User, guild: Key, character: String, race: Race,
                       clazz: ChrClass, level: Int, chrxml: String) = {
     val jdo = getJdoTemplate
@@ -253,6 +268,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
   */
 
+  override
   def getCharacters(user: User, guild: Key) = {
     find(classOf[Chr], "user == userParam && guild == guildParam ",
            "com.google.appengine.api.users.User userParam, "
@@ -260,6 +276,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
 
   /*
+  override
   def getCharacter(cid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     try {
@@ -282,6 +299,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getRoles = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -292,6 +310,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )
   }
 
+  override
   def getRole(roleid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -308,6 +327,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def addRole(name: String, restricted: Boolean) = {
     val jdbc = getSimpleJdbcTemplate()
     try {
@@ -328,6 +348,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )
   }
 
+  override
   def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit = {
     val jdbc = getSimpleJdbcTemplate()
     if (adding) {
@@ -355,6 +376,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getBadges = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -364,6 +386,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )
   }
 
+  override
   def addBadge(name: String, score: Int) = {
     val jdbc = getSimpleJdbcTemplate()
     try {
@@ -384,6 +407,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )
   }
 
+  override
   def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit = {
     val jdbc = getSimpleJdbcTemplate()
     if (adding) {
@@ -500,6 +524,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   private def populateEvent(e: JSEvent): JSEvent =
     populateEventTemplate(e, "event")
 
+  override
   def getEventTemplate(name: String) = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -521,6 +546,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     populateEventTemplate(jset)
   }
 
+  override
   def getEventTemplates = {
     val jdbc = getSimpleJdbcTemplate()
     val jsets = jdbc.query(
@@ -574,6 +600,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def saveEventTemplate(et: JSEventTemplate) = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -734,6 +761,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     et.eid
   }
 
+  override
   def getActiveEventSchedules = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -747,6 +775,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )
   }
 
+  override
   def getEventSchedules(name: String) = {
     val jdbc = getSimpleJdbcTemplate()
 
@@ -761,6 +790,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     )
   }
 
+  override
   def saveEventSchedule(es: JSEventSchedule) = {
     val jdbc = getSimpleJdbcTemplate
 
@@ -856,6 +886,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       Array[AnyRef](eventid, eventtmplid): _*)
   }
 
+  override
   def publishEvent(es: JSEventSchedule) = {
     val jdbc = getSimpleJdbcTemplate
 
@@ -895,6 +926,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     populateEventBosses(eventid, es.eid)
   }
 
+  override
   def getEvents = {
     val jdbc = getSimpleJdbcTemplate
 
@@ -916,6 +948,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     events
   }
 
+  override
   def getEvent(eventid: Long) = {
     val jdbc = getSimpleJdbcTemplate
 
@@ -939,6 +972,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     event
   }
 
+  override
   def getEventSignups(eventid: Long,
                       if_changed_since: Date): Option[JSEventSignups] = {
     val jdbc = getSimpleJdbcTemplate
@@ -979,6 +1013,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def getEventSignup(eventsignupid: Long) = {
     val jdbc = getSimpleJdbcTemplate
     try {
@@ -1000,6 +1035,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def signupForEvent(eventid: Long, cid: Long, roleid: Long,
                      signup_type: Int): Unit = {
     val jdbc = getSimpleJdbcTemplate
@@ -1030,6 +1066,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def changeEventSignup(eventsignupid: Long, new_roleid: Long,
                         new_signup_type: Int): Unit = {
     // changing roles does not change signup time,
@@ -1059,6 +1096,7 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
   def removeEventSignup(eventsignupid: Long): Unit = {
     val jdbc = getSimpleJdbcTemplate
     val c = jdbc.update(

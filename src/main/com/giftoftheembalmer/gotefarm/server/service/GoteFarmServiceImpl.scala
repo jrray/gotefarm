@@ -298,6 +298,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   private val regionre = """(?i)(\w+)\.wowarmory\.com""".r
 
+  override
   def getGuildFromArmoryURL(user: User, url: String): JSGuild = {
     // Parse url to detect region code
     val region = regionre.findFirstMatchIn(url) match {
@@ -400,32 +401,39 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   /*
+  override
   def login(username: String, password: String) =
     goteFarmDao.validateUser(username, password)
 
   @Transactional{val readOnly = false}
+  override
   def newUser(username: String, email: String, password: String) =
     goteFarmDao.createUser(username, email, password)
   */
 
+  override
   def getRegions: java.util.List[JSRegion] = {
     transactionTemplate.execute {
       mkList(goteFarmDao.getRegions, region2JSRegion)
     }
   }
 
+  override
   def getChrClass(key: Key): ChrClass = goteFarmDao.getChrClass(key).getOrElse(
     throw new NotFoundError
   )
 
+  override
   def getRace(key: Key): Race = goteFarmDao.getRace(key).getOrElse(
     throw new NotFoundError
   )
 
+  override
   def getGuild(key: Key): Guild = goteFarmDao.getGuild(key).getOrElse(
     throw new NotFoundError
   )
 
+  override
   def getRegion(key: Key): Region = goteFarmDao.getRegion(key).getOrElse(
     throw new NotFoundError
   )
@@ -512,6 +520,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  override
   def newCharacter(user: User, guild_key: Key, character: String) = {
     // Need region code and realm name for this guild
     val (region, realm) = transactionTemplate.execute {
@@ -529,6 +538,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     createCharacter(user, guild_key, charxml)
   }
 
+  override
   def getCharacters(user: User, guild: Key) = {
     val chrs = transactionTemplate.execute {
       mkList(goteFarmDao.getCharacters(user, guild))
@@ -536,14 +546,18 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     mkList(chrs, chr2JSCharacter)
   }
   /*
+  override
   def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
 
+  override
   def getRoles = goteFarmDao.getRoles
   @Transactional{val readOnly = false}
+  override
   def addRole(name: String, restricted: Boolean) =
     goteFarmDao.addRole(name, restricted)
 
   @Transactional{val readOnly = false}
+  override
   def updateCharacterRole(uid: Long, cid: Long, roleid: Long,
                           adding: Boolean): Unit = {
     // character must belong to user
@@ -554,12 +568,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     goteFarmDao.updateCharacterRole(cid, roleid, adding)
   }
 
+  override
   def getBadges = goteFarmDao.getBadges
   @Transactional{val readOnly = false}
+  override
   def addBadge(name: String, score: Int) =
     goteFarmDao.addBadge(name, score)
 
   @Transactional{val readOnly = false}
+  override
   def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long,
                            adding: Boolean): Unit = {
     // character must belong to user
@@ -572,12 +589,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   */
 
   @Transactional{val propagation = Propagation.REQUIRED}
+  override
   def addInstance(user: User, guild: Key, name: String): JSInstance = {
     // TODO: make sure user is an officer of the guild
     goteFarmDao.addInstance(guild, name)
   }
 
   @Transactional{val propagation = Propagation.REQUIRED}
+  override
   def addBoss(user: User, instance: Key, name: String): JSBoss = {
     // TODO: make sure user is an officer of the guild
 
@@ -591,11 +610,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   @Transactional{val propagation = Propagation.REQUIRED}
+  override
   def getInstances(guild: Key): java.util.List[JSInstance] = {
     mkList(goteFarmDao.getInstances(guild), instance2JSInstance)
   }
 
   @Transactional{val propagation = Propagation.REQUIRED}
+  override
   def getInstanceBosses(instance: Key): java.util.List[JSBoss] = {
     val g = goteFarmDao.getInstance(instance).getOrElse(
       throw new NotFoundError("Instance not found")
@@ -610,15 +631,20 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   /*
+  override
   def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
+  override
   def getEventTemplates = goteFarmDao.getEventTemplates
   @Transactional{val readOnly = false}
+  override
   def saveEventTemplate(et: JSEventTemplate) =
     goteFarmDao.saveEventTemplate(et)
 
+  override
   def getEventSchedules(name: String) =
     goteFarmDao.getEventSchedules(name)
   @Transactional{val readOnly = false}
+  override
   def saveEventSchedule(es: JSEventSchedule) = {
     if (es.repeat_size < JSEventSchedule.REPEAT_NEVER || es.repeat_size > JSEventSchedule.REPEAT_MONTHLY) {
       throw new IllegalArgumentException("Illegal repeat size")
@@ -735,7 +761,9 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
+  override
   def getEvents = goteFarmDao.getEvents
+  override
   def getEventSignups(eventid: Long, if_changed_since: Date)
     : Option[JSEventSignups] =
     goteFarmDao.getEventSignups(eventid, if_changed_since)
@@ -781,6 +809,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   @Transactional{val readOnly = false}
+  override
   def signupForEvent(uid: Long, eventid: Long, cid: Long, roleid: Long,
                      signup_type: Int) = {
     validateSignup(uid, eventid, cid, roleid)
@@ -788,6 +817,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   @Transactional{val readOnly = false}
+  override
   def changeEventSignup(uid: Long, eventsignupid: Long, new_roleid: Long,
                         new_signup_type: Int): Unit = {
     val es = goteFarmDao.getEventSignup(eventsignupid)
@@ -796,6 +826,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   @Transactional{val readOnly = false}
+  override
   def removeEventSignup(uid: Long, eventsignupid: Long): Unit = {
     // character must belong to user
     val es = goteFarmDao.getEventSignup(eventsignupid)
@@ -806,6 +837,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   @Transactional{val readOnly = false}
+  override
   def publishEvents() = synchronized {
     val reftime = System.currentTimeMillis
 

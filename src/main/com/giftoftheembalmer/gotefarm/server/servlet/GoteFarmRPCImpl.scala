@@ -63,10 +63,12 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     goteFarmService.getAccount(getUser)
   }
 
+  override
   def getGuildFromArmoryURL(url: String): JSGuild = {
     goteFarmService.getGuildFromArmoryURL(getUser, url)
   }
 
+  override
   def newUser(username: String, email: String, password: String) = {
     /*
     val uid = goteFarmService.newUser(username, email, password)
@@ -85,6 +87,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     sess
   }
 
+  override
   def validateSID(sid: String) = {
     try {
       val sess = getSession(sid)
@@ -96,6 +99,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     }
   }
 
+  override
   def getRegions: java.util.List[JSRegion] = goteFarmService.getRegions
 
   private def getUser: User = {
@@ -104,14 +108,17 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     user
   }
 
+  override
   def newCharacter(guild_key: String, character: String) = {
     goteFarmService.newCharacter(getUser, guild_key, character)
   }
 
+  override
   def getCharacters(guild_key: String) = {
     goteFarmService.getCharacters(getUser, guild_key)
   }
 
+  override
   def getCharacter(sid: String, cid: Long) = {
     /*
     val sess = getSession(sid)
@@ -120,9 +127,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new JSCharacter
   }
 
+  override
   def getRoles =
     new java.util.ArrayList[JSRole] // goteFarmService.getRoles
 
+  override
   def addRole(sid: String, name: String, restricted: Boolean) = {
     /*
     val sess = getSession(sid)
@@ -132,6 +141,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     false
   }
 
+  override
   def updateCharacterRole(sid: String, cid: Long, roleid: Long, adding: Boolean) = {
     /*
     val sess = getSession(sid)
@@ -142,9 +152,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new JSCharacter
   }
 
+  override
   def getBadges =
     new java.util.ArrayList[JSBadge] // goteFarmService.getBadges
 
+  override
   def addBadge(sid: String, name: String, score: Int) = {
     /*
     val sess = getSession(sid)
@@ -154,6 +166,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     false
   }
 
+  override
   def updateCharacterBadge(sid: String, cid: Long, badgeid: Long, adding: Boolean) = {
     /*
     val sess = getSession(sid)
@@ -164,22 +177,27 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new JSCharacter
   }
 
+  override
   def addInstance(guild_key: String, name: String): JSInstance = {
     goteFarmService.addInstance(getUser, guild_key, name)
   }
 
+  override
   def addBoss(instance_key: String, name: String): JSBoss = {
     goteFarmService.addBoss(getUser, instance_key, name)
   }
 
+  override
   def getInstances(guild_key: String): java.util.List[JSInstance] = {
     goteFarmService.getInstances(guild_key)
   }
 
+  override
   def getInstanceBosses(instance_key: String): java.util.List[JSBoss] = {
     goteFarmService.getInstanceBosses(instance_key)
   }
 
+  override
   def getEventTemplate(sid: String, name: String) = {
     /*
     val sess = getSession(sid)
@@ -188,6 +206,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new JSEventTemplate
   }
 
+  override
   def getEventTemplates(sid: String) = {
     /*
     val sess = getSession(sid)
@@ -196,6 +215,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new java.util.ArrayList[JSEventTemplate]
   }
 
+  override
   def saveEventTemplate(sid: String, et: JSEventTemplate) = {
     /*
     val sess = getSession(sid)
@@ -205,6 +225,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     false
   }
 
+  override
   def getEventSchedules(sid: String, name: String) = {
     /*
     val sess = getSession(sid)
@@ -213,6 +234,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new java.util.ArrayList[JSEventSchedule]
   }
 
+  override
   def saveEventSchedule(sid: String, es: JSEventSchedule) = {
     /*
     val sess = getSession(sid)
@@ -222,6 +244,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     false
   }
 
+  override
   def getEvents(sid: String) = {
     /*
     val sess = getSession(sid)
@@ -230,6 +253,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     new java.util.ArrayList[JSEvent]
   }
 
+  override
   def getEventSignups(sid: String, eventid: Long, if_changed_since: Date) = {
     /*
     val sess = getSession(sid)
@@ -253,6 +277,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     null
   }
 
+  override
   def signupForEvent(sid: String, eventid: Long, cid: Long, roleid: Long,
                      signup_type: Int) = {
     /*
@@ -264,6 +289,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     null
   }
 
+  override
   def changeEventSignup(sid: String, eventid: Long, eventsignupid: Long,
                         new_roleid: Long, new_signup_type: Int) = {
     /*
@@ -276,6 +302,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     null
   }
 
+  override
   def removeEventSignup(sid: String, eventid: Long, eventsignupid: Long) = {
     /*
     val sess = getSession(sid)
