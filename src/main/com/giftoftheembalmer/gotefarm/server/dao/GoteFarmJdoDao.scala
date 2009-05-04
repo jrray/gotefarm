@@ -458,27 +458,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
 
   /*
-  def getInstanceBosses(instance: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    try {
-      val iid = getInstanceId(instance)
-      jdbc.query(
-        "select name from boss where instanceid = ? order by name",
-        new ParameterizedRowMapper[String] {
-          def mapRow(rs: ResultSet, rowNum: Int) = {
-            rs.getString(1)
-          }
-        },
-        Array[AnyRef](iid): _*
-      )
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        new java.util.ArrayList[String]()
-    }
-  }
-
   private def populateEventTemplate[T <: JSEventTemplate](et: T,
                                                           eventstub: String)
     :T = {

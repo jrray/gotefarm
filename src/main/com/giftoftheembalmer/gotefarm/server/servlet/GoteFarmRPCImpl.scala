@@ -6,6 +6,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   GoteFarmRPC,
   JSAccount,
   JSBadge,
+  JSBoss,
   JSCharacter,
   JSEvent,
   JSEventSchedule,
@@ -180,8 +181,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     goteFarmService.getInstances(guild_key)
   }
 
-  def getInstanceBosses(instance: String) =
-    new java.util.ArrayList[String] // goteFarmService.getInstanceBosses(instance)
+  def getInstanceBosses(instance_key: String): java.util.List[JSBoss] = {
+    goteFarmService.getInstanceBosses(instance_key)
+  }
 
   def getEventTemplate(sid: String, name: String) = {
     /*

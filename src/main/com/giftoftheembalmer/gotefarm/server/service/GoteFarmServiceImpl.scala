@@ -1,6 +1,7 @@
 package com.giftoftheembalmer.gotefarm.server.service
 
 import com.giftoftheembalmer.gotefarm.server.dao.{
+  Boss,
   Chr,
   ChrClass,
   GoteFarmDaoT,
@@ -14,6 +15,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   JSAccount,
+  JSBoss,
   JSCharacter,
   JSEventSchedule,
   JSEventSignups,
@@ -176,6 +178,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     val r = new JSInstance
     r.key = instance.getKey
     r.name = instance.getName
+    r
+  }
+
+  implicit def boss2JSBoss(boss: Boss): JSBoss = {
+    val r = new JSBoss
+    r.key = boss.getKey
+    r.name = boss.getName
     r
   }
 
@@ -579,10 +588,21 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     mkList(goteFarmDao.getInstances(guild), instance2JSInstance)
   }
 
-  /*
-  def getInstanceBosses(instance: String) =
-    goteFarmDao.getInstanceBosses(instance)
+  @Transactional{val propagation = Propagation.REQUIRED}
+  def getInstanceBosses(instance: Key): java.util.List[JSBoss] = {
+    val g = goteFarmDao.getInstance(instance).getOrElse(
+      throw new NotFoundError("Instance not found")
+    )
+    val b = g.getBosses
+    if (b eq null) {
+      new java.util.ArrayList[JSBoss]
+    }
+    else {
+      mkList(b, boss2JSBoss)
+    }
+  }
 
+  /*
   def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
   def getEventTemplates = goteFarmDao.getEventTemplates
   @Transactional{val readOnly = false}

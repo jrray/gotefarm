@@ -76,8 +76,6 @@ trait GoteFarmDaoT {
   def getInstances(guild: Key): Collection[Instance]
 
   /*
-  def getInstanceBosses(instance: String): List[String]
-
   def getEventTemplate(name: String): JSEventTemplate
   def getEventTemplates: List[JSEventTemplate]
   def saveEventTemplate(et: JSEventTemplate): Long

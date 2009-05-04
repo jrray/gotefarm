@@ -564,15 +564,17 @@ public class EventEditor extends Composite implements ChangeHandler {
         int index = instances.getSelectedIndex();
         if (index < 0) return;
 
-        final String inst = instances.getItemText(index);
+        final String inst_key = instances.getValue(index);
 
-        GoteFarm.goteService.getInstanceBosses(inst, new AsyncCallback<List<String>>() {
-            public void onSuccess(List<String> results) {
+        GoteFarm.goteService.getInstanceBosses(
+                                            inst_key,
+                                            new AsyncCallback<List<JSBoss>>() {
+            public void onSuccess(List<JSBoss> results) {
                 bosses.clear();
 
-                for (String ib : results) {
-                    bosses.addItem(ib);
-                    if (et != null && inst.equals(et.instance)) {
+                for (JSBoss ib : results) {
+                    bosses.addItem(ib.name, ib.key);
+                    if (et != null && inst_key.equals(et.instance)) {
                         for (String eb : et.bosses) {
                             if (ib.equals(eb)) {
                                 bosses.setItemSelected(bosses.getItemCount() - 1, true);

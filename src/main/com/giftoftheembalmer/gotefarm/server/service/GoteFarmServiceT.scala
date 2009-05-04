@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   InvalidCredentialsError,
   JSAccount,
+  JSBoss,
   JSCharacter,
   JSBadge,
   JSEvent,
@@ -98,9 +99,10 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   def getInstances(guild: Key): List[JSInstance]
 
-  /*
-  def getInstanceBosses(instance: String): List[String]
+  @throws(classOf[NotFoundError])
+  def getInstanceBosses(instance: Key): List[JSBoss]
 
+  /*
   @throws(classOf[NotFoundError])
   def getEventTemplate(name: String): JSEventTemplate
   def getEventTemplates: List[JSEventTemplate]
