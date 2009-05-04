@@ -12,6 +12,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
+  JSGuild,
   JSRegion,
   JSRole,
   UserNotLoggedInError
@@ -31,6 +32,8 @@ import java.util.Date
 
 class GoteFarmRPCImpl extends RemoteServiceServlet
   with GoteFarmRPC {
+  import GoteFarmServiceImpl._
+
   private val logger = LogFactory.getLog(this.getClass)
   logger.debug("Servlet running")
 
@@ -56,6 +59,10 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   override
   def getAccount: JSAccount = {
     goteFarmService.getAccount(getUser)
+  }
+
+  def getGuildFromArmoryURL(url: String): JSGuild = {
+    goteFarmService.getGuildFromArmoryURL(getUser, url)
   }
 
   def newUser(username: String, email: String, password: String) = {
@@ -95,12 +102,12 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     user
   }
 
-  def newCharacter(sid: String, realm: String, character: String) = {
-    goteFarmService.newCharacter(getUser, realm, character)
+  def newCharacter(guild_key: String, character: String) = {
+    goteFarmService.newCharacter(getUser, guild_key, character)
   }
 
-  def getCharacters(sid: String) = {
-    goteFarmService.getCharacters(getUser)
+  def getCharacters(guild_key: String) = {
+    goteFarmService.getCharacters(getUser, guild_key)
   }
 
   def getCharacter(sid: String, cid: Long) = {

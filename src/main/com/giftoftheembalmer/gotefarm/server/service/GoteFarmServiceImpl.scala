@@ -4,6 +4,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Chr,
   ChrClass,
   GoteFarmDaoT,
+  Guild,
   Race,
   Region,
   ScalaTransactionTemplate
@@ -138,7 +139,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
     val r = new JSCharacter
-    r.realm = chr.getRealm
     r.name = chr.getName
     r.race = key2RaceName(chr.getRace)
     r.clazz = key2ChrClassName(chr.getChrClass)
@@ -161,6 +161,12 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     if (officers ne null) {
       jsg.officers ++= officers.map(key2String)
     }
+  }
+
+  implicit def guild2JSGuild(g: Guild): JSGuild = {
+    val r = new JSGuild
+    populateJSGuild(r, g)
+    r
   }
 
   private def mkList[A](col: java.util.Collection[A]): java.util.List[A] = {
@@ -262,6 +268,109 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  private val regionre = """(?i)(\w+)\.wowarmory\.com""".r
+
+  def getGuildFromArmoryURL(user: User, url: String): JSGuild = {
+    // Parse url to detect region code
+    val region = regionre.findFirstMatchIn(url) match {
+      case Some(m) =>
+        m.group(1).toLowerCase match {
+          case "www" => "us"
+          case x => x
+        }
+
+      case None =>
+        throw new IllegalArgumentException("Invalid armory URL")
+    }
+
+    // Fetch character XML from armory
+    val url2 = {
+      if (url.startsWith("http://")) {
+        url
+      }
+      else {
+        "http://" + url
+      }
+    }
+    val charxml = try {
+      fetchCharacterFromArmory(url2)
+    }
+    catch {
+      case _: java.io.IOException =>
+        throw new IllegalArgumentException("Invalid URL or other error, try again.")
+    }
+
+    val charInfo = charxml \ "characterInfo"
+    if (charInfo.isEmpty) {
+      throw new IllegalArgumentException(
+        "URL did not appear to return armory character information"
+      )
+    }
+
+    // check if the character was found
+    if (!(charInfo \ "@errCode").isEmpty) {
+      throw new NotFoundError("Character not found on armory.")
+    }
+
+    val character = charInfo \ "character"
+    if (character.isEmpty) {
+      throw new IllegalArgumentException("Unrecognized armory format")
+    }
+
+    // Parse guild name
+    val guild = character \ "@guildName"
+    if (guild.isEmpty || guild.toString == "") {
+      throw new NotFoundError("Character is guild-less")
+    }
+
+    // Parse realm name
+    val realm = character \ "@realm"
+    if (realm.isEmpty || realm.toString == "") {
+      throw new IllegalArgumentException("Unrecognized armory format")
+    }
+
+    // Get/create region
+    val region_code = transactionTemplate.execute {
+      goteFarmDao.getRegion(region).getCode
+    }
+
+    // Get/create realm
+    val realm_name = transactionTemplate.execute {
+      goteFarmDao.getRealm(region_code, realm.toString).getName
+    }
+
+    // Get account key
+    val account_key = transactionTemplate.execute {
+      val a = goteFarmDao.getAccount(user)
+      a.getKey
+    }
+
+    // Get/create guild
+    val (r, guild_key) = transactionTemplate.execute {
+      val g = goteFarmDao.getGuild(region_code, realm_name, guild.toString,
+                                   account_key)
+
+      (guild2JSGuild(g), g.getKey)
+    }
+
+    // Associate guild with account
+    transactionTemplate.execute {
+      val acct = goteFarmDao.getAccount(user)
+      setAdd(guild_key, acct.getGuilds, acct.setGuilds)
+      acct.setActiveGuild(guild_key)
+    }
+
+    // Register new character (ignore error if it already exists)
+    try {
+      createCharacter(user, guild_key, charxml)
+    }
+    catch {
+      case _: AlreadyExistsError =>
+    }
+
+    r
+  }
+
   /*
   def login(username: String, password: String) =
     goteFarmDao.validateUser(username, password)
@@ -285,6 +394,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     throw new NotFoundError
   )
 
+  def getGuild(key: Key): Guild = goteFarmDao.getGuild(key).getOrElse(
+    throw new NotFoundError
+  )
+
+  def getRegion(key: Key): Region = goteFarmDao.getRegion(key).getOrElse(
+    throw new NotFoundError
+  )
+
   private def fetchCharacterFromArmory(url: String): scala.xml.Elem = {
     val conn = new URL(url).openConnection
 
@@ -303,11 +420,18 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
     conn.connect()
 
-    logger.debug("Loading character via URL: " + url)
-    scala.xml.XML.load(conn.getInputStream())
+    try {
+      logger.debug("Loading character via URL: " + url)
+      scala.xml.XML.load(conn.getInputStream())
+    }
+    catch {
+      case e: org.xml.sax.SAXParseException =>
+        logger.debug("Failure parsing armory XML", e)
+        throw new IllegalArgumentException("Invalid armory URL or other error, try again later.")
+    }
   }
 
-  private def createCharacter(user: User, charxml: scala.xml.Elem): JSCharacter = {
+  private def createCharacter(user: User, guild: Key, charxml: scala.xml.Elem): JSCharacter = {
     val charInfo = charxml \ "characterInfo"
 
     // check if the character was found
@@ -325,7 +449,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
     // Character already in use?
     transactionTemplate.execute {
-      val chr = goteFarmDao.getCharacter(realm.toString, name.toString)
+      val chr = goteFarmDao.getCharacter(guild, name.toString)
       if (chr.isDefined) {
         throw new AlreadyExistsError("Character '" + name.toString + "' already exists.")
       }
@@ -342,14 +466,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
 
     val chr = transactionTemplate.execute {
-      goteFarmDao.createCharacter(user, realm.toString, name.toString,
+      goteFarmDao.createCharacter(user, guild, name.toString,
                                   race_obj, class_obj, level, charxml.toString)
     }
 
     // XXX: Duplicates chr2JSCharacter but don't need to re-query
     // race and class here
     val r = new JSCharacter
-    r.realm = chr.getRealm
     r.name = chr.getName
     r.race = race_obj.getName
     r.clazz = class_obj.getName
@@ -361,18 +484,26 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  def newCharacter(user: User, realm: String, character: String) = {
+  def newCharacter(user: User, guild_key: Key, character: String) = {
+    // Need region code and realm name for this guild
+    val (region, realm) = transactionTemplate.execute {
+      val r = goteFarmDao.getGuild(guild_key).getOrElse(
+        throw new NotFoundError("Guild not found")
+      )
+      (r.getRegion, r.getRealm)
+    }
+
     val charxml = fetchCharacterFromArmory(
-      "http://www.wowarmory.com/character-sheet.xml?r=" +
+      "http://" + region + ".wowarmory.com/character-sheet.xml?r=" +
       URLEncoder.encode(realm, "UTF-8") + "&n=" +
       URLEncoder.encode(character, "UTF-8"))
 
-    createCharacter(user, charxml)
+    createCharacter(user, guild_key, charxml)
   }
 
-  def getCharacters(user: User) = {
+  def getCharacters(user: User, guild: Key) = {
     val chrs = transactionTemplate.execute {
-      mkList(goteFarmDao.getCharacters(user))
+      mkList(goteFarmDao.getCharacters(user, guild))
     }
     mkList(chrs, chr2JSCharacter)
   }

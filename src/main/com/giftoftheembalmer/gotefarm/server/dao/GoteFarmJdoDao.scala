@@ -132,9 +132,66 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  def getRegion(key: Key): Option[Region] = {
+    getObjectById(classOf[Region], key)
+  }
+
+  def getRegion(code: String): Region = {
+    val r = find(classOf[Region], "code == codeParam",
+                 "java.lang.String codeParam")(code)
+    if (r.isEmpty) {
+      // add it
+      val nr = new Region(code)
+      getJdoTemplate.makePersistent(nr)
+      nr
+    }
+    else {
+      r.iterator.next
+    }
+  }
+
+  def getRealm(key: Key): Option[Realm] = {
+    getObjectById(classOf[Realm], key)
+  }
+
+  def getRealm(region: String, name: String): Realm = {
+    val r = find(
+      classOf[Realm], "region == regionParam && name == nameParam",
+      "java.lang.String regionParam, java.lang.String nameParam"
+    )(region, name)
+    if (r.isEmpty) {
+      // add it
+      val nr = new Realm(region, name, null)
+      getJdoTemplate.makePersistent(nr)
+      nr
+    }
+    else {
+      r.iterator.next
+    }
+  }
+
   override
   def getGuild(key: Key): Option[Guild] = {
     getObjectById(classOf[Guild], key)
+  }
+
+  def getGuild(region: String, realm: String, name: String, account: Key)
+    : Guild = {
+    val r = find(
+      classOf[Guild],
+      "region == regionParam && realm == realmParam && name == nameParam",
+        "java.lang.String regionParam, java.lang.String realmParam,"
+      + "java.lang.String nameParam"
+    )(region, realm, name)
+    if (r.isEmpty) {
+      // add it
+      val nr = new Guild(region, realm, name, account)
+      getJdoTemplate.makePersistent(nr)
+      nr
+    }
+    else {
+      r.iterator.next
+    }
   }
 
   def getChrClass(clazz: String): ChrClass = {
@@ -151,10 +208,10 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
-  def getCharacter(realm: String, name: String): Option[Chr] = {
-    val r = find(classOf[Chr], "realm == realmName && name == nameParam",
-                 "java.lang.String realmName, java.lang.String nameParam")(
-                 realm, name)
+  def getCharacter(guild: Key, name: String): Option[Chr] = {
+    val r = find(classOf[Chr], "guild == guildParam && name == nameParam",
+                   "com.google.appengine.api.datastore.Key guildParam, "
+                 + "java.lang.String nameParam")(guild, name)
     if (r.isEmpty) {
       None
     }
@@ -163,10 +220,10 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
-  def createCharacter(user: User, realm: String, character: String, race: Race,
+  def createCharacter(user: User, guild: Key, character: String, race: Race,
                       clazz: ChrClass, level: Int, chrxml: String) = {
     val jdo = getJdoTemplate
-    val c = new Chr(user, realm, character, race.getKey, clazz.getKey, level,
+    val c = new Chr(user, guild, character, race.getKey, clazz.getKey, level,
                     chrxml.toString, new Date)
     jdo.makePersistent(c)
     c
@@ -192,9 +249,10 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
   */
 
-  def getCharacters(user: User) = {
-    find(classOf[Chr], "user == userParam",
-         "com.google.appengine.api.users.User userParam")(user)
+  def getCharacters(user: User, guild: Key) = {
+    find(classOf[Chr], "user == userParam && guild == guildParam ",
+           "com.google.appengine.api.users.User userParam, "
+         + "com.google.appengine.api.datastore.Key guildParam")(user, guild)
   }
 
   /*

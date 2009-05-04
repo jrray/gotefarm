@@ -21,6 +21,7 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
   static String sessionID = null;
 
   TabPanel tabpanel;
+  Guilds guilds;
   Events events;
   Characters chars;
   Admin admin;
@@ -36,12 +37,15 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
     endpoint.setServiceEntryPoint(moduleRelativeURL);
 
     tabpanel = new TabPanel();
+    guilds = new Guilds();
     events = new Events();
     chars = new Characters();
     admin = new Admin();
 
     // Events wants to know when there are changes to the user's characters
     chars.addValueChangeHandler(events);
+    // Characters wants to know when the current guild changes
+    guilds.addValueChangeHandler(chars);
 
     final VerticalPanel vpanel = new VerticalPanel();
     vpanel.setWidth("100%");
@@ -52,6 +56,7 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
     tabpanel.addStyleName(tabpanel.getStylePrimaryName() + "-main");
     tabpanel.addSelectionHandler(this);
 
+    tabpanel.add(guilds, "Guilds");
     tabpanel.add(events, "Events");
     tabpanel.add(chars, "Characters");
     tabpanel.add(admin, "Admin");
@@ -81,27 +86,34 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
 
     public void onValueChange(ValueChangeEvent<String> event) {
         final String historyToken = event.getValue();
-        if (historyToken.equals("events")) {
+        if (historyToken.equals("guilds")) {
             tabpanel.selectTab(0);
             events.resizeRows();
         }
-        else if (historyToken.equals("characters")) {
+        else if (historyToken.equals("events")) {
             tabpanel.selectTab(1);
+            events.resizeRows();
+        }
+        else if (historyToken.equals("characters")) {
+            tabpanel.selectTab(2);
         }
         else if (historyToken.equals("admin")) {
-            tabpanel.selectTab(2);
+            tabpanel.selectTab(3);
         }
     }
 
     public void onSelection(SelectionEvent<Integer> event) {
         switch (event.getSelectedItem()) {
             case 0:
-                History.newItem("events");
+                History.newItem("guilds");
                 break;
             case 1:
-                History.newItem("characters");
+                History.newItem("events");
                 break;
             case 2:
+                History.newItem("characters");
+                break;
+            case 3:
                 History.newItem("admin");
                 break;
             default:

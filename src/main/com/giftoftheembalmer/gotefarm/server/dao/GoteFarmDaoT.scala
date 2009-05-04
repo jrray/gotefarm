@@ -36,13 +36,21 @@ trait GoteFarmDaoT {
   def getRace(key: Key): Option[Race]
   def getRace(race: String): Race
 
-  def getGuild(key: Key): Option[Guild]
+  def getRegion(key: Key): Option[Region]
+  def getRegion(code: String): Region
 
-  def getCharacter(realm: String, name: String): Option[Chr]
-  def createCharacter(user: User, realm: String, character: String, race: Race,
+  def getRealm(key: Key): Option[Realm]
+  def getRealm(region: String, name: String): Realm
+
+  def getGuild(key: Key): Option[Guild]
+  def getGuild(region: String, realm: String, name: String, account: Key)
+    : Guild
+
+  def getCharacter(guild: Key, name: String): Option[Chr]
+  def createCharacter(user: User, guild: Key, character: String, race: Race,
                       clazz: ChrClass, level: Int, chrxml: String): Chr
 
-  def getCharacters(user: User): Collection[Chr]
+  def getCharacters(user: User, guild: Key): Collection[Chr]
   /*
   def getCharacter(cid: Long): JSCharacter
 

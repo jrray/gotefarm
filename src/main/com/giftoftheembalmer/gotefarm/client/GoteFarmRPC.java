@@ -8,14 +8,18 @@ import java.util.List;
 public interface GoteFarmRPC extends RemoteService {
     public JSAccount getAccount() throws UserNotLoggedInError;
 
+    public JSGuild getGuildFromArmoryURL(String url)
+        throws UserNotLoggedInError, AlreadyExistsError, NotFoundError,
+               IllegalArgumentException;
+
     public String newUser(String username, String email, String password) throws AlreadyExistsError;
     public String validateSID(String sid);
 
     public List<JSRegion> getRegions();
 
-    public JSCharacter newCharacter(String sid, String realm, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
+    public JSCharacter newCharacter(String guild_key, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
 
-    public List<JSCharacter> getCharacters(String sid) throws UserNotLoggedInError;
+    public List<JSCharacter> getCharacters(String guild_key) throws UserNotLoggedInError;
     public JSCharacter getCharacter(String sid, long cid) throws UserNotLoggedInError, NotFoundError;
 
     public List<JSRole> getRoles();

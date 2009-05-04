@@ -10,6 +10,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
+  JSGuild,
   JSRegion,
   JSRole,
   NotFoundError
@@ -17,7 +18,9 @@ import com.giftoftheembalmer.gotefarm.client.{
 import com.giftoftheembalmer.gotefarm.server.dao.{
   Chr,
   ChrClass,
-  Race
+  Guild,
+  Race,
+  Region
 }
 
 import com.google.appengine.api.datastore.Key
@@ -32,6 +35,11 @@ import java.util.{
 trait GoteFarmServiceT {
   def getAccount(user: User): JSAccount
 
+  @throws(classOf[AlreadyExistsError])
+  @throws(classOf[NotFoundError])
+  @throws(classOf[IllegalArgumentException])
+  def getGuildFromArmoryURL(user: User, url: String): JSGuild
+
   /*
   @throws(classOf[InvalidCredentialsError])
   def login(username: String, password: String): Long
@@ -45,12 +53,16 @@ trait GoteFarmServiceT {
   def getChrClass(key: Key): ChrClass
   @throws(classOf[NotFoundError])
   def getRace(key: Key): Race
+  @throws(classOf[NotFoundError])
+  def getGuild(key: Key): Guild
+  @throws(classOf[NotFoundError])
+  def getRegion(key: Key): Region
 
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
-  def newCharacter(user: User, realm: String, character: String): JSCharacter
+  def newCharacter(user: User, guild: Key, character: String): JSCharacter
 
-  def getCharacters(user: User): List[JSCharacter]
+  def getCharacters(user: User, guild: Key): List[JSCharacter]
 
   /*
   @throws(classOf[NotFoundError])

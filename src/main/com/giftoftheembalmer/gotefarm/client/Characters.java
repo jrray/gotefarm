@@ -36,7 +36,7 @@ import java.util.List;
 
 public class Characters
     extends Composite
-    implements HasValue<List<JSCharacter>> {
+    implements HasValue<List<JSCharacter>>, ValueChangeHandler<JSGuild> {
 
     VerticalPanel vpanel = new VerticalPanel();
     VerticalPanel chrpanel = new VerticalPanel();
@@ -44,6 +44,8 @@ public class Characters
     private List<JSCharacter> characters = new ArrayList<JSCharacter>();
     private List<JSRole> roles = new ArrayList<JSRole>();
     private List<JSBadge> badges = new ArrayList<JSBadge>();
+
+    private JSGuild current_guild;
 
     public void addCharacter(JSCharacter chr) {
         characters.add(chr);
@@ -88,7 +90,6 @@ public class Characters
             hpanel.add(attr_vpanel);
 
             attr_vpanel.add(new Label(chr.name));
-            attr_vpanel.add(new Label(chr.realm));
             attr_vpanel.add(new Label(chr.race));
             attr_vpanel.add(new Label(chr.clazz));
             attr_vpanel.add(new Label("Level " + chr.level));
@@ -210,7 +211,6 @@ public class Characters
     }
 
     public class NewCharPanel extends PopupPanel {
-        TextBox realm = new TextBox();
         TextBox character = new TextBox();
         Label errmsg = new Label();
 
@@ -219,21 +219,16 @@ public class Characters
 
             VerticalPanel vpanel = new VerticalPanel();
 
-            Grid grid = new Grid(2, 2);
+            Grid grid = new Grid(1, 2);
             grid.setWidth("100%");
 
             CellFormatter cf = grid.getCellFormatter();
             // right align field labels
             cf.setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-            cf.setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 
-            grid.setText(0, 0, "Realm:");
-            grid.setText(1, 0, "Character Name:");
+            grid.setText(0, 0, "Character Name:");
 
-            realm.setText("Boulderfist");
-
-            grid.setWidget(0, 1, realm);
-            grid.setWidget(1, 1, character);
+            grid.setWidget(0, 1, character);
 
             vpanel.add(grid);
 
@@ -277,7 +272,10 @@ public class Characters
         public void addCharacter() {
             errmsg.setText("");
 
-            GoteFarm.goteService.newCharacter(GoteFarm.sessionID, realm.getText(), character.getText(), new AsyncCallback<JSCharacter>() {
+            GoteFarm.goteService.newCharacter(
+                                            current_guild.key,
+                                            character.getText(),
+                                            new AsyncCallback<JSCharacter>() {
                 public void onSuccess(JSCharacter chr) {
                     Characters.this.addCharacter(chr);
                     hide();
@@ -337,15 +335,17 @@ public class Characters
     public void loadCharacters() {
         chrpanel.clear();
 
-        if (GoteFarm.sessionID == null) {
-            chrpanel.add(new Label("You are not signed in."));
+        if (current_guild == null) {
+            chrpanel.add(new Label("Select a guild before managing characters."));
             enrollbtn.setEnabled(false);
             return;
         }
 
         enrollbtn.setEnabled(true);
 
-        GoteFarm.goteService.getCharacters(GoteFarm.sessionID, new AsyncCallback<List<JSCharacter>>() {
+        GoteFarm.goteService.getCharacters(
+                                    current_guild.key,
+                                    new AsyncCallback<List<JSCharacter>>() {
             public void onSuccess(List<JSCharacter> result) {
                 setValue(result, true);
 
@@ -413,5 +413,11 @@ public class Characters
     public HandlerRegistration addValueChangeHandler(
             ValueChangeHandler<List<JSCharacter>> handler) {
         return addHandler(handler, ValueChangeEvent.getType());
+    }
+
+    public void onValueChange(ValueChangeEvent<JSGuild> event) {
+        // need to fetch the characters enrolled for this guild
+        current_guild = event.getValue();
+        loadCharacters();
     }
 }

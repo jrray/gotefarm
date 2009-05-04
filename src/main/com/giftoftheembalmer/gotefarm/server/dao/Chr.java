@@ -22,7 +22,7 @@ public class Chr {
     private User user;
 
     @Persistent
-    private String realm;
+    private Key guild;
 
     @Persistent
     private String name;
@@ -42,10 +42,10 @@ public class Chr {
     @Persistent
     private Date created;
 
-    public Chr(User user, String realm, String name, Key race, Key clazz,
+    public Chr(User user, Key guild, String name, Key race, Key clazz,
                int level, String chrxml, Date created) {
         this.user = user;
-        this.realm = realm;
+        this.guild = guild;
         this.name = name;
         this.race = race;
         this.clazz = clazz;
@@ -74,16 +74,16 @@ public class Chr {
         return level;
     }
 
+    public Key getGuild() {
+        return guild;
+    }
+
     public String getName() {
         return name;
     }
 
     public Key getRace() {
         return race;
-    }
-
-    public String getRealm() {
-        return realm;
     }
 
     public User getUser() {
@@ -112,9 +112,5 @@ public class Chr {
 
     public void setRace(Key race) {
         this.race = race;
-    }
-
-    public void setRealm(String realm) {
-        this.realm = realm;
     }
 }
