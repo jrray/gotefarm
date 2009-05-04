@@ -1,5 +1,7 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -12,6 +14,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import java.util.ListIterator;
 
 public class Guilds extends Composite implements HasValue<JSGuild> {
 
@@ -53,12 +57,48 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
 
     void showGuilds(JSAccount account) {
         vpanel.clear();
-        ListBox lb = new ListBox();
-        // TODO: Watch for selection changes and update the user's
-        // current_guild
+        final ListBox lb = new ListBox();
+        lb.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
+                final int index = lb.getSelectedIndex();
+                if (index < 0) {
+                    return;
+                }
+
+                final String key = lb.getValue(index);
+
+                GoteFarm.goteService.setActiveGuild(
+                    key,
+                    new AsyncCallback<JSGuild>() {
+                        public void onSuccess(JSGuild guild) {
+                            // Update cached JSGuild with this latest one
+                            ListIterator<JSGuild> iter = Guilds.this.account
+                                                               .guilds
+                                                               .listIterator();
+                            while (iter.hasNext()) {
+                                JSGuild curr = iter.next();
+                                if (curr.key.equals(guild.key)) {
+                                    iter.set(guild);
+                                    break;
+                                }
+                            }
+
+                            // Update active_guild
+                            Guilds.this.account.active_guild = guild;
+                            setValue(Guilds.this.account.active_guild, true);
+                        }
+
+                        public void onFailure(Throwable caught) {
+                            // TODO: show error message
+                        }
+                    }
+                );
+            }
+        });
+
         lb.setVisibleItemCount(5);
         for (JSGuild g : account.guilds) {
-            lb.addItem(g.name);
+            lb.addItem(g.name, g.key);
             if (   account.active_guild != null
                 && g.key.equals(account.active_guild.key)) {
                 lb.setSelectedIndex(lb.getItemCount()-1);

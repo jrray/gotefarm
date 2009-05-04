@@ -420,6 +420,31 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  override
+  def setActiveGuild(user: User, guild: Key): JSGuild = {
+    val r = transactionTemplate.execute {
+      val g = goteFarmDao.getGuild(guild).getOrElse(
+        throw new NotFoundError("Guild not found")
+      )
+      guild2JSGuild(g)
+    }
+
+    // set the user's active guild
+    transactionTemplate.execute {
+      val account = goteFarmDao.getAccount(user)
+
+      // verify guild is in the user's list of guilds
+      val guilds = account.getGuilds
+      if (!guilds.contains(guild)) {
+        throw new NotFoundError("Guild not found in user's guild list")
+      }
+
+      account.setActiveGuild(guild)
+    }
+
+    r
+  }
+
   private val regionre = """(?i)(\w+)\.wowarmory\.com""".r
 
   override

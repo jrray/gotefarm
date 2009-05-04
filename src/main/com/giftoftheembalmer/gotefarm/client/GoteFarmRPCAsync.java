@@ -7,6 +7,7 @@ import java.util.List;
 
 interface GoteFarmRPCAsync {
     public void getAccount(AsyncCallback<JSAccount> cb);
+    public void setActiveGuild(String guild_key, AsyncCallback<JSGuild> cb);
 
     public void getGuildFromArmoryURL(String url, AsyncCallback<JSGuild> cb);
 

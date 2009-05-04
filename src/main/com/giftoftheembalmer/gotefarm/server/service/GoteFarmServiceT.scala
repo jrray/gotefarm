@@ -38,6 +38,8 @@ import java.util.{
 
 trait GoteFarmServiceT {
   def getAccount(user: User): JSAccount
+  @throws(classOf[NotFoundError])
+  def setActiveGuild(user: User, guild: Key): JSGuild
 
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])

@@ -64,6 +64,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
+  def setActiveGuild(guild_key: String): JSGuild = {
+    goteFarmService.setActiveGuild(getUser, guild_key)
+  }
+
+  override
   def getGuildFromArmoryURL(url: String): JSGuild = {
     goteFarmService.getGuildFromArmoryURL(getUser, url)
   }

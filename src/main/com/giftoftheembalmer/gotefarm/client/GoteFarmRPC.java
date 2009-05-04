@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface GoteFarmRPC extends RemoteService {
     public JSAccount getAccount() throws UserNotLoggedInError;
+    public JSGuild setActiveGuild(String guild_key)
+        throws UserNotLoggedInError, NotFoundError;
 
     public JSGuild getGuildFromArmoryURL(String url)
         throws UserNotLoggedInError, AlreadyExistsError, NotFoundError,
