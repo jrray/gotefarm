@@ -114,6 +114,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
+  def getGuild(key: Key): Option[Guild] = {
+    getObjectById(classOf[Guild], key)
+  }
+
   def getChrClass(clazz: String): ChrClass = {
     val r = find(classOf[ChrClass], "name == nameParam",
                  "java.lang.String nameParam")(clazz)

@@ -34,6 +34,8 @@ trait GoteFarmDaoT {
   def getRace(key: Key): Option[Race]
   def getRace(race: String): Race
 
+  def getGuild(key: Key): Option[Guild]
+
   def getCharacter(realm: String, name: String): Option[Chr]
   def createCharacter(user: User, realm: String, character: String, race: Race,
                       clazz: ChrClass, level: Int, chrxml: String): Chr
