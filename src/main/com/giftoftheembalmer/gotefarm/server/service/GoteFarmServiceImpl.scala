@@ -171,6 +171,36 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  private
+  def setAdd[I <: AnyRef, S <: java.util.Set[I]](
+                                            element: I, existing_set: S,
+                                            set: java.util.HashSet[I] => Unit)
+    : Unit = {
+    if (existing_set eq null) {
+      val new_set = new java.util.HashSet[I]
+      new_set.add(element)
+      set(new_set)
+    }
+    else {
+      existing_set.add(element)
+    }
+  }
+
+  private
+  def listAdd[I <: AnyRef, L <: java.util.List[I]](
+                                          element: I, existing_list: L,
+                                          set: java.util.ArrayList[I] => Unit)
+    : Unit = {
+    if (existing_list eq null) {
+      val new_list = new java.util.ArrayList[I]
+      new_list.add(element)
+      set(new_list)
+    }
+    else {
+      existing_list.add(element)
+    }
+  }
+
   /*
   def login(username: String, password: String) =
     goteFarmDao.validateUser(username, password)
