@@ -456,29 +456,15 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       parms: _*
     )
   }
+  */
 
-  def getInstances = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    jdbc.query(
-      "select name from instance order by name",
-      new ParameterizedRowMapper[String] {
-        def mapRow(rs: ResultSet, rowNum: Int) = {
-          rs.getString(1)
-        }
-      },
-      Array[AnyRef](): _*
-    )
+  override
+  def getInstances(guild: Key): java.util.Collection[Instance] = {
+    find(classOf[Instance], "guild == guildParam",
+         "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
-  def getInstanceId(instance: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-    jdbc.queryForLong(
-      "select instanceid from instance where name = ?",
-      Array[AnyRef](instance): _*
-    )
-  }
-
+  /*
   def getInstanceBosses(instance: String) = {
     val jdbc = getSimpleJdbcTemplate()
 

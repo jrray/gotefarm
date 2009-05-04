@@ -38,7 +38,8 @@ public interface GoteFarmRPC extends RemoteService {
     public Boolean addInstance(String sid, String name) throws UserNotLoggedInError, AlreadyExistsError;
     public Boolean addBoss(String sid, String instance, String boss) throws UserNotLoggedInError, NotFoundError, AlreadyExistsError;
 
-    public List<String> getInstances();
+    public List<JSInstance> getInstances(String guild_key)
+        throws NotFoundError;
     public List<String> getInstanceBosses(String instance);
 
     public JSEventTemplate getEventTemplate(String sid, String name) throws UserNotLoggedInError, NotFoundError;

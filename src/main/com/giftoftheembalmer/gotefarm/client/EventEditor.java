@@ -130,12 +130,13 @@ public class EventEditor extends Composite implements ChangeHandler {
 
         grid.setWidget(3, 1, instances);
 
-        GoteFarm.goteService.getInstances(new AsyncCallback<List<String>>() {
-            public void onSuccess(List<String> results) {
+        GoteFarm.goteService.getInstances(admin.current_guild.key,
+                                          new AsyncCallback<List<JSInstance>>() {
+            public void onSuccess(List<JSInstance> results) {
                 int sel = 0;
 
-                for (String i : results) {
-                    instances.addItem(i);
+                for (JSInstance i : results) {
+                    instances.addItem(i.name, i.key);
                     if (EventEditor.this.et != null && i.equals(EventEditor.this.et.instance)) {
                         sel = instances.getItemCount() - 1;
                     }

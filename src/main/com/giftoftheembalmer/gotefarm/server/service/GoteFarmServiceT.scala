@@ -10,6 +10,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
+  JSInstance,
   JSGuild,
   JSRegion,
   JSRole,
@@ -90,9 +91,12 @@ trait GoteFarmServiceT {
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
   def addBoss(instance: String, name: String): Long
+  */
 
-  def getInstances: List[String]
+  @throws(classOf[NotFoundError])
+  def getInstances(guild: Key): List[JSInstance]
 
+  /*
   def getInstanceBosses(instance: String): List[String]
 
   @throws(classOf[NotFoundError])

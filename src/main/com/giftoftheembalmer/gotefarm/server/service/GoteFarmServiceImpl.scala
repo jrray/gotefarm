@@ -5,6 +5,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   ChrClass,
   GoteFarmDaoT,
   Guild,
+  Instance,
   Race,
   Region,
   ScalaTransactionTemplate
@@ -17,6 +18,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
+  JSInstance,
   JSGuild,
   JSRegion,
   NotFoundError
@@ -166,6 +168,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   implicit def guild2JSGuild(g: Guild): JSGuild = {
     val r = new JSGuild
     populateJSGuild(r, g)
+    r
+  }
+
+  implicit def instance2JSInstance(instance: Instance): JSInstance = {
+    val r = new JSInstance
+    r.key = instance.getKey
+    r.name = instance.getName
     r
   }
 
@@ -556,8 +565,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   @Transactional{val readOnly = false}
   def addBoss(instance: String, boss: String) =
     goteFarmDao.addBoss(instance, boss)
+  */
 
-  def getInstances() = goteFarmDao.getInstances
+  @Transactional{val propagation = Propagation.REQUIRED}
+  def getInstances(guild: Key): java.util.List[JSInstance] = {
+    mkList(goteFarmDao.getInstances(guild), instance2JSInstance)
+  }
+
+  /*
   def getInstanceBosses(instance: String) =
     goteFarmDao.getInstanceBosses(instance)
 

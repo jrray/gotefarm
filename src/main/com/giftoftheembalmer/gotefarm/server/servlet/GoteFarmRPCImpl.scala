@@ -12,6 +12,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
+  JSInstance,
   JSGuild,
   JSRegion,
   JSRole,
@@ -180,7 +181,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     false
   }
 
-  def getInstances = new java.util.ArrayList[String] // goteFarmService.getInstances
+  def getInstances(guild_key: String): java.util.List[JSInstance] = {
+    goteFarmService.getInstances(guild_key)
+  }
 
   def getInstanceBosses(instance: String) =
     new java.util.ArrayList[String] // goteFarmService.getInstanceBosses(instance)

@@ -36,7 +36,7 @@ interface GoteFarmRPCAsync {
     public void addInstance(String sid, String name, AsyncCallback<Boolean> cb);
     public void addBoss(String sid, String instance, String boss, AsyncCallback<Boolean> cb);
 
-    public void getInstances(AsyncCallback<List<String>> cb);
+    public void getInstances(String guild_key, AsyncCallback<List<JSInstance>> cb);
     public void getInstanceBosses(String instance, AsyncCallback<List<String>> cb);
 
     public void getEventTemplate(String sid, String name, AsyncCallback<JSEventTemplate> cb);

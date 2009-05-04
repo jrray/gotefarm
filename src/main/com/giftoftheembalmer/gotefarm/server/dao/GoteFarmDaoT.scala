@@ -17,7 +17,8 @@ import com.google.appengine.api.users.User
 import java.util.{
   Collection,
   Date,
-  List
+  List,
+  Set
 }
 
 trait GoteFarmDaoT {
@@ -65,8 +66,11 @@ trait GoteFarmDaoT {
 
   def addInstance(name: String): Long
   def addBoss(instance: String, boss: String): Long
+  */
 
-  def getInstances: List[String]
+  def getInstances(guild: Key): Collection[Instance]
+
+  /*
   def getInstanceBosses(instance: String): List[String]
 
   def getEventTemplate(name: String): JSEventTemplate
