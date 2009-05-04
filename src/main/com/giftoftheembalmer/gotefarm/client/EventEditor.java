@@ -168,6 +168,7 @@ public class EventEditor extends Composite implements ChangeHandler {
 
                     for (int i = 0; i < instances.getItemCount(); ++i) {
                         if (instances.getItemText(i).equals(inst)) {
+                            instances.setSelectedIndex(i);
                             found = true;
                             break;
                         }
