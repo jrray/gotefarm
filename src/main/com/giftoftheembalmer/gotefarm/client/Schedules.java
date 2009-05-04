@@ -15,7 +15,7 @@ public class Schedules extends Composite {
     ListBox eventlb = new ListBox();
     List<JSEventTemplate> event_templates;
 
-    public Schedules(Admin admin) {
+    public Schedules(final Admin admin) {
         this.admin = admin;
 
         eventlb.setWidth("100%");
@@ -33,7 +33,8 @@ public class Schedules extends Composite {
                     new AsyncCallback<List<JSEventSchedule>>() {
                         public void onSuccess(List<JSEventSchedule> results) {
                             Schedules.this.admin.setCenterWidget(
-                                new ScheduleEditor(event_template_key, results)
+                                new ScheduleEditor(admin, event_template_key,
+                                                   results)
                             );
                         }
 

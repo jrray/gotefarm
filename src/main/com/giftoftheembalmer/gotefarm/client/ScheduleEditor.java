@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -25,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ScheduleEditor extends Composite {
+    Admin admin;
     static int last_group_num = 0;
 
     class Schedule extends Composite implements ClickHandler, ValueChangeHandler<Date> {
@@ -526,16 +528,29 @@ public class ScheduleEditor extends Composite {
 
     VerticalPanel vpanel = new VerticalPanel();
 
-    public ScheduleEditor(String eventKey, List<JSEventSchedule> schedules) {
+    public ScheduleEditor(final Admin admin, String eventKey,
+                          List<JSEventSchedule> schedules) {
+        this.admin = admin;
+
         vpanel.setWidth("100%");
         vpanel.setHeight("100%");
         vpanel.setSpacing(40);
 
-        for (JSEventSchedule s : schedules) {
-            vpanel.add(new Schedule(eventKey, s));
+        if (admin.current_guild.time_zone == null) {
+            HorizontalPanel hpanel = new HorizontalPanel();
+            hpanel.setSpacing(10);
+            hpanel.add(new Label(  "The guild time zone must be set before"
+                                 + " creating schedules."));
+            hpanel.add(new Hyperlink("Manage guild", "guilds"));
+            vpanel.add(hpanel);
         }
+        else {
+            for (JSEventSchedule s : schedules) {
+                vpanel.add(new Schedule(eventKey, s));
+            }
 
-        vpanel.add(new Schedule(eventKey));
+            vpanel.add(new Schedule(eventKey));
+        }
 
         initWidget(vpanel);
 
