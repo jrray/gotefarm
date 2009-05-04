@@ -222,6 +222,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
+  def initialize() = {
+    // Populate Regions
+    for (code <- List("us", "eu", "kr", "cn", "tw")) {
+      transactionTemplate.execute {
+        goteFarmDao.getRegion(code)
+      }
+    }
+  }
+
   override
   def getAccount(user: User): JSAccount = {
     val r = transactionTemplate.execute {

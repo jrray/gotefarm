@@ -58,7 +58,9 @@
             <property name="transactionManager"><ref local="txManager"/></property>
         </bean>
 
-        <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl">
+        <bean id="goteFarmService"
+            class="com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl"
+            init-method="initialize">
             <property name="transactionTemplate"><ref local="transTemplate"/></property>
             <property name="goteFarmDao" ref="goteFarmDao"/>
         </bean>
