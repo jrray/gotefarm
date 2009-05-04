@@ -363,6 +363,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   */
 
   override
+  def getBadge(key: Key): Option[Badge] = {
+    getObjectById(classOf[Badge], key)
+  }
+
+  override
   def getBadges(guild: Key): java.util.Collection[Badge] = {
     find(classOf[Badge], "guild == guildParam",
          "com.google.appengine.api.datastore.Key guildParam")(guild)

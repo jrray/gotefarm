@@ -70,6 +70,7 @@ trait GoteFarmDaoT {
   def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit
   */
 
+  def getBadge(key: Key): Option[Badge]
   def getBadges(guild: Key): Collection[Badge]
 
   def addBadge(guild: Key, name: String, score: Int): Badge
