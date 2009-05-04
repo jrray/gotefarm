@@ -61,6 +61,10 @@ public class EventEditor extends Composite implements ChangeHandler {
         vpanel.setWidth("100%");
         vpanel.setHeight("100%");
 
+        final Label errmsg = new Label();
+        errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
+        errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
+
         FlexTable grid = new FlexTable();
         grid.setWidth("100%");
 
@@ -168,7 +172,7 @@ public class EventEditor extends Composite implements ChangeHandler {
 
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getCharCode() == KeyCodes.KEY_ENTER) {
-                    String inst = newinst.getText();
+                    final String inst = newinst.getText();
 
                     boolean found = false;
 
@@ -182,17 +186,31 @@ public class EventEditor extends Composite implements ChangeHandler {
                     }
 
                     if (!found) {
-                        instances.addItem(inst);
-                        instances.setSelectedIndex(instances.getItemCount()-1);
-                        bosses.clear();
-
-                        focusBoss();
-
                         GoteFarm.goteService.addInstance(GoteFarm.sessionID, inst, new AsyncCallback<Boolean>() {
                             public void onSuccess(Boolean result) {
+                                if (!result) {
+                                    errmsg.setText("Failed to add instance");
+                                    return;
+                                }
+
+                                instances.addItem(inst);
+                                instances.setSelectedIndex(instances.getItemCount()-1);
+                                bosses.clear();
+
+                                focusBoss();
                             }
 
                             public void onFailure(Throwable caught) {
+                                try {
+                                    throw caught;
+                                }
+                                catch (AlreadyExistsError e) {
+                                    // Someone else added it?
+                                    onSuccess(true);
+                                }
+                                catch (Throwable e) {
+                                    errmsg.setText(e.getMessage());
+                                }
                             }
                         });
                     }
@@ -409,10 +427,6 @@ public class EventEditor extends Composite implements ChangeHandler {
 
         HorizontalPanel hpanel = new HorizontalPanel();
         hpanel.setWidth("100%");
-
-        final Label errmsg = new Label();
-        errmsg.addStyleName(errmsg.getStylePrimaryName() + "-error");
-        errmsg.addStyleName(errmsg.getStylePrimaryName() + "-bottom");
 
         final CheckBox modify = new CheckBox("Modify published events (can change signups)");
         modify.setValue(true);
