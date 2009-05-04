@@ -26,25 +26,21 @@ public class Schedules extends Composite {
                 int sel = eventlb.getSelectedIndex();
                 if (sel < 0) return;
 
-                final String name = eventlb.getItemText(sel);
+                final String event_template_key = eventlb.getValue(sel);
 
-                GoteFarm.goteService.getEventSchedules(GoteFarm.sessionID, name, new AsyncCallback<List<JSEventSchedule>>() {
-                    public void onSuccess(List<JSEventSchedule> results) {
-                        String key = null;
-
-                        for (JSEventTemplate e : Schedules.this.event_templates) {
-                            if (e.name.equals(name)) {
-                                key = e.key;
-                                break;
-                            }
+                GoteFarm.goteService.getEventSchedules(
+                    event_template_key,
+                    new AsyncCallback<List<JSEventSchedule>>() {
+                        public void onSuccess(List<JSEventSchedule> results) {
+                            Schedules.this.admin.setCenterWidget(
+                                new ScheduleEditor(event_template_key, results)
+                            );
                         }
 
-                        Schedules.this.admin.setCenterWidget(new ScheduleEditor(key, results));
+                        public void onFailure(Throwable caught) {
+                        }
                     }
-
-                    public void onFailure(Throwable caught) {
-                    }
-                });
+                );
             }
         });
 
@@ -61,7 +57,7 @@ public class Schedules extends Composite {
         eventlb.clear();
 
         for (JSEventTemplate e : events) {
-            eventlb.addItem(e.name);
+            eventlb.addItem(e.name, e.key);
         }
     }
 }

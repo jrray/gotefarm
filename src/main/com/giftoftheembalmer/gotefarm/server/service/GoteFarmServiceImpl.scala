@@ -8,6 +8,8 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   EventBadge,
   EventBoss,
   EventRole,
+  EventSchedule,
+  EventTemplate,
   GoteFarmDaoT,
   Guild,
   Instance,
@@ -182,6 +184,27 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         )
       }.getName
     })
+  }
+
+  implicit def eventSchedule2JSEventSchedule(es: EventSchedule)
+    : JSEventSchedule = {
+    val r = new JSEventSchedule
+    r.event_schedule_key = es.getKey
+    r.event_template_key = es.getEventTemplate
+    r.start_time = es.getStartTime
+    r.orig_start_time = es.getOrigStartTime
+    r.time_zone = es.getTimeZone
+    r.duration = es.getDuration
+    r.display_start = es.getDisplayStart
+    r.display_end = es.getDisplayEnd
+    r.signups_start = es.getSignupsStart
+    r.signups_end = es.getSignupsEnd
+    r.repeat_size = es.getRepeatSize
+    r.repeat_freq = es.getRepeatFreq
+    r.day_mask = es.getDayMask
+    r.repeat_by = es.getRepeatBy
+    r.active = es.isActive
+    r
   }
 
   implicit def region2JSRegion(region: Region): JSRegion = {
@@ -860,10 +883,16 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     jset
   }
 
-  /*
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def getEventSchedules(name: String) =
-    goteFarmDao.getEventSchedules(name)
+  def getEventSchedules(user: User, event_template: Key)
+    : java.util.List[JSEventSchedule] = {
+    // TODO: user needs to be ... in guild? officer?
+    mkList(goteFarmDao.getEventSchedules(event_template),
+           eventSchedule2JSEventSchedule)
+  }
+
+  /*
   @Transactional{val readOnly = false}
   override
   def saveEventSchedule(es: JSEventSchedule) = {

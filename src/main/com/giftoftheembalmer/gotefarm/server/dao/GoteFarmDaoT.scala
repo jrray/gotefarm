@@ -93,7 +93,11 @@ trait GoteFarmDaoT {
 
   /*
   def getActiveEventSchedules: List[JSEventSchedule]
-  def getEventSchedules(name: String): List[JSEventSchedule]
+  */
+
+  def getEventSchedules(event_template: Key): Collection[EventSchedule]
+
+  /*
   def saveEventSchedule(es: JSEventSchedule): Long
   def publishEvent(es: JSEventSchedule): Unit
 

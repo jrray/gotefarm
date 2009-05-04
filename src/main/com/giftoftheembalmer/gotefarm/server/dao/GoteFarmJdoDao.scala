@@ -578,22 +578,16 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       noargs: _*
     )
   }
+  */
 
   override
-  def getEventSchedules(name: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    jdbc.query(
-      "select " + JSEventScheduleMapper.columns +
-      """ from eventsched join eventtmpl
-            on eventsched.eventtmplid = eventtmpl.eventtmplid
-          where eventtmpl.name = ?
-          order by start_time""",
-      JSEventScheduleMapper,
-      Array[AnyRef](name): _*
-    )
+  def getEventSchedules(event_template: Key)
+    : java.util.Collection[EventSchedule] = {
+    find(classOf[EventSchedule], "eventTemplate == etParam",
+         "com.google.appengine.api.datastore.Key etParam")(event_template)
   }
 
+  /*
   override
   def saveEventSchedule(es: JSEventSchedule) = {
     val jdbc = getSimpleJdbcTemplate
