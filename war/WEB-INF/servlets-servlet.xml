@@ -12,13 +12,7 @@
     <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
         <property name="mappings">
             <value>
-                /login/**=loginServlet
             </value>
         </property>
-    </bean>
-
-    <bean id="loginServlet"
-        class="com.giftoftheembalmer.gotefarm.server.servlet.LoginServlet">
-        <property name="goteFarmService"><ref bean="goteFarmService"/></property>
     </bean>
 </beans>

@@ -13,6 +13,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   NotFoundError
 }
 
+import com.google.appengine.api.users.User
+
 import java.util.{
   Date,
   List
@@ -29,7 +31,7 @@ trait GoteFarmServiceT {
 
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
-  def newCharacter(uid: Long, realm: String, character: String): Long
+  def newCharacter(user: User, realm: String, character: String): Long
 
   def getCharacters(uid: Long): List[JSCharacter]
 

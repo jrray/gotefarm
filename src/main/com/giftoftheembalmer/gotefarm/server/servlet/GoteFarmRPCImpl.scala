@@ -11,6 +11,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   UserNotLoggedInError
 }
 
+import com.google.appengine.api.users.UserServiceFactory
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 
 import org.gwtwidgets.server.spring.ServletUtils
@@ -27,6 +29,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
 
   @scala.reflect.BeanProperty
   private var goteFarmService: GoteFarmServiceT = null
+
+  private val userService = UserServiceFactory.getUserService
 
   private def sessionID(uid: Long) = {
     val req = ServletUtils.getRequest()
@@ -69,9 +73,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   def newCharacter(sid: String, realm: String, character: String) = {
-    val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Long]
-    goteFarmService.newCharacter(uid, realm, character)
+    val user = userService.getCurrentUser
+    if (user eq null) throw new UserNotLoggedInError
+    goteFarmService.newCharacter(user, realm, character)
   }
 
   def getCharacters(sid: String) = {

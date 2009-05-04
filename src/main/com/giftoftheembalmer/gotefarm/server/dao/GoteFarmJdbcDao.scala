@@ -18,6 +18,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   NotFoundError
 }
 
+import com.google.appengine.api.users.User
+
 import org.springframework.jdbc.core._
 import org.springframework.jdbc.core.simple._
 import org.springframework.dao.{
@@ -787,7 +789,8 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
     }
   }
 
-  def createCharacter(uid: Long, realm: String, character: String) = {
+  def createCharacter(user: User, realm: String, character: String) = {
+    /*
     val jdbc = getSimpleJdbcTemplate()
 
     try {
@@ -856,6 +859,9 @@ class GoteFarmJdbcDao extends SimpleJdbcDaoSupport
       """select chrid from chr where realm = ? and name = ?""",
       Array[AnyRef](realm, character): _*
     )
+    */
+
+    -1L
   }
 
   def getCharacterRoles(cid: Long): Seq[JSChrRole] = {

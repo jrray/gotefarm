@@ -11,6 +11,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventTemplate
 }
 
+import com.google.appengine.api.users.User
+
 import org.apache.commons.logging.LogFactory
 
 import java.util.{
@@ -39,8 +41,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def newUser(username: String, email: String, password: String) =
     goteFarmDao.createUser(username, email, password)
   @Transactional{val readOnly = false}
-  def newCharacter(uid: Long, realm: String, character: String) =
-    goteFarmDao.createCharacter(uid, realm, character)
+  def newCharacter(user: User, realm: String, character: String) =
+    goteFarmDao.createCharacter(user, realm, character)
 
   def getCharacters(uid: Long) = goteFarmDao.getCharacters(uid)
   def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
