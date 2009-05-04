@@ -271,6 +271,7 @@
             force="changed"
             deprecation="yes">
             <classpath refid="project.class.path"/>
+            <include name="**/*.java"/>
             <include name="**/*.scala"/>
         </scalac>
     </target>
