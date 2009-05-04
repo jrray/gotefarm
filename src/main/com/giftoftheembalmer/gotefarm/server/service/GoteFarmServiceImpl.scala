@@ -62,13 +62,40 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     val r = new JSCharacter
     r.realm = chr.getRealm
     r.name = chr.getName
-    r.race = key2Race(chr.getRace).getName
-    r.clazz = key2ChrClass(chr.getChrClass).getName
+    r.race = transactionTemplate.execute {
+      key2Race(chr.getRace)
+    }.getName
+    r.clazz = transactionTemplate.execute {
+      key2ChrClass(chr.getChrClass)
+    }.getName
     r.level = chr.getLevel.shortValue
     r.characterxml = chr.getChrXml
     r.created = chr.getCreated
     r.roles = Array()
     r.badges = Array()
+    r
+  }
+
+  private def mkList[A](col: java.util.Collection[A]): java.util.List[A] = {
+    val r = new java.util.ArrayList[A]
+    if (col ne null) {
+      val i = col.iterator
+      while (i.hasNext) {
+        r.add(i.next)
+      }
+    }
+    r
+  }
+
+  private def mkList[A,B](col: java.util.Collection[A], f: A => B)
+    : java.util.List[B] = {
+    val r = new java.util.ArrayList[B]
+    if (col ne null) {
+      val i = col.iterator
+      while (i.hasNext) {
+        r.add(f(i.next))
+      }
+    }
     r
   }
 
@@ -163,8 +190,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  def getCharacters(user: User) = {
+    val chrs = transactionTemplate.execute {
+      mkList(goteFarmDao.getCharacters(user))
+    }
+    mkList(chrs, chr2JSCharacter)
+  }
   /*
-  def getCharacters(uid: Long) = goteFarmDao.getCharacters(uid)
   def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
 
   def getRoles = goteFarmDao.getRoles

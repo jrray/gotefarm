@@ -163,23 +163,14 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       Array[AnyRef](cid): _*
     )
   }
+  */
 
-  def getCharacters(uid: Long) = {
-    val jdbc = getSimpleJdbcTemplate()
-    val r = jdbc.query(
-      "select " + JSCharacterMapper.columns + " from "
-        + JSCharacterMapper.tables
-        + """ where accountid = ?""",
-      JSCharacterMapper,
-      Array[AnyRef](uid): _*
-    )
-    for (chr <- r) {
-      chr.roles = getCharacterRoles(chr.cid).toArray
-      chr.badges = getCharacterBadges(chr.cid).toArray
-    }
-    r
+  def getCharacters(user: User) = {
+    find(classOf[Chr], "user == userParam",
+         "com.google.appengine.api.users.User userParam")(user)
   }
 
+  /*
   def getCharacter(cid: Long) = {
     val jdbc = getSimpleJdbcTemplate()
     try {

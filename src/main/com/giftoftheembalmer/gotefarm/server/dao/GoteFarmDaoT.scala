@@ -15,6 +15,7 @@ import com.google.appengine.api.datastore.Key
 import com.google.appengine.api.users.User
 
 import java.util.{
+  Collection,
   Date,
   List
 }
@@ -35,8 +36,8 @@ trait GoteFarmDaoT {
   def createCharacter(user: User, realm: String, character: String, race: Race,
                       clazz: ChrClass, level: Int, chrxml: String): Chr
 
+  def getCharacters(user: User): Collection[Chr]
   /*
-  def getCharacters(uid: Long): List[JSCharacter]
   def getCharacter(cid: Long): JSCharacter
 
   def getRoles: List[JSRole]

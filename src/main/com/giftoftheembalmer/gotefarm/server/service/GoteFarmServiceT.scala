@@ -43,9 +43,10 @@ trait GoteFarmServiceT {
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
   def newCharacter(user: User, realm: String, character: String): JSCharacter
-  /*
-  def getCharacters(uid: Long): List[JSCharacter]
 
+  def getCharacters(user: User): List[JSCharacter]
+
+  /*
   @throws(classOf[NotFoundError])
   def getCharacter(cid: Long): JSCharacter
 

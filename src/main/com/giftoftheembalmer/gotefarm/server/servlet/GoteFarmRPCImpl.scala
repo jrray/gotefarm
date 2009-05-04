@@ -91,12 +91,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   def getCharacters(sid: String) = {
-    /*
-    val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Long]
-    goteFarmService.getCharacters(uid)
-    */
-    new java.util.ArrayList[JSCharacter]
+    goteFarmService.getCharacters(getUser)
   }
 
   def getCharacter(sid: String, cid: Long) = {
