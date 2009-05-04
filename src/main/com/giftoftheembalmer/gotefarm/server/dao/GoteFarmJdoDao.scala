@@ -523,24 +523,13 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[EventTemplate], key)
   }
 
-  /*
   override
-  def getEventTemplates = {
-    val jdbc = getSimpleJdbcTemplate()
-    val jsets = jdbc.query(
-      "select " + JSEventTemplateMapper.columns
-                + " from "
-                + JSEventTemplateMapper.tables
-                + " order by eventtmpl.name",
-      JSEventTemplateMapper,
-      Array[AnyRef](): _*
-    ).map(populateEventTemplate)
-
-    val r = new scala.collection.jcl.ArrayList[JSEventTemplate]
-    r.addAll(jsets)
-    r
+  def getEventTemplates(guild: Key): java.util.Collection[EventTemplate] = {
+    find(classOf[EventTemplate], "guild == guildParam",
+         "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
+  /*
   private def rebuildEvents(et: JSEventTemplate): Unit = {
     val jdbc = getSimpleJdbcTemplate
 

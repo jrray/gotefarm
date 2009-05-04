@@ -23,6 +23,8 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
   JSBoss,
   JSCharacter,
+  JSEventBadge,
+  JSEventRole,
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
@@ -218,6 +220,42 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   implicit def guild2JSGuild(g: Guild): JSGuild = {
     val r = new JSGuild
     populateJSGuild(r, g)
+    r
+  }
+
+  implicit def eventRole2JSEventRole(eventRole: EventRole): JSEventRole = {
+    val r = new JSEventRole
+    r.role_key = eventRole.getRoleKey
+    r.name = eventRole.getRole
+    r.min = eventRole.getMin
+    r.max = eventRole.getMax
+    r
+  }
+
+  implicit def eventBadge2JSEventBadge(eventBadge: EventBadge)
+    : JSEventBadge = {
+    val r = new JSEventBadge
+    r.badge_key = eventBadge.getBadgeKey
+    r.name = eventBadge.getBadge
+    r.requireForSignup = eventBadge.getRequireForSignup
+    r.applyToRole = eventBadge.getApplyToRole
+    r.numSlots = eventBadge.getNumSlots
+    r.earlySignup = eventBadge.getEarlySignup
+    r
+  }
+
+  implicit def eventTemplate2JSEventTemplate(eventTemplate: EventTemplate)
+    : JSEventTemplate = {
+    val r = new JSEventTemplate
+    r.key = eventTemplate.getKey
+    r.name = eventTemplate.getName
+    r.size = eventTemplate.getSize
+    r.minimumLevel = eventTemplate.getMinimumLevel
+    r.instance_key = eventTemplate.getInstanceKey
+    r.boss_keys = mkList(eventTemplate.getBosses, (x: EventBoss) => x.getBossKey)
+    r.roles = mkList(eventTemplate.getRoles, eventRole2JSEventRole)
+    r.badges = mkList(eventTemplate.getBadges, eventBadge2JSEventBadge)
+    r.modifyEvents = false
     r
   }
 
@@ -481,6 +519,11 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
 
   override
+  def getBadge(key: Key): Badge = goteFarmDao.getBadge(key).getOrElse(
+    throw new NotFoundError("Badge not found")
+  )
+
+  override
   def getChrClass(key: Key): ChrClass = goteFarmDao.getChrClass(key).getOrElse(
     throw new NotFoundError
   )
@@ -488,6 +531,11 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   override
   def getRace(key: Key): Race = goteFarmDao.getRace(key).getOrElse(
     throw new NotFoundError
+  )
+
+  override
+  def getRole(key: Key): Role = goteFarmDao.getRole(key).getOrElse(
+    throw new NotFoundError("Role not found")
   )
 
   override
@@ -713,9 +761,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   /*
   override
   def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
-  override
-  def getEventTemplates = goteFarmDao.getEventTemplates
   */
+
+  @Transactional{val propagation = Propagation.REQUIRED}
+  override
+  def getEventTemplates(user: User, guild: Key)
+    : java.util.List[JSEventTemplate] = {
+    // TODO: make sure user is an officer of the guild
+    mkList(goteFarmDao.getEventTemplates(guild), eventTemplate2JSEventTemplate)
+  }
 
   override
   def saveEventTemplate(user: User, guild: Key,

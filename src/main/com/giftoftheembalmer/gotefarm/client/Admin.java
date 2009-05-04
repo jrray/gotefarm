@@ -70,8 +70,12 @@ public class Admin extends Composite implements ValueChangeHandler<JSGuild> {
     }
 
     void getEventTemplates() {
+        if (current_guild == null) {
+            return;
+        }
+
         GoteFarm.goteService.getEventTemplates(
-            GoteFarm.sessionID,
+            current_guild.key,
             new AsyncCallback<List<JSEventTemplate>>() {
 
             public void onSuccess(List<JSEventTemplate> results) {

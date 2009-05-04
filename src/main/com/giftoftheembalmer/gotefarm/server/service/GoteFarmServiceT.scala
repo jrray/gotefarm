@@ -18,11 +18,13 @@ import com.giftoftheembalmer.gotefarm.client.{
   NotFoundError
 }
 import com.giftoftheembalmer.gotefarm.server.dao.{
+  Badge,
   Chr,
   ChrClass,
   Guild,
   Race,
-  Region
+  Region,
+  Role
 }
 
 import com.google.appengine.api.datastore.Key
@@ -52,9 +54,13 @@ trait GoteFarmServiceT {
   def getRegions: List[JSRegion]
 
   @throws(classOf[NotFoundError])
+  def getBadge(key: Key): Badge
+  @throws(classOf[NotFoundError])
   def getChrClass(key: Key): ChrClass
   @throws(classOf[NotFoundError])
   def getRace(key: Key): Race
+  @throws(classOf[NotFoundError])
+  def getRole(key: Key): Role
   @throws(classOf[NotFoundError])
   def getGuild(key: Key): Guild
   @throws(classOf[NotFoundError])
@@ -108,8 +114,9 @@ trait GoteFarmServiceT {
   /*
   @throws(classOf[NotFoundError])
   def getEventTemplate(name: String): JSEventTemplate
-  def getEventTemplates: List[JSEventTemplate]
   */
+  @throws(classOf[NotFoundError])
+  def getEventTemplates(user: User, guild: Key): List[JSEventTemplate]
 
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[NotFoundError])
