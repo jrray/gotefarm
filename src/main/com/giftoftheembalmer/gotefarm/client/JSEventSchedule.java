@@ -13,8 +13,8 @@ public class JSEventSchedule implements IsSerializable {
     public static final int REPEAT_BY_DAY_OF_MONTH = 0;
     public static final int REPEAT_BY_DAY_OF_WEEK = 1;
 
-    public long esid;
-    public long eid;
+    public String event_schedule_key;
+    public String event_template_key;
 
     public Date start_time;
     public Date orig_start_time;

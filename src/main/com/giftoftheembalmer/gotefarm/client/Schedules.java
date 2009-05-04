@@ -30,16 +30,16 @@ public class Schedules extends Composite {
 
                 GoteFarm.goteService.getEventSchedules(GoteFarm.sessionID, name, new AsyncCallback<List<JSEventSchedule>>() {
                     public void onSuccess(List<JSEventSchedule> results) {
-                        long eid = -1L;
+                        String key = null;
 
                         for (JSEventTemplate e : Schedules.this.event_templates) {
                             if (e.name.equals(name)) {
-                                eid = e.eid;
+                                key = e.key;
                                 break;
                             }
                         }
 
-                        Schedules.this.admin.setCenterWidget(new ScheduleEditor(eid, results));
+                        Schedules.this.admin.setCenterWidget(new ScheduleEditor(key, results));
                     }
 
                     public void onFailure(Throwable caught) {

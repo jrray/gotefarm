@@ -98,14 +98,14 @@ public class ScheduleEditor extends Composite {
         final DurationChangeHandler dch = new DurationChangeHandler();
 
         @SuppressWarnings("deprecation")
-        public Schedule(long eid, JSEventSchedule sched) {
+        public Schedule(String eventKey, JSEventSchedule sched) {
             this.sched = sched;
 
             if (this.sched == null) {
                 this.sched = sched = new JSEventSchedule();
 
-                sched.esid = -1;
-                sched.eid = eid;
+                sched.event_schedule_key = null;
+                sched.event_template_key = eventKey;
 
                 sched.start_time = new Date();
                 sched.start_time.setTime(
@@ -470,8 +470,8 @@ public class ScheduleEditor extends Composite {
             setStyleName("Admin-Schedule");
         }
 
-        public Schedule(long eid) {
-            this(eid, null);
+        public Schedule(String eventKey) {
+            this(eventKey, null);
         }
 
         private void updateTimes() {
@@ -532,16 +532,16 @@ public class ScheduleEditor extends Composite {
 
     VerticalPanel vpanel = new VerticalPanel();
 
-    public ScheduleEditor(long eid, List<JSEventSchedule> schedules) {
+    public ScheduleEditor(String eventKey, List<JSEventSchedule> schedules) {
         vpanel.setWidth("100%");
         vpanel.setHeight("100%");
         vpanel.setSpacing(40);
 
         for (JSEventSchedule s : schedules) {
-            vpanel.add(new Schedule(eid, s));
+            vpanel.add(new Schedule(eventKey, s));
         }
 
-        vpanel.add(new Schedule(eid));
+        vpanel.add(new Schedule(eventKey));
 
         initWidget(vpanel);
 

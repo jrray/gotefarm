@@ -141,7 +141,8 @@ public class EventEditor extends Composite implements ChangeHandler {
 
                 for (JSInstance i : results) {
                     instances.addItem(i.name, i.key);
-                    if (EventEditor.this.et != null && i.equals(EventEditor.this.et.instance)) {
+                    if (EventEditor.this.et != null
+                        && i.key.equals(EventEditor.this.et.instance_key)) {
                         sel = instances.getItemCount() - 1;
                     }
                 }
@@ -442,11 +443,12 @@ public class EventEditor extends Composite implements ChangeHandler {
                 JSEventTemplate t = new JSEventTemplate();
 
                 if (EventEditor.this.et != null) {
-                    t.eid = EventEditor.this.et.eid;
+                    t.key = EventEditor.this.et.key;
                 }
                 else {
-                    t.eid = -1;
+                    t.key = null;
                 }
+
                 t.name = name.getText();
                 t.size = getRaidSize();
                 t.minimumLevel = Integer.parseInt(minlevel.getText());
@@ -455,12 +457,12 @@ public class EventEditor extends Composite implements ChangeHandler {
                     errmsg.setText("Please select an instance for this event.");
                     return;
                 }
-                t.instance = instances.getItemText(index);
+                t.instance_key = instances.getValue(index);
 
-                t.bosses = new ArrayList<String>();
+                t.boss_keys = new ArrayList<String>();
                 for (int i = 0; i < bosses.getItemCount(); ++i) {
                     if (bosses.isItemSelected(i)) {
-                        t.bosses.add(bosses.getItemText(i));
+                        t.boss_keys.add(bosses.getValue(i));
                     }
                 }
 
@@ -592,9 +594,9 @@ public class EventEditor extends Composite implements ChangeHandler {
 
                 for (JSBoss ib : results) {
                     bosses.addItem(ib.name, ib.key);
-                    if (et != null && inst_key.equals(et.instance)) {
-                        for (String eb : et.bosses) {
-                            if (ib.equals(eb)) {
+                    if (et != null && inst_key.equals(et.instance_key)) {
+                        for (String eb : et.boss_keys) {
+                            if (ib.key.equals(eb)) {
                                 bosses.setItemSelected(bosses.getItemCount() - 1, true);
                                 break;
                             }

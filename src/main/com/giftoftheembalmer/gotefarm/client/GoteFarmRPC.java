@@ -59,21 +59,21 @@ public interface GoteFarmRPC extends RemoteService {
 
     public List<JSEvent> getEvents(String sid) throws UserNotLoggedInError;
     /* Return null if signups are unchanged */
-    public JSEventSignups getEventSignups(String sid, long eventid,
+    public JSEventSignups getEventSignups(String sid, String event_key,
                                           Date if_changed_since)
         throws UserNotLoggedInError, NotFoundError;
-    public JSEventSignups signupForEvent(String sid, long eventid,
+    public JSEventSignups signupForEvent(String sid, String event_key,
                                          long cid, String role_key,
                                          int signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
-    public JSEventSignups changeEventSignup(String sid, long eventid,
+    public JSEventSignups changeEventSignup(String sid, String event_key,
                                             long eventsignupid,
                                             String new_role_key,
                                             int new_signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
-    public JSEventSignups removeEventSignup(String sid, long eventid,
+    public JSEventSignups removeEventSignup(String sid, String event_key,
                                             long eventsignupid)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;

@@ -50,15 +50,15 @@ interface GoteFarmRPCAsync {
     public void saveEventSchedule(String sid, JSEventSchedule es, AsyncCallback<Boolean> cb);
 
     public void getEvents(String sid, AsyncCallback<List<JSEvent>> cb);
-    public void getEventSignups(String sid, long eventid,
+    public void getEventSignups(String sid, String event_key,
                                 Date if_changed_since,
                                 AsyncCallback<JSEventSignups> cb);
-    public void signupForEvent(String sid, long eventid, long cid,
+    public void signupForEvent(String sid, String event_key, long cid,
                                String role_key, int signup_type,
                                AsyncCallback<JSEventSignups> cb);
-    public void changeEventSignup(String sid, long eventid, long eventsignupid,
+    public void changeEventSignup(String sid, String event_key, long eventsignupid,
                                   String new_role_key, int new_signup_type,
                                   AsyncCallback<JSEventSignups> cb);
-    public void removeEventSignup(String sid, long eventid, long eventsignupid,
+    public void removeEventSignup(String sid, String event_key, long eventsignupid,
                                   AsyncCallback<JSEventSignups> cb);
 }

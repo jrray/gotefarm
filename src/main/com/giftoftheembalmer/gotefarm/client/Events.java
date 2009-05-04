@@ -129,13 +129,13 @@ public class Events
         }
 
         class Signup extends Label {
-            long eventid;
+            String eventKey;
             JSCharacter chr;
             JSEventSignup sup;
 
-            public Signup(long eventid, JSEventSignup sup) {
+            public Signup(String eventKey, JSEventSignup sup) {
                 super(sup.chr.name);
-                this.eventid = eventid;
+                this.eventKey = eventKey;
                 this.sup = sup;
                 dragController.makeDraggable(this);
                 if (sup.chr.accountid == accountid) {
@@ -147,9 +147,9 @@ public class Events
                 addStyleName(sup.chr.clazz.replace(' ', '-'));
             }
 
-            public Signup(long eventid, JSCharacter chr) {
+            public Signup(String eventKey, JSCharacter chr) {
                 super(chr.name);
-                this.eventid = eventid;
+                this.eventKey = eventKey;
                 this.chr = chr;
                 dragController.makeDraggable(this);
                 if (chr.accountid == accountid) {
@@ -196,16 +196,17 @@ public class Events
         };
 
         class RoleDropController extends AbstractDropController {
-            long eventid;
+            String eventKey;
             JSEventRole role;
             Widget dropTarget;
             int signupType;
             String highlightStyle;
 
-            RoleDropController(long eventid, JSEventRole role, Widget widget,
-                               int signupType, String highlightStyle) {
+            RoleDropController(String eventKey, JSEventRole role,
+                               Widget widget, int signupType,
+                               String highlightStyle) {
                 super(widget);
-                this.eventid = eventid;
+                this.eventKey = eventKey;
                 this.role = role;
                 this.dropTarget = widget;
                 this.signupType = signupType;
@@ -292,7 +293,7 @@ public class Events
                 Signup sup = (Signup)context.selectedWidgets.get(0);
 
                 // ignore drag events for other raid events
-                if (sup.eventid != eventid) {
+                if (!sup.eventKey.equals(eventKey)) {
                     return;
                 }
 
@@ -318,7 +319,7 @@ public class Events
                 Signup sup = (Signup)context.selectedWidgets.get(0);
 
                 // reject drag events for other raid events
-                if (sup.eventid != eventid) {
+                if (!sup.eventKey.equals(eventKey)) {
                     throw new VetoDragException();
                 }
 
@@ -345,7 +346,7 @@ public class Events
                 if (sup.sup == null) {
                     // new signup
                     GoteFarm.goteService.signupForEvent(GoteFarm.sessionID,
-                                                        event.eid,
+                                                        event.key,
                                                         sup.chr.cid, role.role_key,
                                                         signupType,
                                                         signupCallback);
@@ -353,7 +354,7 @@ public class Events
                 else if (signupType < 0) {
                     // deleting signup
                     GoteFarm.goteService.removeEventSignup(GoteFarm.sessionID,
-                                                           event.eid,
+                                                           event.key,
                                                            sup.sup.eventsignupid,
                                                            signupCallback);
                 }
@@ -361,7 +362,7 @@ public class Events
                 {
                     // changing signup
                     GoteFarm.goteService.changeEventSignup(GoteFarm.sessionID,
-                                                           event.eid,
+                                                           event.key,
                                                            sup.sup.eventsignupid,
                                                            role.role_key,
                                                            signupType,
@@ -541,7 +542,7 @@ public class Events
 
                 // show signups
                 for (JSEventSignup sup : rsup.coming) {
-                    vsign.add(new Signup(event.eid, sup));
+                    vsign.add(new Signup(event.key, sup));
                 }
 
                 // show remaining slots
@@ -583,7 +584,7 @@ public class Events
 
                 sp.add(vsign);
                 flex.setWidget(1, column, sp);
-                rsup.coming_dc = new RoleDropController(event.eid, role, sp,
+                rsup.coming_dc = new RoleDropController(event.key, role, sp,
                                                         JSEventSignup.SIGNUP_TYPE_COMING,
                                                         "coming-hi");
                 dragController.registerDropController(rsup.coming_dc);
@@ -593,7 +594,7 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.standby) {
-                    vstand.add(new Signup(event.eid, sup));
+                    vstand.add(new Signup(event.key, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
@@ -603,7 +604,7 @@ public class Events
                 VerticalPanel vmaybe = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.maybe) {
-                    vmaybe.add(new Signup(event.eid, sup));
+                    vmaybe.add(new Signup(event.key, sup));
                 }
 
                 if (rsup.maybe.isEmpty()) {
@@ -612,7 +613,7 @@ public class Events
 
                 sp.add(vmaybe);
                 flex.setWidget(3, column, sp);
-                rsup.maybe_dc = new RoleDropController(event.eid, role, sp,
+                rsup.maybe_dc = new RoleDropController(event.key, role, sp,
                                                        JSEventSignup.SIGNUP_TYPE_MAYBE,
                                                        "maybe-hi");
                 dragController.registerDropController(rsup.maybe_dc);
@@ -623,7 +624,7 @@ public class Events
                 VerticalPanel vnotcoming = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.not_coming) {
-                    vnotcoming.add(new Signup(event.eid, sup));
+                    vnotcoming.add(new Signup(event.key, sup));
                 }
 
                 if (rsup.not_coming.isEmpty()) {
@@ -632,7 +633,7 @@ public class Events
 
                 sp.add(vnotcoming);
                 flex.setWidget(4, column, sp);
-                rsup.not_coming_dc = new RoleDropController(event.eid, role, sp,
+                rsup.not_coming_dc = new RoleDropController(event.key, role, sp,
                                                             JSEventSignup.SIGNUP_TYPE_NOT_COMING,
                                                             "notcoming-hi");
                 dragController.registerDropController(rsup.not_coming_dc);
@@ -650,7 +651,7 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : limbo) {
-                    vstand.add(new Signup(event.eid, sup));
+                    vstand.add(new Signup(event.key, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
@@ -723,7 +724,7 @@ public class Events
             if (have_character_signed_up) {
                 Label l = new Label("You are signed up for this event. Drag to here to delete your signup.");
                 hchrpanel.add(l);
-                removeSignupDC = new RoleDropController(event.eid, null, l, -1, "coming");
+                removeSignupDC = new RoleDropController(event.key, null, l, -1, "coming");
                 dragController.registerDropController(removeSignupDC);
                 return;
             }
@@ -737,7 +738,7 @@ public class Events
             accountid = characters.get(0).accountid;
 
             for (JSCharacter c : characters) {
-                hchrpanel.add(new Signup(event.eid, c));
+                hchrpanel.add(new Signup(event.key, c));
             }
         }
 
@@ -799,7 +800,7 @@ public class Events
             }
 
             GoteFarm.goteService.getEventSignups(GoteFarm.sessionID,
-                                                 event.eid, asof,
+                                                 event.key, asof,
                                                  signupCallback);
         }
 
@@ -808,7 +809,7 @@ public class Events
             Signup sup = (Signup)c.selectedWidgets.get(0);
 
             // ignore drag events for other raid events
-            if (sup.eventid != Event.this.event.eid) {
+            if (!sup.eventKey.equals(Event.this.event.key)) {
                 return;
             }
 
@@ -824,7 +825,7 @@ public class Events
             Signup sup = (Signup)c.selectedWidgets.get(0);
 
             // ignore drag events for other raid events
-            if (sup.eventid != Event.this.event.eid) {
+            if (!sup.eventKey.equals(Event.this.event.key)) {
                 return;
             }
 
@@ -846,7 +847,7 @@ public class Events
             Signup sup = (Signup)c.selectedWidgets.get(0);
 
             // ignore drag events for other raid events
-            if (sup.eventid != Event.this.event.eid) {
+            if (!sup.eventKey.equals(Event.this.event.key)) {
                 return;
             }
 
@@ -867,7 +868,7 @@ public class Events
             Signup sup = (Signup)c.selectedWidgets.get(0);
 
             // ignore drag events for other raid events
-            if (sup.eventid != Event.this.event.eid) {
+            if (!sup.eventKey.equals(Event.this.event.key)) {
                 return;
             }
 
@@ -1026,7 +1027,8 @@ public class Events
                         old_event = events.get(old_index);
                     }
 
-                    if (old_event != null && e.eid == old_event.event.eid) {
+                    if (   old_event != null
+                        && e.key.equals(old_event.event.key)) {
                         // give existing event widget new JSEvent
                         old_event.setEvent(e);
                     }
