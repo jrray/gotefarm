@@ -11,6 +11,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
+  JSRegion,
   JSRole,
   UserNotLoggedInError
 }
@@ -79,6 +80,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
         null
     }
   }
+
+  def getRegions: java.util.List[JSRegion] = goteFarmService.getRegions
 
   private def getUser: User = {
     val user = userService.getCurrentUser

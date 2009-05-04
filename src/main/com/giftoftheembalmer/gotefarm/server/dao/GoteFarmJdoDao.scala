@@ -88,6 +88,10 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
   */
 
+  def getRegions: java.util.Collection[Region] = {
+    find(classOf[Region])
+  }
+
   def getChrClass(key: Key): Option[ChrClass] = {
     getObjectById(classOf[ChrClass], key)
   }

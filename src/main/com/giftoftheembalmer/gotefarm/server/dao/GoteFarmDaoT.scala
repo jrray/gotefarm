@@ -26,6 +26,8 @@ trait GoteFarmDaoT {
   def createUser(username: String, email: String, password: String): Long
   */
 
+  def getRegions: Collection[Region]
+
   def getChrClass(key: Key): Option[ChrClass]
   def getChrClass(clazz: String): ChrClass
 

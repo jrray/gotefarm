@@ -5,6 +5,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   ChrClass,
   GoteFarmDaoT,
   Race,
+  Region,
   ScalaTransactionTemplate
 }
 
@@ -14,6 +15,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
+  JSRegion,
   NotFoundError
 }
 
@@ -125,6 +127,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     })
   }
 
+  implicit def region2JSRegion(region: Region): JSRegion = {
+    val r = new JSRegion
+    r.key = region.getKey
+    r.code = region.getCode
+    r
+  }
+
   implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
     val r = new JSCharacter
     r.realm = chr.getRealm
@@ -170,6 +179,12 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def newUser(username: String, email: String, password: String) =
     goteFarmDao.createUser(username, email, password)
   */
+
+  def getRegions: java.util.List[JSRegion] = {
+    transactionTemplate.execute {
+      mkList(goteFarmDao.getRegions, region2JSRegion)
+    }
+  }
 
   def getChrClass(key: Key): ChrClass = goteFarmDao.getChrClass(key).getOrElse(
     throw new NotFoundError

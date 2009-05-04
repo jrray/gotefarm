@@ -9,6 +9,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventSchedule,
   JSEventSignups,
   JSEventTemplate,
+  JSRegion,
   JSRole,
   NotFoundError
 }
@@ -35,6 +36,8 @@ trait GoteFarmServiceT {
   @throws(classOf[AlreadyExistsError])
   def newUser(username: String, email: String, password: String): Long
   */
+  def getRegions: List[JSRegion]
+
   @throws(classOf[NotFoundError])
   def getChrClass(key: Key): ChrClass
   @throws(classOf[NotFoundError])
