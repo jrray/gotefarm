@@ -150,8 +150,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def getBadges =
-    new java.util.ArrayList[JSBadge] // goteFarmService.getBadges
+  def getBadges(guild_key: String): java.util.List[JSBadge] = {
+    goteFarmService.getBadges(guild_key)
+  }
 
   override
   def addBadge(sid: String, name: String, score: Int) = {

@@ -360,17 +360,15 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
                   cid, roleid)
     }
   }
+  */
 
   override
-  def getBadges = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    jdbc.query(
-      "select " + JSBadgeMapper.columns + " from badge order by score desc, name",
-      JSBadgeMapper
-    )
+  def getBadges(guild: Key): java.util.Collection[Badge] = {
+    find(classOf[Badge], "guild == guildParam",
+         "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
+  /*
   override
   def addBadge(name: String, score: Int) = {
     val jdbc = getSimpleJdbcTemplate()

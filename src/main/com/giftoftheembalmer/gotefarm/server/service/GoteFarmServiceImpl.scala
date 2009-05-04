@@ -1,6 +1,7 @@
 package com.giftoftheembalmer.gotefarm.server.service
 
 import com.giftoftheembalmer.gotefarm.server.dao.{
+  Badge,
   Boss,
   Chr,
   ChrClass,
@@ -16,6 +17,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
 import com.giftoftheembalmer.gotefarm.client.{
   AlreadyExistsError,
   JSAccount,
+  JSBadge,
   JSBoss,
   JSCharacter,
   JSEventSchedule,
@@ -188,6 +190,13 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r.key = role.getKey
     r.name = role.getName
     r.restricted = role.getRestricted.booleanValue
+    r
+  }
+
+  implicit def badge2JSBadge(badge: Badge): JSBadge = {
+    val r = new JSBadge
+    r.key = badge.getKey
+    r.name = badge.getName
     r
   }
 
@@ -586,10 +595,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
     goteFarmDao.updateCharacterRole(cid, roleid, adding)
   }
+  */
 
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def getBadges = goteFarmDao.getBadges
-  @Transactional{val readOnly = false}
+  def getBadges(guild: Key): java.util.List[JSBadge] = {
+    mkList(goteFarmDao.getBadges(guild), badge2JSBadge)
+  }
+
+  /*
   override
   def addBadge(name: String, score: Int) =
     goteFarmDao.addBadge(name, score)

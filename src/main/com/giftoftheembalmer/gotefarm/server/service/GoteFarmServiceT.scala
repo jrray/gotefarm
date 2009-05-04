@@ -81,8 +81,10 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
   def updateCharacterRole(uid: Long, cid: Long, roleid: Long, adding: Boolean): Unit
+  */
 
-  def getBadges: List[JSBadge]
+  def getBadges(guild: Key): List[JSBadge]
+  /*
   @throws(classOf[AlreadyExistsError])
   def addBadge(name: String, score: Int): Long
 

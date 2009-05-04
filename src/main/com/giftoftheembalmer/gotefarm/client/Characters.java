@@ -375,7 +375,8 @@ public class Characters
             }
         });
 
-        GoteFarm.goteService.getBadges(new AsyncCallback<List<JSBadge>>() {
+        GoteFarm.goteService.getBadges(current_guild.key,
+                                       new AsyncCallback<List<JSBadge>>() {
             public void onSuccess(List<JSBadge> result) {
                 badges = result;
                 for (Character c : character_widgets) {

@@ -345,7 +345,8 @@ public class EventEditor extends Composite implements ChangeHandler {
 
         badges.addItem(SELECT_A_BADGE);
 
-        GoteFarm.goteService.getBadges(new AsyncCallback<List<JSBadge>>() {
+        GoteFarm.goteService.getBadges(admin.current_guild.key,
+            new AsyncCallback<List<JSBadge>>() {
             public void onSuccess(List<JSBadge> results) {
                 for (JSBadge badge : results) {
                     badges.addItem(badge.name);

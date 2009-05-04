@@ -28,7 +28,7 @@ interface GoteFarmRPCAsync {
                                     boolean adding,
                                     AsyncCallback<JSCharacter> cb);
 
-    public void getBadges(AsyncCallback<List<JSBadge>> cb);
+    public void getBadges(String guild_key, AsyncCallback<List<JSBadge>> cb);
     public void addBadge(String sid, String name, int score, AsyncCallback<Boolean> cb);
     public void updateCharacterBadge(String sid, long cid, String badge_key,
                                      boolean adding,
