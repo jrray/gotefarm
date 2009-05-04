@@ -154,19 +154,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     throw new NotFoundError
   )
 
-  def newCharacter(user: User, realm: String, character: String) = {
-    // Character already in use?
-    {
-      val chr = goteFarmDao.getCharacter(realm, character)
-      if (chr.isDefined) {
-        throw new AlreadyExistsError("Character '" + character + "' already exists.")
-      }
-    }
-
-    // Fetch the character from the armory
-    val conn = new URL("http://www.wowarmory.com/character-sheet.xml?r=" +
-      URLEncoder.encode(realm, "UTF-8") + "&n=" +
-      URLEncoder.encode(character, "UTF-8")).openConnection
+  private def fetchCharacterFromArmory(url: String): scala.xml.Elem = {
+    val conn = new URL(url).openConnection
 
     conn.setRequestProperty(
       "User-Agent",
@@ -183,7 +172,23 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
     conn.connect()
 
-    val charxml = scala.xml.XML.load(conn.getInputStream())
+    logger.debug("Loading character via URL: " + url)
+    scala.xml.XML.load(conn.getInputStream())
+  }
+
+  def newCharacter(user: User, realm: String, character: String) = {
+    // Character already in use?
+    {
+      val chr = goteFarmDao.getCharacter(realm, character)
+      if (chr.isDefined) {
+        throw new AlreadyExistsError("Character '" + character + "' already exists.")
+      }
+    }
+
+    val charxml = fetchCharacterFromArmory(
+      "http://www.wowarmory.com/character-sheet.xml?r=" +
+      URLEncoder.encode(realm, "UTF-8") + "&n=" +
+      URLEncoder.encode(character, "UTF-8"))
 
     val charInfo = charxml \ "characterInfo"
 
