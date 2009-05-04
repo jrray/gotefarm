@@ -109,6 +109,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   */
 
   override
+  def getBoss(key: Key): Option[Boss] = {
+    getObjectById(classOf[Boss], key)
+  }
+
+  override
   def getRegions: java.util.Collection[Region] = {
     find(classOf[Region])
   }
