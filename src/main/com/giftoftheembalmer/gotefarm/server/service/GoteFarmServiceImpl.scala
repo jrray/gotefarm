@@ -176,29 +176,18 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     scala.xml.XML.load(conn.getInputStream())
   }
 
-  def newCharacter(user: User, realm: String, character: String) = {
-    // Character already in use?
-    {
-      val chr = goteFarmDao.getCharacter(realm, character)
-      if (chr.isDefined) {
-        throw new AlreadyExistsError("Character '" + character + "' already exists.")
-      }
-    }
-
-    val charxml = fetchCharacterFromArmory(
-      "http://www.wowarmory.com/character-sheet.xml?r=" +
-      URLEncoder.encode(realm, "UTF-8") + "&n=" +
-      URLEncoder.encode(character, "UTF-8"))
-
+  private def createCharacter(user: User, charxml: scala.xml.Elem): JSCharacter = {
     val charInfo = charxml \ "characterInfo"
 
     // check if the character was found
     if (!(charInfo \ "@errCode").isEmpty) {
-      throw new NotFoundError("Character '" + character + "' not found.")
+      throw new NotFoundError("Character not found.")
     }
 
     val char = charInfo \ "character"
 
+    val name = char \ "@name"
+    val realm = char \ "@realm"
     val race = char \ "@race"
     val clazz = char \ "@class"
     val level = (char \ "@level").toString.toInt
@@ -214,8 +203,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
 
     val chr = transactionTemplate.execute {
-      goteFarmDao.createCharacter(user, realm, character, race_obj, class_obj,
-                                  level, charxml.toString)
+      goteFarmDao.createCharacter(user, realm.toString, name.toString,
+                                  race_obj, class_obj, level, charxml.toString)
     }
 
     // XXX: Duplicates chr2JSCharacter but don't need to re-query
@@ -231,6 +220,23 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r.roles = Array()
     r.badges = Array()
     r
+  }
+
+  def newCharacter(user: User, realm: String, character: String) = {
+    // Character already in use?
+    {
+      val chr = goteFarmDao.getCharacter(realm, character)
+      if (chr.isDefined) {
+        throw new AlreadyExistsError("Character '" + character + "' already exists.")
+      }
+    }
+
+    val charxml = fetchCharacterFromArmory(
+      "http://www.wowarmory.com/character-sheet.xml?r=" +
+      URLEncoder.encode(realm, "UTF-8") + "&n=" +
+      URLEncoder.encode(character, "UTF-8"))
+
+    createCharacter(user, charxml)
   }
 
   def getCharacters(user: User) = {
