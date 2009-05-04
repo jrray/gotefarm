@@ -85,8 +85,9 @@ trait GoteFarmDaoT {
   def addInstance(guild: Key, name: String): Instance
   def getInstances(guild: Key): Collection[Instance]
 
+  def getEventTemplate(key: Key): Option[EventTemplate]
+
   /*
-  def getEventTemplate(name: String): JSEventTemplate
   def getEventTemplates: List[JSEventTemplate]
   def saveEventTemplate(et: JSEventTemplate): Long
 

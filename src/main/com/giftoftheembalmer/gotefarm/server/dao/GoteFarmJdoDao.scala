@@ -507,29 +507,14 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
 
   private def populateEvent(e: JSEvent): JSEvent =
     populateEventTemplate(e, "event")
+  */
 
   override
-  def getEventTemplate(name: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    val jset = try {
-      jdbc.queryForObject(
-        "select " + JSEventTemplateMapper.columns
-                  + " from "
-                  + JSEventTemplateMapper.tables
-                  + " where eventtmpl.name = ?",
-        JSEventTemplateMapper,
-        Array[AnyRef](name): _*
-      )
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("Template '" + name + "' not found.")
-    }
-
-    populateEventTemplate(jset)
+  def getEventTemplate(key: Key): Option[EventTemplate] = {
+    getObjectById(classOf[EventTemplate], key)
   }
 
+  /*
   override
   def getEventTemplates = {
     val jdbc = getSimpleJdbcTemplate()
