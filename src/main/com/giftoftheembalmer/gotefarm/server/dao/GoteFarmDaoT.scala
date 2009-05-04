@@ -20,8 +20,6 @@ import java.util.{
 
 trait GoteFarmDaoT {
   /*
-  def generateTables(): Unit
-
   def validateUser(username: String, password: String): Long
   def createUser(username: String, email: String, password: String): Long
   def createCharacter(user: User, realm: String, character: String): Long

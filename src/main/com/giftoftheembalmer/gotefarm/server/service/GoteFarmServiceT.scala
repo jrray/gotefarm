@@ -22,8 +22,6 @@ import java.util.{
 
 trait GoteFarmServiceT {
   /*
-  def generateTables(): Unit
-
   @throws(classOf[InvalidCredentialsError])
   def login(username: String, password: String): Long
 

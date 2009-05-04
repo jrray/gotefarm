@@ -37,9 +37,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   private var transactionTemplate: ScalaTransactionTemplate = null
 
   /*
-  @Transactional{val readOnly = false}
-  def generateTables() = goteFarmDao.generateTables()
-
   def login(username: String, password: String) =
     goteFarmDao.validateUser(username, password)
 
