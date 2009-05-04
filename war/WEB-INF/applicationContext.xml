@@ -50,14 +50,17 @@
 
 	<!-- ========================= BUSINESS OBJECT DEFINITIONS ======================== -->
 
-        <!--
-        <bean id="goteFarmDao" class="com.giftoftheembalmer.gotefarm.server.dao.GoteFarmJdbcDao">
-            <property name="dataSource" ref="dataSource"/>
+        <bean id="goteFarmDao" class="com.giftoftheembalmer.gotefarm.server.dao.GoteFarmJdoDao">
+            <property name="persistenceManagerFactory" ref="jdoFactory"/>
         </bean>
-        -->
+
+        <bean id="transTemplate" class="com.giftoftheembalmer.gotefarm.server.dao.ScalaTransactionTemplate">
+            <property name="transactionManager"><ref local="txManager"/></property>
+        </bean>
 
         <bean id="goteFarmService" class="com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl">
-            <!-- <property name="goteFarmDao" ref="goteFarmDao"/> -->
+            <property name="transactionTemplate"><ref local="transTemplate"/></property>
+            <property name="goteFarmDao" ref="goteFarmDao"/>
         </bean>
 
 	<!-- AOP advice used to send confirmation email after order has been submitted -->

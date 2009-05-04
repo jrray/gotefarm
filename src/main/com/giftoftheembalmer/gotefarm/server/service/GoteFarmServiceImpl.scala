@@ -2,7 +2,10 @@ package com.giftoftheembalmer.gotefarm.server.service
 
 import org.springframework.transaction.annotation.Transactional
 
-import com.giftoftheembalmer.gotefarm.server.dao.GoteFarmDaoT
+import com.giftoftheembalmer.gotefarm.server.dao.{
+  GoteFarmDaoT,
+  ScalaTransactionTemplate
+}
 
 import com.giftoftheembalmer.gotefarm.client.{
   JSCharacter,
@@ -30,6 +33,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   @scala.reflect.BeanProperty
   private var goteFarmDao: GoteFarmDaoT = null
+  @scala.reflect.BeanProperty
+  private var transactionTemplate: ScalaTransactionTemplate = null
 
   @Transactional{val readOnly = false}
   def generateTables() = goteFarmDao.generateTables()
