@@ -28,7 +28,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet
 
 import org.gwtwidgets.server.spring.ServletUtils
 
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.LoggerFactory
 
 import java.util.Date
 
@@ -36,7 +36,7 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   with GoteFarmRPC {
   import GoteFarmServiceImpl._
 
-  private val logger = LogFactory.getLog(this.getClass)
+  private val logger = LoggerFactory.getLogger(this.getClass)
   logger.debug("Servlet running")
 
   @scala.reflect.BeanProperty

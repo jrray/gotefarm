@@ -236,6 +236,8 @@
             <fileset dir="${appengine.sdk}/lib/user" includes="**/*.jar"/>
         </copy>
         <copy todir="war/WEB-INF/lib" file="${scala-library.jar}" />
+        <copy todir="war/WEB-INF/lib" file="${slf4j-api.jar}" />
+        <copy todir="war/WEB-INF/lib" file="${slf4j-impl.jar}" />
     </target>
 
     <target name="compile_java" depends="libs"

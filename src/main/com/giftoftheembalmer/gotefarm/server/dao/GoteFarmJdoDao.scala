@@ -21,8 +21,6 @@ import com.giftoftheembalmer.gotefarm.client.{
 import com.google.appengine.api.datastore.Key
 import com.google.appengine.api.users.User
 
-import org.apache.commons.logging.LogFactory;
-
 import java.util.Date
 
 import scala.collection.jcl.Conversions._

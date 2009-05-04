@@ -41,12 +41,12 @@ import com.google.appengine.api.datastore.{
 }
 import com.google.appengine.api.users.User
 
+import org.slf4j.LoggerFactory
+
 import org.springframework.transaction.annotation.{
   Propagation,
   Transactional
 }
-
-import org.apache.commons.logging.LogFactory
 
 import java.net.{
   URL,
@@ -95,7 +95,7 @@ object GoteFarmServiceImpl {
 class GoteFarmServiceImpl extends GoteFarmServiceT {
   import GoteFarmServiceImpl._
 
-  private val logger = LogFactory.getLog(this.getClass)
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   @scala.reflect.BeanProperty
   private var goteFarmDao: GoteFarmDaoT = null

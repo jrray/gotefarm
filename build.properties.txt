@@ -5,3 +5,8 @@ scala-compiler.jar: /opt/local/share/scala/lib/scala-compiler.jar
 scala-library.jar: /opt/local/share/scala/lib/scala-library.jar
 gwt-xml-ep.name: com.giftoftheembalmer.gotefarm.GoteFarm
 gwt-output.dir: gotefarm
+
+slf4j.ver: 1.5.6
+slf4j.sdk: /Users/jrray/java/slf4j-${slf4j.ver}
+slf4j-api.jar: ${slf4j.sdk}/slf4j-api-${slf4j.ver}.jar
+slf4j-impl.jar: ${slf4j.sdk}/slf4j-jdk14-${slf4j.ver}.jar
