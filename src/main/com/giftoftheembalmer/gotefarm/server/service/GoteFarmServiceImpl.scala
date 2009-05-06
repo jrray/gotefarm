@@ -34,6 +34,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSGuild,
   JSRegion,
   JSRole,
+  NotAuthorizedException,
   NotFoundError
 }
 
@@ -363,6 +364,51 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
     else {
       existing_list.add(element)
+    }
+  }
+
+  private
+  def getGuildOfficers(guild: Key): java.util.Set[Key] = {
+    val key = "officers-" + guild
+    cached(key, { key: String =>
+      transactionTemplate.execute {
+        val g = goteFarmDao.getGuild(guild).getOrElse(
+          throw new NotFoundError("Guild not found")
+        )
+        val officers = new java.util.HashSet[Key]
+        officers += g.getOwner
+        // FIXME: this null test can be removed once appengine bug is fixed
+        val guild_officers = g.getOfficers
+        if (guild_officers ne null) {
+          officers ++= guild_officers
+        }
+        officers
+      }
+    })
+  }
+
+  private
+  def getUserAccountKey(user: User): Key = {
+    val key = "user-accout-key-" + user
+    cached(key, { key: String =>
+      transactionTemplate.execute {
+        goteFarmDao.getAccount(user).getKey
+      }
+    })
+  }
+
+  private
+  def isUserOfficer(user: User, guild: Key): Boolean = {
+    val officers = getGuildOfficers(guild)
+    officers.contains(getUserAccountKey(user))
+  }
+
+  private
+  def verifyUserIsOfficer(user: User, guild: Key): Unit = {
+    // don't cache the result of this test directly, because it is impractical
+    // to invalidate the cache if the guild's officer list changes
+    if (!isUserOfficer(user, guild)) {
+      throw new NotAuthorizedException("You are not an officer of this guild")
     }
   }
 
