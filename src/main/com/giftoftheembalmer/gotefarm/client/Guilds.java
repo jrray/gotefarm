@@ -2,10 +2,13 @@ package com.giftoftheembalmer.gotefarm.client;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
@@ -24,6 +27,41 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
     private JSGuild active_guild;
     VerticalPanel vpanel = new VerticalPanel();
     private final FlexTable flex = new FlexTable();
+    private final Anchor change_tz = new Anchor("change");
+    private final ListBox time_zones = new ListBox();
+
+    private class ChangeTimeZone implements ClickHandler {
+        public void onClick(ClickEvent event) {
+            flex.setWidget(1, 1, time_zones);
+            flex.removeCell(1, 2);
+
+            // Only ask for the list of time zones once
+            if (time_zones.getItemCount() == 0) {
+                GoteFarm.goteService.getTimeZones(new GetTimeZonesCallback());
+            }
+        }
+    }
+
+    private class GetTimeZonesCallback implements AsyncCallback<String[]> {
+        public void onSuccess(String[] results) {
+            boolean matched = active_guild.time_zone == null;
+            time_zones.clear();
+            for (String tz : results) {
+                time_zones.addItem(tz);
+                if (!matched && tz.equals(active_guild.time_zone)) {
+                    time_zones.setSelectedIndex(
+                        time_zones.getItemCount() - 1
+                    );
+                    matched = true;
+                }
+            }
+        }
+
+        public void onFailure(Throwable caught) {
+            flex.setText(1, 1, caught.getMessage());
+            flex.setWidget(1, 2, change_tz);
+        }
+    }
 
     public Guilds() {
         vpanel.setWidth("100%");
@@ -55,6 +93,10 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
                 vpanel.add(errmsg);
             }
         });
+
+        time_zones.setVisibleItemCount(10);
+
+        change_tz.addClickHandler(new ChangeTimeZone());
     }
 
     void showGuilds(JSAccount account) {
@@ -207,6 +249,10 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
         flex.setText(1, 1, active_guild.time_zone != null
                             ? active_guild.time_zone
                             : "Not Set");
+
+        if (active_guild.isOfficer(account.key)) {
+            flex.setWidget(1, 2, change_tz);
+        }
     }
 
     public HandlerRegistration addValueChangeHandler(
