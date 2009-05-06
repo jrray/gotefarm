@@ -39,8 +39,20 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
             time_zones.setFocus(true);
 
             // Only ask for the list of time zones once
-            if (time_zones.getItemCount() == 0) {
+            final int count = time_zones.getItemCount();
+            if (count == 0) {
                 GoteFarm.goteService.getTimeZones(new GetTimeZonesCallback());
+            }
+            else if (active_guild != null && active_guild.time_zone != null) {
+                // This scrolls the listbox to make the current time zone
+                // visible
+                for (int i = 0; i < count; ++i) {
+                    if (time_zones.getItemText(i)
+                                  .equals(active_guild.time_zone)) {
+                        time_zones.setSelectedIndex(i);
+                        break;
+                    }
+                }
             }
         }
     }
