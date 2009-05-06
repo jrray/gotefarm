@@ -1212,4 +1212,35 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getTimeZones: Array[String] = {
     time_zones
   }
+
+  override
+  def setTimeZone(user: User, guild: Key, time_zone: String): JSGuild = {
+    verifyUserIsOfficer(user, guild)
+
+    if (!time_zones.contains(time_zone)) {
+      throw new IllegalArgumentException("Invalid time zone")
+    }
+
+    val r = transactionTemplate.execute {
+      val g = goteFarmDao.getGuild(guild).getOrElse(
+        throw new NotFoundError("Guild does not exist")
+      )
+      g.setTimeZone(time_zone)
+      guild2JSGuild(g)
+    }
+
+    // all the EventSchedule entities must be updated
+    for {
+      es <- mkList(goteFarmDao.getGuildEventSchedules(guild))
+      key = es.getKey
+    } {
+      transactionTemplate.execute {
+        for (es <- goteFarmDao.getEventSchedule(key)) {
+          es.setTimeZone(time_zone)
+        }
+      }
+    }
+
+    r
+  }
 }

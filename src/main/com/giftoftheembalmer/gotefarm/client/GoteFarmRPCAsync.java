@@ -67,4 +67,6 @@ interface GoteFarmRPCAsync {
                                   AsyncCallback<JSEventSignups> cb);
 
     public void getTimeZones(AsyncCallback<String[]> cb);
+    public void setTimeZone(String guild_key, String time_zone,
+                            AsyncCallback<JSGuild> cb);
 }

@@ -307,4 +307,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   def getTimeZones: Array[String] = {
     goteFarmService.getTimeZones
   }
+
+  override
+  def setTimeZone(guild_key: String, time_zone: String): JSGuild = {
+    goteFarmService.setTimeZone(getUser, guild_key, time_zone)
+  }
 }

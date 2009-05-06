@@ -15,6 +15,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSGuild,
   JSRegion,
   JSRole,
+  NotAuthorizedException,
   NotFoundError
 }
 import com.giftoftheembalmer.gotefarm.server.dao.{
@@ -155,4 +156,8 @@ trait GoteFarmServiceT {
   */
 
   def getTimeZones: Array[String]
+  @throws(classOf[IllegalArgumentException])
+  @throws(classOf[NotAuthorizedException])
+  @throws(classOf[NotFoundError])
+  def setTimeZone(user: User, guild: Key, time_zone: String): JSGuild
 }

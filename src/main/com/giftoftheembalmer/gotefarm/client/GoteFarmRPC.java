@@ -84,4 +84,7 @@ public interface GoteFarmRPC extends RemoteService {
                IllegalArgumentException;
 
     public String[] getTimeZones();
+    public JSGuild setTimeZone(String guild_key, String time_zone)
+        throws IllegalArgumentException, NotAuthorizedException,
+               NotFoundError, UserNotLoggedInError;
 }
