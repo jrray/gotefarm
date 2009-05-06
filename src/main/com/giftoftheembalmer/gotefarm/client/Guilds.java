@@ -1,5 +1,7 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -34,6 +36,7 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
         public void onClick(ClickEvent event) {
             flex.setWidget(1, 1, time_zones);
             flex.removeCell(1, 2);
+            time_zones.setFocus(true);
 
             // Only ask for the list of time zones once
             if (time_zones.getItemCount() == 0) {
@@ -126,6 +129,11 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
 
         time_zones.setVisibleItemCount(10);
         time_zones.addChangeHandler(new TimeZoneSelected());
+        time_zones.addBlurHandler(new BlurHandler() {
+            public void onBlur(BlurEvent event) {
+                updateGuildInfo();
+            }
+        });
 
         change_tz.addClickHandler(new ChangeTimeZone());
     }
