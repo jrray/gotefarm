@@ -587,6 +587,13 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          "com.google.appengine.api.datastore.Key etParam")(event_template)
   }
 
+  override
+  def getGuildEventSchedules(guild: Key)
+    : java.util.Collection[EventSchedule] = {
+    find(classOf[EventSchedule], "guild == guildParam",
+         "com.google.appengine.api.datastore.Key guildParam")(guild)
+  }
+
   /*
   override
   def saveEventSchedule(es: JSEventSchedule) = {
