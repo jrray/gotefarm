@@ -7,6 +7,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -22,6 +23,7 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
     private JSAccount account;
     private JSGuild active_guild;
     VerticalPanel vpanel = new VerticalPanel();
+    private final FlexTable flex = new FlexTable();
 
     public Guilds() {
         vpanel.setWidth("100%");
@@ -57,7 +59,14 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
 
     void showGuilds(JSAccount account) {
         vpanel.clear();
+
+        final HorizontalPanel hpanel = new HorizontalPanel();
+        hpanel.setWidth("100%");
+
         final ListBox lb = new ListBox();
+        hpanel.add(lb);
+        hpanel.add(flex);
+
         lb.addChangeHandler(new ChangeHandler() {
             public void onChange(ChangeEvent event) {
                 final int index = lb.getSelectedIndex();
@@ -104,7 +113,9 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
                 lb.setSelectedIndex(lb.getItemCount()-1);
             }
         }
-        vpanel.add(lb);
+
+        vpanel.add(hpanel);
+
         // TODO: Add a way for a user to add additional guilds
 
         setValue(account.active_guild, true);
@@ -177,9 +188,25 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
 
         active_guild = value;
 
+        updateGuildInfo();
+
         if (fireEvents) {
             ValueChangeEvent.fire(this, value);
         }
+    }
+
+    private void updateGuildInfo() {
+        flex.clear();
+        if (active_guild == null) {
+            return;
+        }
+
+        flex.setText(0, 0, active_guild.name + " (" + active_guild.realm + " ."
+                     + active_guild.region + ")");
+        flex.setText(1, 0, "Server Time Zone:");
+        flex.setText(1, 1, active_guild.time_zone != null
+                            ? active_guild.time_zone
+                            : "Not Set");
     }
 
     public HandlerRegistration addValueChangeHandler(
