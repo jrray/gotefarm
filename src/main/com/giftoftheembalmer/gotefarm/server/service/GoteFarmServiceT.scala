@@ -153,4 +153,6 @@ trait GoteFarmServiceT {
 
   def publishEvents(): Unit
   */
+
+  def getTimeZones: Array[String]
 }

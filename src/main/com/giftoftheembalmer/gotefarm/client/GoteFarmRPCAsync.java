@@ -65,4 +65,6 @@ interface GoteFarmRPCAsync {
                                   AsyncCallback<JSEventSignups> cb);
     public void removeEventSignup(String sid, String event_key, long eventsignupid,
                                   AsyncCallback<JSEventSignups> cb);
+
+    public void getTimeZones(AsyncCallback<String[]> cb);
 }

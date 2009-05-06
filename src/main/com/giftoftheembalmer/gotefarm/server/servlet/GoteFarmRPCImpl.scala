@@ -302,4 +302,9 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     */
     null
   }
+
+  override
+  def getTimeZones: Array[String] = {
+    goteFarmService.getTimeZones
+  }
 }

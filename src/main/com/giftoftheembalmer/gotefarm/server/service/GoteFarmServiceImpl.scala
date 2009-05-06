@@ -71,6 +71,7 @@ import javax.cache.{
 }
 
 import scala.collection.jcl.Conversions._
+import scala.util.Sorting._
 
 object GoteFarmServiceImpl {
   implicit def key2String(key: Key): String = {
@@ -1153,4 +1154,16 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
   */
+
+  private
+  lazy val time_zones = {
+    val ids = TimeZone.getAvailableIDs
+    stableSort(ids, (x: String, y: String) => x < y)
+    ids
+  }
+
+  override
+  def getTimeZones: Array[String] = {
+    time_zones
+  }
 }

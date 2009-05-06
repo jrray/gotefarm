@@ -82,4 +82,6 @@ public interface GoteFarmRPC extends RemoteService {
                                             long eventsignupid)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
+
+    public String[] getTimeZones();
 }
