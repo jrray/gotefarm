@@ -123,16 +123,7 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
                     new AsyncCallback<JSGuild>() {
                         public void onSuccess(JSGuild guild) {
                             // Update cached JSGuild with this latest one
-                            ListIterator<JSGuild> iter = Guilds.this.account
-                                                               .guilds
-                                                               .listIterator();
-                            while (iter.hasNext()) {
-                                JSGuild curr = iter.next();
-                                if (curr.key.equals(guild.key)) {
-                                    iter.set(guild);
-                                    break;
-                                }
-                            }
+                            refreshGuild(guild);
 
                             // Update active_guild
                             Guilds.this.account.active_guild = guild;
@@ -258,5 +249,21 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
     public HandlerRegistration addValueChangeHandler(
             ValueChangeHandler<JSGuild> handler) {
         return addHandler(handler, ValueChangeEvent.getType());
+    }
+
+    private void refreshGuild(JSGuild guild) {
+        ListIterator<JSGuild> iter = account.guilds.listIterator();
+        while (iter.hasNext()) {
+            JSGuild curr = iter.next();
+            if (curr.key.equals(guild.key)) {
+                iter.set(guild);
+                break;
+            }
+        }
+
+        if (account.active_guild != null
+            && account.active_guild.key.equals(guild.key)) {
+            account.active_guild = guild;
+        }
     }
 }
