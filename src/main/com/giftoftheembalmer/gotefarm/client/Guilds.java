@@ -63,6 +63,36 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
         }
     }
 
+    private class TimeZoneSelected implements ChangeHandler {
+        public void onChange(ChangeEvent event) {
+            final int index = time_zones.getSelectedIndex();
+            if (index < 0) {
+                return;
+            }
+
+            final String time_zone = time_zones.getItemText(index);
+
+            GoteFarm.goteService.setTimeZone(
+                                        active_guild.key,
+                                        time_zone,
+                                        new AsyncCallback<JSGuild>() {
+                public void onSuccess(JSGuild result) {
+                    flex.setText(1, 1, time_zone);
+                    flex.setWidget(1, 2, change_tz);
+
+                    refreshGuild(result);
+                    // inform listeners that the guild has changed
+                    setValue(result, true);
+                }
+
+                public void onFailure(Throwable caught) {
+                    flex.setText(1, 1, caught.getMessage());
+                    flex.setWidget(1, 2, change_tz);
+                }
+            });
+        }
+    }
+
     public Guilds() {
         vpanel.setWidth("100%");
 
@@ -95,6 +125,7 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
         });
 
         time_zones.setVisibleItemCount(10);
+        time_zones.addChangeHandler(new TimeZoneSelected());
 
         change_tz.addClickHandler(new ChangeTimeZone());
     }
