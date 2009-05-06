@@ -16,4 +16,8 @@ public class JSGuild implements IsSerializable {
 
     public JSGuild() {
     }
+
+    public boolean isOfficer(String account_key) {
+        return owner.equals(account_key) || officers.contains(account_key);
+    }
 }
