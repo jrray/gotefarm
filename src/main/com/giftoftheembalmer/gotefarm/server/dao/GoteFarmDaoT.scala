@@ -95,6 +95,7 @@ trait GoteFarmDaoT {
   def getActiveEventSchedules: List[JSEventSchedule]
   */
 
+  def getEventSchedule(key: Key): Option[EventSchedule]
   def getEventSchedules(event_template: Key): Collection[EventSchedule]
   def getGuildEventSchedules(guild: Key): Collection[EventSchedule]
 

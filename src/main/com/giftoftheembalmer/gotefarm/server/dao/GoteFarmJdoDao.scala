@@ -581,6 +581,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   */
 
   override
+  def getEventSchedule(key: Key): Option[EventSchedule] = {
+    getObjectById(classOf[EventSchedule], key)
+  }
+
+  override
   def getEventSchedules(event_template: Key)
     : java.util.Collection[EventSchedule] = {
     find(classOf[EventSchedule], "eventTemplate == etParam",
