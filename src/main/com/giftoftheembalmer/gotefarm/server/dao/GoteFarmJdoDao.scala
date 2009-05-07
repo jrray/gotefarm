@@ -241,16 +241,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
-  override
-  def createCharacter(user: User, guild: Key, character: String, race: Race,
-                      clazz: ChrClass, level: Int, chrxml: String) = {
-    val jdo = getJdoTemplate
-    val c = new Chr(user, guild, character, race.getKey, clazz.getKey, level,
-                    chrxml.toString, new Date)
-    jdo.makePersistent(c)
-    c
-  }
-
   /*
   def getCharacterRoles(cid: Long): Seq[JSChrRole] = {
     val jdbc = getSimpleJdbcTemplate()
@@ -272,10 +262,8 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   */
 
   override
-  def getCharacters(user: User, guild: Key) = {
-    find(classOf[Chr], "user == userParam && guild == guildParam ",
-           "com.google.appengine.api.users.User userParam, "
-         + "com.google.appengine.api.datastore.Key guildParam")(user, guild)
+  def getChrGroup(key: Key): Option[ChrGroup] = {
+    getObjectById(classOf[ChrGroup], key)
   }
 
   /*

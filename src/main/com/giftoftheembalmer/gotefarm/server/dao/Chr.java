@@ -2,7 +2,6 @@ package com.giftoftheembalmer.gotefarm.server.dao;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Text;
-import com.google.appengine.api.users.User;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
@@ -19,7 +18,7 @@ public class Chr {
     private Key key;
 
     @Persistent
-    private User user;
+    private ChrGroup chrGroup;
 
     @Persistent
     private Key guild;
@@ -42,9 +41,9 @@ public class Chr {
     @Persistent
     private Date created;
 
-    public Chr(User user, Key guild, String name, Key race, Key clazz,
-               int level, String chrxml, Date created) {
-        this.user = user;
+    public Chr(ChrGroup chrGroup, Key guild, String name, Key race,
+               Key clazz, int level, String chrxml, Date created) {
+        this.chrGroup = chrGroup;
         this.guild = guild;
         this.name = name;
         this.race = race;
@@ -58,12 +57,20 @@ public class Chr {
         return clazz;
     }
 
+    public ChrGroup getChrGroup() {
+        return chrGroup;
+    }
+
     public String getChrXml() {
         return chrxml.getValue();
     }
 
     public Date getCreated() {
         return created;
+    }
+
+    public Key getGuild() {
+        return guild;
     }
 
     public Key getKey() {
@@ -74,20 +81,12 @@ public class Chr {
         return level;
     }
 
-    public Key getGuild() {
-        return guild;
-    }
-
     public String getName() {
         return name;
     }
 
     public Key getRace() {
         return race;
-    }
-
-    public User getUser() {
-        return user;
     }
 
     public void setChrClass(Key clazz) {

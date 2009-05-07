@@ -413,6 +413,23 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
+  private
+  def getUserChrGroupKey(user: User, guild_key: Key): Key = {
+    val key = "chr-group-key-" + user + "-" + guild_key
+    cached(key, { key: String =>
+      val acct = goteFarmDao.getAccount(user)
+      val chr_groups = acct.getChrGroups
+      if (chr_groups eq null) {
+        // don't want to cache a negative result
+        throw new NotFoundError("User has no character groups")
+      }
+      chr_groups.find(_.getGuildKey == guild_key).getOrElse(
+        // don't want to cache a negative result
+        throw new NotFoundError("User has no character group for guild")
+      ).getKey
+    })
+  }
+
   def initialize() = {
     // Populate Regions
     for (code <- List("us", "eu", "kr", "cn", "tw")) {
@@ -700,32 +717,75 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
 
     // get (or create) the race object
-    val race_obj = transactionTemplate.execute {
-      goteFarmDao.getRace(race.toString)
+    val race_key = transactionTemplate.execute {
+      goteFarmDao.getRace(race.toString).getKey
     }
 
     // get (or create) the class object
-    val class_obj = transactionTemplate.execute {
-      goteFarmDao.getChrClass(clazz.toString)
+    val class_key = transactionTemplate.execute {
+      goteFarmDao.getChrClass(clazz.toString).getKey
     }
 
-    val chr = transactionTemplate.execute {
-      goteFarmDao.createCharacter(user, guild, name.toString,
-                                  race_obj, class_obj, level, charxml.toString)
-    }
+    transactionTemplate.execute {
+      // find/create the appropriate ChrGroup
+      val acct = goteFarmDao.getAccount(user)
+      val chr_groups = {
+        val chr_groups = acct.getChrGroups
+        // FIXME: appengine null collection workaround
+        if (chr_groups eq null) {
+          val chr_groups = new java.util.ArrayList[ChrGroup]
+          acct.setChrGroups(chr_groups)
+          chr_groups
+        }
+        else {
+          chr_groups
+        }
+      }
 
-    // XXX: Duplicates chr2JSCharacter but don't need to re-query
-    // race and class here
-    val r = new JSCharacter
-    r.name = chr.getName
-    r.race = race_obj.getName
-    r.clazz = class_obj.getName
-    r.level = chr.getLevel.shortValue
-    r.characterxml = chr.getChrXml
-    r.created = chr.getCreated
-    r.roles = Array()
-    r.badges = Array()
-    r
+      val chr_group = chr_groups.find(_.getGuildKey == guild).getOrElse {
+        val chr_group = new ChrGroup(acct, guild)
+        chr_groups.add(chr_group)
+        chr_group
+      }
+
+      // create the Chr entity
+      val chr = new Chr(chr_group, guild, name.toString, race_key, class_key,
+                        level, charxml.toString, new Date)
+
+      // put it in the group
+      val characters = {
+        val characters = chr_group.getCharacters
+        // FIXME: appengine null collection workaround
+        if (characters eq null) {
+          val characters = new java.util.ArrayList[Chr]
+          chr_group.setCharacters(characters)
+          characters
+        }
+        else {
+          characters
+        }
+      }
+
+      characters.add(chr)
+
+      // make it the user's main if it is the first character
+      if (chr_group.getMain eq null) {
+        chr_group.setMain(chr.getName, chr.getKey)
+      }
+
+      // XXX: Duplicates chr2JSCharacter but don't need to re-query
+      // race and class here
+      val r = new JSCharacter
+      r.name = chr.getName
+      r.race = race.toString
+      r.clazz = clazz.toString
+      r.level = chr.getLevel.shortValue
+      r.characterxml = chr.getChrXml
+      r.created = chr.getCreated
+      r.roles = Array()
+      r.badges = Array()
+      r
+    }
   }
 
   override
@@ -748,10 +808,26 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   override
   def getCharacters(user: User, guild: Key) = {
-    val chrs = transactionTemplate.execute {
-      mkList(goteFarmDao.getCharacters(user, guild))
+    val r = new java.util.ArrayList[JSCharacter]
+
+    try {
+      val chr_group = goteFarmDao.getChrGroup(
+        getUserChrGroupKey(user, guild)
+      ).getOrElse(
+        throw new NotFoundError("Character group not found")
+      )
+
+      val characters = chr_group.getCharacters
+      // FIXME: appengine null collection bug
+      if (characters ne null) {
+        convertList(r).addAll(characters.map(chr2JSCharacter))
+      }
     }
-    mkList(chrs, chr2JSCharacter)
+    catch {
+      case _: NotFoundError =>
+    }
+
+    r
   }
   /*
   override

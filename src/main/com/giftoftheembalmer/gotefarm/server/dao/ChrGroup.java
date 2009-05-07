@@ -26,7 +26,7 @@ public class ChrGroup {
     @Persistent
     private Key guildKey;
 
-    @Persistent
+    @Persistent(mappedBy = "chrGroup")
     @Element(dependent = "true")
     @Order(extensions = @Extension(vendorName="datanucleus", key="list-ordering", value="name asc"))
     private List<Chr> characters = new ArrayList<Chr>();

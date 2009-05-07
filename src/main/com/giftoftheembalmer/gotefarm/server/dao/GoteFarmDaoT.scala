@@ -52,10 +52,8 @@ trait GoteFarmDaoT {
     : Guild
 
   def getCharacter(guild: Key, name: String): Option[Chr]
-  def createCharacter(user: User, guild: Key, character: String, race: Race,
-                      clazz: ChrClass, level: Int, chrxml: String): Chr
 
-  def getCharacters(user: User, guild: Key): Collection[Chr]
+  def getChrGroup(key: Key): Option[ChrGroup]
   /*
   def getCharacter(cid: Long): JSCharacter
   */
