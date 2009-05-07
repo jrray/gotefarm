@@ -14,6 +14,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,9 +26,6 @@ public class Account {
 
     @Persistent
     private User user;
-
-    @Persistent
-    private Set<Key> guilds;
 
     @Persistent
     private Key activeGuild;
@@ -57,7 +55,15 @@ public class Account {
     }
 
     public Set<Key> getGuilds() {
-        return guilds;
+        Set<Key> r = new HashSet<Key>();
+        List<ChrGroup> chr_groups = getChrGroups();
+        // FIXME: appengine null collection bug
+        if (chr_groups != null) {
+            for (ChrGroup cg : chr_groups) {
+                r.add(cg.getGuildKey());
+            }
+        }
+        return r;
     }
 
     public Key getKey() {
@@ -78,10 +84,6 @@ public class Account {
 
     public void setChrGroups(List<ChrGroup> chrGroups) {
         this.chrGroups = chrGroups;
-    }
-
-    public void setGuilds(Set<Key> guilds) {
-        this.guilds = guilds;
     }
 
     public void setLastUpdate(Date lastUpdate) {

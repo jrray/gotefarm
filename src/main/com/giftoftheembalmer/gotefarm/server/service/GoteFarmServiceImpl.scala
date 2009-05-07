@@ -5,6 +5,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Boss,
   Chr,
   ChrClass,
+  ChrGroup,
   EventBadge,
   EventBoss,
   EventRole,
@@ -581,7 +582,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     // Associate guild with account
     transactionTemplate.execute {
       val acct = goteFarmDao.getAccount(user)
-      setAdd(guild_key, acct.getGuilds, acct.setGuilds)
+      val chr_group = new ChrGroup(acct, guild_key)
+      listAdd(chr_group, acct.getChrGroups, acct.setChrGroups)
       acct.setActiveGuild(guild_key)
     }
 
