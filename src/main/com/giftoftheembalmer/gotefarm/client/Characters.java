@@ -72,7 +72,6 @@ public class Characters
     public class Character extends Composite {
 
         JSCharacter chr = null;
-        Document xml = null;
 
         VerticalPanel vpanel = new VerticalPanel();
         HorizontalPanel hpanel = new HorizontalPanel();
@@ -95,7 +94,7 @@ public class Characters
             attr_vpanel.add(new Label("Level " + chr.level));
 
             try {
-                xml = XMLParser.parse(chr.characterxml);
+                Document xml = XMLParser.parse(chr.characterxml);
                 NodeList items = xml.getElementsByTagName("items");
                 if (items != null) {
                     for (int i = 0; i < items.getLength(); ++i) {
