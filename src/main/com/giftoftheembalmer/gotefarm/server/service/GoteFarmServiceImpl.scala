@@ -145,30 +145,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     })
   }
 
-  def key2Race(key: Key): Race = {
-    getRace(key)
-  }
-
-  def key2RaceName(key: Key): String = {
-    cached(key, { key: Key =>
-      transactionTemplate.execute {
-        key2Race(key)
-      }.getName
-    })
-  }
-
-  def key2ChrClass(key: Key): ChrClass = {
-    getChrClass(key)
-  }
-
-  def key2ChrClassName(key: Key): String = {
-    cached(key, { key: Key =>
-      transactionTemplate.execute {
-        key2ChrClass(key)
-      }.getName
-    })
-  }
-
   def key2InstanceName(key: Key): String = {
     cached(key, { key: Key =>
       transactionTemplate.execute {
@@ -220,8 +196,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
     val r = new JSCharacter
     r.name = chr.getName
-    r.race = key2RaceName(chr.getRace)
-    r.clazz = key2ChrClassName(chr.getChrClass)
+    r.race = chr.getRace
+    r.clazz = chr.getChrClass
     r.level = chr.getLevel.shortValue
     r.characterxml = chr.getChrXml
     r.created = chr.getCreated
@@ -749,8 +725,9 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       }
 
       // create the Chr entity
-      val chr = new Chr(chr_group, guild, name.toString, race_key, class_key,
-                        level, charxml.toString, new Date)
+      val chr = new Chr(chr_group, guild, name.toString, race.toString,
+                        race_key, clazz.toString, class_key, level,
+                        charxml.toString, new Date)
 
       // put it in the group
       val characters = {

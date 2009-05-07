@@ -27,10 +27,16 @@ public class Chr {
     private String name;
 
     @Persistent
-    private Key race;
+    private String race;
 
     @Persistent
-    private Key clazz;
+    private Key raceKey;
+
+    @Persistent
+    private String clazz;
+
+    @Persistent
+    private Key classKey;
 
     @Persistent
     private int level;
@@ -41,20 +47,27 @@ public class Chr {
     @Persistent
     private Date created;
 
-    public Chr(ChrGroup chrGroup, Key guild, String name, Key race,
-               Key clazz, int level, String chrxml, Date created) {
+    public Chr(ChrGroup chrGroup, Key guild, String name, String race,
+               Key raceKey, String clazz, Key classKey, int level,
+               String chrxml, Date created) {
         this.chrGroup = chrGroup;
         this.guild = guild;
         this.name = name;
         this.race = race;
+        this.raceKey = raceKey;
         this.clazz = clazz;
+        this.classKey = classKey;
         this.level = level;
         this.chrxml = new Text(chrxml);
         this.created = created;
     }
 
-    public Key getChrClass() {
+    public String getChrClass() {
         return clazz;
+    }
+
+    public Key getChrClassKey() {
+        return classKey;
     }
 
     public ChrGroup getChrGroup() {
@@ -85,12 +98,17 @@ public class Chr {
         return name;
     }
 
-    public Key getRace() {
+    public String getRace() {
         return race;
     }
 
-    public void setChrClass(Key clazz) {
+    public Key getRaceKey() {
+        return raceKey;
+    }
+
+    public void setChrClass(String clazz, Key classKey) {
         this.clazz = clazz;
+        this.classKey = classKey;
     }
 
     public void setChrXml(String chrxml) {
@@ -109,7 +127,8 @@ public class Chr {
         this.name = name;
     }
 
-    public void setRace(Key race) {
+    public void setRace(String race, Key raceKey) {
         this.race = race;
+        this.raceKey = raceKey;
     }
 }
