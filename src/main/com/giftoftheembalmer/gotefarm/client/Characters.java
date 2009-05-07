@@ -94,36 +94,42 @@ public class Characters
             attr_vpanel.add(new Label(chr.clazz));
             attr_vpanel.add(new Label("Level " + chr.level));
 
-            xml = XMLParser.parse(chr.characterxml);
-            NodeList items = xml.getElementsByTagName("items");
-            if (items != null) {
-                for (int i = 0; i < items.getLength(); ++i) {
-                    Node node = items.item(i);
-                    NodeList subitems = node.getChildNodes();
-                    for (int j = 0; j < subitems.getLength(); ++j) {
-                        Node subitem = subitems.item(j);
-                        if (!subitem.getNodeName().equals("item")) {
-                            continue;
-                        }
+            try {
+                xml = XMLParser.parse(chr.characterxml);
+                NodeList items = xml.getElementsByTagName("items");
+                if (items != null) {
+                    for (int i = 0; i < items.getLength(); ++i) {
+                        Node node = items.item(i);
+                        NodeList subitems = node.getChildNodes();
+                        for (int j = 0; j < subitems.getLength(); ++j) {
+                            Node subitem = subitems.item(j);
+                            if (!subitem.getNodeName().equals("item")) {
+                                continue;
+                            }
 
-                        NamedNodeMap attribs = subitem.getAttributes();
-                        if (attribs != null) {
-                            Node id = attribs.getNamedItem("id");
-                            Node icon = attribs.getNamedItem("icon");
-                            HTML link = new HTML("<a target=\"_blank\" href=\"http://www.wowhead.com/?item=" + id + "\"><img src=\"http://static.wowhead.com/images/icons/medium/" + icon + ".jpg\"/></a>");
-                            hpanel.add(link);
+                            NamedNodeMap attribs = subitem.getAttributes();
+                            if (attribs != null) {
+                                Node id = attribs.getNamedItem("id");
+                                Node icon = attribs.getNamedItem("icon");
+                                HTML link = new HTML("<a target=\"_blank\" href=\"http://www.wowhead.com/?item=" + id + "\"><img src=\"http://static.wowhead.com/images/icons/medium/" + icon + ".jpg\"/></a>");
+                                hpanel.add(link);
+                            }
                         }
                     }
                 }
+
+                NodeList characters = xml.getElementsByTagName("character");
+                if (characters != null) {
+                    Node character = characters.item(0);
+                    NamedNodeMap attribs = character.getAttributes();
+
+                    Node updated = attribs.getNamedItem("lastModified");
+                    attr_vpanel.add(new Label("Armory updated: " + updated));
+                }
             }
-
-            NodeList characters = xml.getElementsByTagName("character");
-            if (characters != null) {
-                Node character = characters.item(0);
-                NamedNodeMap attribs = character.getAttributes();
-
-                Node updated = attribs.getNamedItem("lastModified");
-                attr_vpanel.add(new Label("Armory updated: " + updated));
+            catch (Throwable e) {
+                attr_vpanel.add(new Label(  "Error parsing XML: "
+                                          + e.getMessage()));
             }
 
             updateRoles();
