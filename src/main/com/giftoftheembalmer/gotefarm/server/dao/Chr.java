@@ -27,6 +27,9 @@ public class Chr {
     private String name;
 
     @Persistent
+    private boolean main;
+
+    @Persistent
     private String race;
 
     @Persistent
@@ -47,12 +50,13 @@ public class Chr {
     @Persistent
     private Date created;
 
-    public Chr(ChrGroup chrGroup, Key guild, String name, String race,
-               Key raceKey, String clazz, Key classKey, int level,
+    public Chr(ChrGroup chrGroup, Key guild, String name, boolean main,
+               String race, Key raceKey, String clazz, Key classKey, int level,
                String chrxml, Date created) {
         this.chrGroup = chrGroup;
         this.guild = guild;
         this.name = name;
+        this.main = main;
         this.race = race;
         this.raceKey = raceKey;
         this.clazz = clazz;
@@ -94,6 +98,10 @@ public class Chr {
         return level;
     }
 
+    public boolean getMain() {
+        return main;
+    }
+
     public String getName() {
         return name;
     }
@@ -121,6 +129,10 @@ public class Chr {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public void setMain(boolean main) {
+        this.main = main;
     }
 
     public void setName(String name) {

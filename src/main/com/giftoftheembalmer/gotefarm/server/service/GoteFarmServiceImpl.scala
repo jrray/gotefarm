@@ -724,10 +724,12 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         chr_group
       }
 
+      val no_main = chr_group.getMain eq null
+
       // create the Chr entity
-      val chr = new Chr(chr_group, guild, name.toString, race.toString,
-                        race_key, clazz.toString, class_key, level,
-                        charxml.toString, new Date)
+      val chr = new Chr(chr_group, guild, name.toString, no_main,
+                        race.toString, race_key, clazz.toString, class_key,
+                        level, charxml.toString, new Date)
 
       // put it in the group
       val characters = {
@@ -746,7 +748,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       characters.add(chr)
 
       // make it the user's main if it is the first character
-      if (chr_group.getMain eq null) {
+      if (no_main) {
         chr_group.setMain(chr.getName, chr.getKey)
       }
 
