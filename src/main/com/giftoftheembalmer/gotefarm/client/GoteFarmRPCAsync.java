@@ -28,15 +28,15 @@ interface GoteFarmRPCAsync {
     public void addRole(String guild_key, String name, boolean restricted,
                         AsyncCallback<JSRole> cb);
     // public void getCharacterRoles(long cid, AsyncCallback<List<JSCharRole>> cb);
-    public void updateCharacterRole(String sid, long cid, String role_key,
-                                    boolean adding,
+    public void updateCharacterRole(String sid, String character_key,
+                                    String role_key, boolean adding,
                                     AsyncCallback<JSCharacter> cb);
 
     public void getBadges(String guild_key, AsyncCallback<List<JSBadge>> cb);
     public void addBadge(String guild_key, String name, int score,
                          AsyncCallback<JSBadge> cb);
-    public void updateCharacterBadge(String sid, long cid, String badge_key,
-                                     boolean adding,
+    public void updateCharacterBadge(String sid, String character_key,
+                                     String badge_key, boolean adding,
                                      AsyncCallback<JSCharacter> cb);
 
     public void addInstance(String guild_key, String name, AsyncCallback<JSInstance> cb);
@@ -60,8 +60,9 @@ interface GoteFarmRPCAsync {
     public void getEventSignups(String sid, String event_key,
                                 Date if_changed_since,
                                 AsyncCallback<JSEventSignups> cb);
-    public void signupForEvent(String sid, String event_key, long cid,
-                               String role_key, int signup_type,
+    public void signupForEvent(String sid, String event_key,
+                               String character_key, String role_key,
+                               int signup_type,
                                AsyncCallback<JSEventSignups> cb);
     public void changeEventSignup(String sid, String event_key, long eventsignupid,
                                   String new_role_key, int new_signup_type,

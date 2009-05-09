@@ -46,7 +46,7 @@ public class Events
     final DateTimeFormat time_formatter = DateTimeFormat.getFormat("EEE MMM dd, yyyy hh:mm aaa");
 
     private List<JSCharacter> characters = new ArrayList<JSCharacter>();
-    private long accountid;
+    private String account_key;
 
     PickupDragController dragController;
 
@@ -138,7 +138,7 @@ public class Events
                 this.eventKey = eventKey;
                 this.sup = sup;
                 dragController.makeDraggable(this);
-                if (sup.chr.accountid == accountid) {
+                if (sup.chr.account_key.equals(account_key)) {
                     addStyleName("draggable-character");
                 }
                 else {
@@ -152,7 +152,7 @@ public class Events
                 this.eventKey = eventKey;
                 this.chr = chr;
                 dragController.makeDraggable(this);
-                if (chr.accountid == accountid) {
+                if (chr.account_key.equals(account_key)) {
                     addStyleName("draggable-character");
                 }
                 else {
@@ -347,7 +347,7 @@ public class Events
                     // new signup
                     GoteFarm.goteService.signupForEvent(GoteFarm.sessionID,
                                                         event.key,
-                                                        sup.chr.cid, role.role_key,
+                                                        sup.chr.key, role.role_key,
                                                         signupType,
                                                         signupCallback);
                 }
@@ -430,7 +430,7 @@ public class Events
             if (signups != null) {
                 // Categorize the current signups
                 for (JSEventSignup es : signups.signups) {
-                    if (es.chr.accountid == accountid) {
+                    if (es.chr.account_key.equals(account_key)) {
                         have_character_signed_up = true;
                     }
 
@@ -735,7 +735,9 @@ public class Events
                 return;
             }
 
-            accountid = characters.get(0).accountid;
+            // FIXME: the user's account_key is already known from calling
+            // getAccount, replace this hack
+            account_key = characters.get(0).account_key;
 
             for (JSCharacter c : characters) {
                 hchrpanel.add(new Signup(event.key, c));

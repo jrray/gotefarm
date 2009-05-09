@@ -31,14 +31,14 @@ public interface GoteFarmRPC extends RemoteService {
     public JSRole addRole(String guild_key, String name, boolean restricted)
         throws UserNotLoggedInError, NotFoundError;
     // public List<JSCharRole> getCharacterRoles(long cid);
-    public JSCharacter updateCharacterRole(String sid, long cid,
+    public JSCharacter updateCharacterRole(String sid, String character_key,
                                            String role_key, boolean adding)
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
     public List<JSBadge> getBadges(String guild_key);
     public JSBadge addBadge(String guild_key, String name, int score)
         throws UserNotLoggedInError;
-    public JSCharacter updateCharacterBadge(String sid, long cid,
+    public JSCharacter updateCharacterBadge(String sid, String character_key,
                                             String badge_key, boolean adding)
         throws UserNotLoggedInError, NotFoundError, IllegalArgumentException;
 
@@ -71,7 +71,7 @@ public interface GoteFarmRPC extends RemoteService {
                                           Date if_changed_since)
         throws UserNotLoggedInError, NotFoundError;
     public JSEventSignups signupForEvent(String sid, String event_key,
-                                         long cid, String role_key,
+                                         String character_key, String role_key,
                                          int signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
