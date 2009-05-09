@@ -82,6 +82,12 @@ public class Characters
         RoleAndBadgeEditor badge_editor = new RoleAndBadgeEditor("Badges");
         private final RadioButton name_check = new RadioButton("main_chr");
 
+        private final static String MAIN_TOOLTIP = "This is your \"main\" "
+            + "character, you will be identified to other users as this "
+            + "character.";
+        private final static String NOT_MAIN_TOOLTIP = "Click to make this "
+            + "your \"main\" character.";
+
         public Character(final JSCharacter chr) {
             this.chr = chr;
 
@@ -115,18 +121,7 @@ public class Characters
                 }
             });
             name_check.setText(chr.name);
-            name_check.setValue(chr.main);
-            if (chr.main) {
-                name_check.setTitle(
-                      "This is your \"main\" character, you will be identified"
-                    + " to other users as this character."
-                );
-            }
-            else {
-                name_check.setTitle(
-                    "Click to make this your \"main\" character."
-                );
-            }
+            setMain(chr.main);
 
             attr_vpanel.add(name_check);
             attr_vpanel.add(new Label(chr.race));
@@ -260,8 +255,12 @@ public class Characters
 
         public void setMain(boolean main) {
             chr.main = main;
-            if (main) {
+            if (chr.main) {
                 name_check.setValue(main);
+                name_check.setTitle(MAIN_TOOLTIP);
+            }
+            else {
+                name_check.setTitle(NOT_MAIN_TOOLTIP);
             }
         }
 
