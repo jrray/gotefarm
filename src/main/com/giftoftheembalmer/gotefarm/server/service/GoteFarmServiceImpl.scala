@@ -196,6 +196,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
     val r = new JSCharacter
     r.name = chr.getName
+    r.main = chr.getMain
     r.race = chr.getRace
     r.clazz = chr.getChrClass
     r.level = chr.getLevel.shortValue

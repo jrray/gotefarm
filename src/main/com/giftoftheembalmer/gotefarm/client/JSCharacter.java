@@ -8,6 +8,7 @@ public class JSCharacter implements IsSerializable {
     public long accountid;
     public long cid;
     public String name;
+    public boolean main;
     public String race;
     public String clazz;
     public short level;
