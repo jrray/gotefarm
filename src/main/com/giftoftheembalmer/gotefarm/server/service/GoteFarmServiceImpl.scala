@@ -798,6 +798,47 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
     r
   }
+
+  @Transactional{val propagation = Propagation.REQUIRED}
+  override
+  def setMainCharacter(user: User, guild: Key, character: Key): Unit = {
+    val chr_group = goteFarmDao.getChrGroup(
+      getUserChrGroupKey(user, guild)
+    ).getOrElse(
+      throw new NotFoundError("Character group not found")
+    )
+
+    val old_main_key = chr_group.getMainKey
+    if (old_main_key != character) {
+      val characters = chr_group.getCharacters
+      // FIXME: appengine null collection bug
+      if (characters eq null) {
+        throw new NotFoundError("Character not found")
+      }
+
+      val new_main = characters.find(_.getKey == character).getOrElse(
+        throw new NotFoundError("Character not found")
+      )
+
+      // need to update the ChrGroup
+      chr_group.setMain(new_main.getName, new_main.getKey)
+
+      // and change the old main Chr
+      (for (old_main <- characters.find(_.getKey == old_main_key)) yield {
+        old_main.setMain(false)
+        Some(true)
+      }).getOrElse {
+        // not an error if it isn't found, it means the old_main_key is
+        // invalid, indictive of a coding error somewhere else
+        logger.warn(  "Old main character not found changing main for user "
+                    + user + " in guild " + guild)
+      }
+
+      // and change the new main Chr
+      new_main.setMain(true)
+    }
+  }
+
   /*
   override
   def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)

@@ -133,6 +133,11 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
+  def setMainCharacter(guild_key: String, character_key: String): Unit = {
+    goteFarmService.setMainCharacter(getUser, guild_key, character_key)
+  }
+
+  override
   def getRoles(guild_key: String): java.util.List[JSRole] = {
     goteFarmService.getRoles(guild_key)
   }
