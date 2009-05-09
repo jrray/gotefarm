@@ -18,6 +18,9 @@ public class Chr {
     private Key key;
 
     @Persistent
+    private Key accountKey;
+
+    @Persistent
     private ChrGroup chrGroup;
 
     @Persistent
@@ -50,9 +53,10 @@ public class Chr {
     @Persistent
     private Date created;
 
-    public Chr(ChrGroup chrGroup, Key guild, String name, boolean main,
-               String race, Key raceKey, String clazz, Key classKey, int level,
-               String chrxml, Date created) {
+    public Chr(Key accountKey, ChrGroup chrGroup, Key guild, String name,
+               boolean main, String race, Key raceKey, String clazz,
+               Key classKey, int level, String chrxml, Date created) {
+        this.accountKey = accountKey;
         this.chrGroup = chrGroup;
         this.guild = guild;
         this.name = name;
@@ -64,6 +68,10 @@ public class Chr {
         this.level = level;
         this.chrxml = new Text(chrxml);
         this.created = created;
+    }
+
+    public Key getAccountKey() {
+        return accountKey;
     }
 
     public String getChrClass() {

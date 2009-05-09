@@ -728,7 +728,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       val no_main = chr_group.getMain eq null
 
       // create the Chr entity
-      val chr = new Chr(chr_group, guild, name.toString, no_main,
+      val chr = new Chr(acct.getKey, chr_group, guild, name.toString, no_main,
                         race.toString, race_key, clazz.toString, class_key,
                         level, charxml.toString, new Date)
 
