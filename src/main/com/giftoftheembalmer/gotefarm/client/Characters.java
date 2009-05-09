@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
@@ -79,8 +80,9 @@ public class Characters
         HorizontalPanel role_and_badge_panel = new HorizontalPanel();
         RoleAndBadgeEditor role_editor = new RoleAndBadgeEditor("Roles");
         RoleAndBadgeEditor badge_editor = new RoleAndBadgeEditor("Badges");
+        private final RadioButton name_check = new RadioButton("main_chr");
 
-        public Character(JSCharacter chr) {
+        public Character(final JSCharacter chr) {
             this.chr = chr;
 
             vpanel.setSpacing(10);
@@ -88,7 +90,45 @@ public class Characters
             hpanel.setSpacing(2);
             hpanel.add(attr_vpanel);
 
-            attr_vpanel.add(new Label(chr.name));
+            name_check.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+                public void onValueChange(ValueChangeEvent<Boolean> event) {
+                    if (event.getValue() == false) {
+                        // losing main status
+                        return;
+                    }
+
+                    // inform the server
+                    GoteFarm.goteService.setMainCharacter(current_guild.key,
+                                                          chr.key,
+                                                          new AsyncCallback<Void>() {
+                        public void onSuccess(Void v) {
+                            // worked! update our cached JSCharacters
+                            Characters.this.setMainCharacter(chr.key);
+                        }
+
+                        public void onFailure(Throwable caught) {
+                            // need to revert the UI
+                            Characters.this.revertMainCharacter();
+                            // TODO: display error message somewhere
+                        }
+                    });
+                }
+            });
+            name_check.setText(chr.name);
+            name_check.setValue(chr.main);
+            if (chr.main) {
+                name_check.setTitle(
+                      "This is your \"main\" character, you will be identified"
+                    + " to other users as this character."
+                );
+            }
+            else {
+                name_check.setTitle(
+                    "Click to make this your \"main\" character."
+                );
+            }
+
+            attr_vpanel.add(name_check);
             attr_vpanel.add(new Label(chr.race));
             attr_vpanel.add(new Label(chr.clazz));
             attr_vpanel.add(new Label("Level " + chr.level));
@@ -213,6 +253,21 @@ public class Characters
         public void updateBadges() {
             badge_editor.update(badges, chr.badges, new BadgeClickHandlerFactory());
         }
+
+        public boolean isMain() {
+            return chr.main;
+        }
+
+        public void setMain(boolean main) {
+            chr.main = main;
+            if (main) {
+                name_check.setValue(main);
+            }
+        }
+
+        public JSCharacter getCharacter() {
+            return chr;
+        }
     }
 
     public class NewCharPanel extends PopupPanel {
@@ -333,6 +388,22 @@ public class Characters
         initWidget(vpanel);
 
         setStyleName("Characters");
+    }
+
+    protected void revertMainCharacter() {
+        for (Character c : character_widgets) {
+            if (c.isMain()) {
+                c.setMain(true);
+                break;
+            }
+        }
+    }
+
+    protected void setMainCharacter(String key) {
+        for (Character c : character_widgets) {
+            // touch every Character so all JSCharacters are updated
+            c.setMain(c.getCharacter().key.equals(key));
+        }
     }
 
     private List<Character> character_widgets = new ArrayList<Character>();
