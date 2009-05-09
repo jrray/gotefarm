@@ -750,18 +750,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         chr_group.setMain(chr.getName, chr.getKey)
       }
 
-      // XXX: Duplicates chr2JSCharacter but don't need to re-query
-      // race and class here
-      val r = new JSCharacter
-      r.name = chr.getName
-      r.race = race.toString
-      r.clazz = clazz.toString
-      r.level = chr.getLevel.shortValue
-      r.characterxml = chr.getChrXml
-      r.created = chr.getCreated
-      r.roles = Array()
-      r.badges = Array()
-      r
+      chr
     }
   }
 
