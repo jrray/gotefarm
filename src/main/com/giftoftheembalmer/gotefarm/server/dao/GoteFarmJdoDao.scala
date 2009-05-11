@@ -208,17 +208,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[Chr], key)
   }
 
-  /*
-  def getCharacterBadges(cid: Long): Seq[JSChrBadge] = {
-    val jdbc = getSimpleJdbcTemplate()
-    jdbc.query(
-      "select " + JSChrBadgeMapper.columns + " from badge join chrbadge on badge.badgeid = chrbadge.badgeid where chrid = ? order by name",
-      JSChrBadgeMapper,
-      Array[AnyRef](cid): _*
-    )
-  }
-  */
-
   override
   def getChrGroup(key: Key): Option[ChrGroup] = {
     getObjectById(classOf[ChrGroup], key)
