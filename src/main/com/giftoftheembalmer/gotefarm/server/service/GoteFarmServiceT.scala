@@ -86,11 +86,10 @@ trait GoteFarmServiceT {
   def addRole(user: User, guild: Key, name: String, restricted: Boolean)
     : JSRole
 
-  /*
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
-  def updateCharacterRole(uid: Long, cid: Long, roleid: Long, adding: Boolean): Unit
-  */
+  def updateCharacterRole(user: User, character: Key, role: Key,
+                          adding: Boolean): JSCharacter
 
   def getBadges(guild: Key): List[JSBadge]
   @throws(classOf[NotFoundError])

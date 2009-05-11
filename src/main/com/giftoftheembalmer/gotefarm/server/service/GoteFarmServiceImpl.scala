@@ -963,19 +963,60 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     goteFarmDao.addRole(guild, name, restricted)
   }
 
-  /*
-  @Transactional{val readOnly = false}
   override
-  def updateCharacterRole(uid: Long, cid: Long, roleid: Long,
-                          adding: Boolean): Unit = {
-    // character must belong to user
-    val chr = goteFarmDao.getCharacter(cid)
-    if (chr.accountid != uid) {
-      throw new IllegalArgumentException("Character does not belong to you.")
+  def updateCharacterRole(user: User, character: Key, role: Key,
+                          adding: Boolean): JSCharacter = {
+    val (role_name, restricted) = if (adding) {
+      transactionTemplate.execute {
+        val r = goteFarmDao.getRole(role).getOrElse(
+          throw new NotFoundError("Role not found")
+        )
+        (r.getName, r.getRestricted)
+      }
     }
-    goteFarmDao.updateCharacterRole(cid, roleid, adding)
+    else {
+      // not needed when removing
+      (null, false)
+    }
+
+    transactionTemplate.execute {
+      val chr = goteFarmDao.getCharacter(character).getOrElse(
+        throw new NotFoundError("Character not found")
+      )
+
+      val acct = goteFarmDao.getAccount(chr.getAccountKey).getOrElse(
+        throw new NotFoundError("Account not found")
+      )
+
+      // character must belong to user
+      // TODO: or if user is an admin ...
+      if (acct.getUser != user) {
+        throw new IllegalArgumentException("Character does not belong to you.")
+      }
+
+      val curr_roles = chr.getRoles
+
+      if (adding) {
+        // avoid adding duplicates
+        if ((curr_roles eq null) || !curr_roles.exists(_.getRoleKey == role)) {
+          val new_role = new ChrRole(role_name, role, restricted, !restricted)
+          listAdd(new_role, curr_roles, chr.setRoles)
+        }
+      }
+      else {
+        if (curr_roles ne null) {
+          chr.setRoles(mkList(curr_roles.filter(_.getRoleKey != role)))
+        }
+
+        // TODO: Update last_signup_modification for any event that this
+        // character is signed up for with the role being deleted.
+
+        // TODO: Delete any signups by this character with this role.
+      }
+
+      chr
+    }
   }
-  */
 
   @Transactional{val propagation = Propagation.REQUIRED}
   override

@@ -144,15 +144,10 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def updateCharacterRole(sid: String, character_key: String, role_key: String,
+  def updateCharacterRole(character_key: String, role_key: String,
                           adding: Boolean): JSCharacter = {
-    /*
-    val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Long]
-    goteFarmService.updateCharacterRole(uid, cid, roleid, adding)
-    goteFarmService.getCharacter(cid)
-    */
-    new JSCharacter
+    goteFarmService.updateCharacterRole(getUser, character_key, role_key,
+                                        adding)
   }
 
   override

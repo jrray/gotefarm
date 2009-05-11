@@ -66,10 +66,6 @@ trait GoteFarmDaoT {
 
   def addRole(guild: Key, name: String, restricted: Boolean): Role
 
-  /*
-  def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit
-  */
-
   def getBadge(key: Key): Option[Badge]
   def getBadges(guild: Key): Collection[Badge]
 

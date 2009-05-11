@@ -187,8 +187,7 @@ public class Characters
             }
 
             public void updateCharacterRole(boolean adding) {
-                GoteFarm.goteService.updateCharacterRole(GoteFarm.sessionID,
-                                                         chr.key,
+                GoteFarm.goteService.updateCharacterRole(chr.key,
                                                          role.getKey(),
                                                          adding,
                                                          new AsyncCallback<JSCharacter>() {

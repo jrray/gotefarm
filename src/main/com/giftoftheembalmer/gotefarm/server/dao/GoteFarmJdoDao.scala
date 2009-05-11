@@ -313,36 +313,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     nr
   }
 
-  /*
-  override
-  def updateCharacterRole(cid: Long, roleid: Long, adding: Boolean): Unit = {
-    val jdbc = getSimpleJdbcTemplate()
-    if (adding) {
-      try {
-        jdbc.update("""insert into chrrole (chrid, roleid, waiting, approved)
-                        VALUES (?, ?, 'Y', 'N')""",
-                    cid, roleid)
-      }
-      catch {
-        case e: DataIntegrityViolationException if e.getMessage.contains("CHRROLE_CHRID_FK") =>
-          throw new NotFoundError
-
-        case e: DataIntegrityViolationException if e.getMessage.contains("UNIQUE") =>
-          // role already there, ignore
-      }
-    }
-    else {
-      // TODO: Update last_signup_modification for any event that this
-      // character is signed up for with the role being deleted.
-
-      // TODO: Delete any signups by this character with this role.
-
-      jdbc.update("""delete from chrrole where chrid = ? and roleid = ?""",
-                  cid, roleid)
-    }
-  }
-  */
-
   override
   def getBadge(key: Key): Option[Badge] = {
     getObjectById(classOf[Badge], key)
