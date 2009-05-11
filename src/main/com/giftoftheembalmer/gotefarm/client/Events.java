@@ -826,8 +826,7 @@ public class Events
                 asof = new Date(0L);
             }
 
-            GoteFarm.goteService.getEventSignups(GoteFarm.sessionID,
-                                                 event.key, asof,
+            GoteFarm.goteService.getEventSignups(event.key, asof,
                                                  signupCallback);
         }
 

@@ -68,7 +68,7 @@ public interface GoteFarmRPC extends RemoteService {
 
     public List<JSEvent> getEvents(String guild_key) throws UserNotLoggedInError;
     /* Return null if signups are unchanged */
-    public JSEventSignups getEventSignups(String sid, String event_key,
+    public JSEventSignups getEventSignups(String event_key,
                                           Date if_changed_since)
         throws UserNotLoggedInError, NotFoundError;
     public JSEventSignups signupForEvent(String event_key,

@@ -224,14 +224,10 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def getEventSignups(sid: String, event_key: String,
-                      if_changed_since: Date) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.getEventSignups(eventid, if_changed_since)
+  def getEventSignups(event_key: String, if_changed_since: Date)
+    : JSEventSignups = {
+    goteFarmService.getEventSignups(getUser, event_key, if_changed_since)
       .getOrElse(null)
-    */
-    null
   }
 
   private val time_zero = new Date(0L)

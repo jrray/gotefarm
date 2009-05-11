@@ -96,8 +96,6 @@ trait GoteFarmDaoT {
   def getEvents(guild: Key): Collection[Event]
   def getEvent(key: Key): Option[Event]
   /*
-  def getEventSignups(eventid: Long,
-                      if_changed_since: Date): Option[JSEventSignups]
   def getEventSignup(eventsignupid: Long): JSEventSignup
   def changeEventSignup(eventsignupid: Long, new_roleid: Long,
                         new_signup_type: Int): Unit

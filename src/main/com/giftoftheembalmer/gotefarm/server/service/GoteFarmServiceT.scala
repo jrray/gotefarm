@@ -131,11 +131,9 @@ trait GoteFarmServiceT {
   def saveEventSchedule(user: User, guild: Key, es: JSEventSchedule): Unit
 
   def getEvents(user: User, guild: Key): List[JSEvent]
-  /*
   @throws(classOf[NotFoundError])
-  def getEventSignups(eventid: Long,
+  def getEventSignups(user: User, event: Key,
                       if_changed_since: Date): Option[JSEventSignups]
-  */
 
   @throws(classOf[NotFoundError])
   @throws(classOf[AlreadyExistsError])

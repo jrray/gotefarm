@@ -59,8 +59,7 @@ interface GoteFarmRPCAsync {
                                   AsyncCallback<Void> cb);
 
     public void getEvents(String guild_key, AsyncCallback<List<JSEvent>> cb);
-    public void getEventSignups(String sid, String event_key,
-                                Date if_changed_since,
+    public void getEventSignups(String event_key, Date if_changed_since,
                                 AsyncCallback<JSEventSignups> cb);
     public void signupForEvent(String event_key, String character_key,
                                String role_key, int signup_type,

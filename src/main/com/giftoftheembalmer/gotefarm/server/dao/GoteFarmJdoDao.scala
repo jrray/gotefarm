@@ -642,47 +642,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
 
   /*
   override
-  def getEventSignups(eventid: Long,
-                      if_changed_since: Date): Option[JSEventSignups] = {
-    val jdbc = getSimpleJdbcTemplate
-    val last_modification = try {
-      jdbc.queryForObject(
-        "select last_signup_modification from event where eventid = ?",
-        classOf[java.sql.Timestamp],
-        eventid
-      )
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("No such event")
-    }
-
-    if (last_modification.getTime > if_changed_since.getTime) {
-      val r = new JSEventSignups
-      r.eventid = eventid
-      r.signups = jdbc.query(
-        JSEventSignupMapper.prefix +
-          """ where eventid = ?
-          order by signup_time""",
-        JSEventSignupMapper,
-        eventid
-      )
-
-      for (es <- r.signups) {
-        es.chr.roles = getCharacterRoles(es.chr.cid).toArray
-        es.chr.badges = getCharacterBadges(es.chr.cid).toArray
-      }
-
-      r.asof = last_modification
-
-      Some(r)
-    }
-    else {
-      None
-    }
-  }
-
-  override
   def getEventSignup(eventsignupid: Long) = {
     val jdbc = getSimpleJdbcTemplate
     try {

@@ -1409,12 +1409,22 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  /*
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def getEventSignups(eventid: Long, if_changed_since: Date)
-    : Option[JSEventSignups] =
-    goteFarmDao.getEventSignups(eventid, if_changed_since)
-  */
+  def getEventSignups(user: User, event_key: Key, if_changed_since: Date)
+    : Option[JSEventSignups] = {
+    // XXX: should users only be allowed to see signups in their own
+    // guild(s)? That test would be somewhat expensive.
+    val event = goteFarmDao.getEvent(event_key).getOrElse(
+      throw new NotFoundError("Event not found")
+    )
+    if (event.getLastModification.compareTo(if_changed_since) > 0) {
+      Some(event2JSEventSignups(event))
+    }
+    else {
+      None
+    }
+  }
 
   private def validateSignup(user: User, event: Event, chr: JSCharacter,
                              role: Key): Unit = {
