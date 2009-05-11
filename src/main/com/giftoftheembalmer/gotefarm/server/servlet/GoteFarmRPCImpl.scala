@@ -44,20 +44,6 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
 
   private val userService = UserServiceFactory.getUserService
 
-  private def sessionID(uid: Long) = {
-    val req = ServletUtils.getRequest()
-    if (req eq null) {
-      throw new RuntimeException("request is null")
-    }
-    val sess = req.getSession()
-    if (sess eq null) {
-      throw new RuntimeException("session is null")
-    }
-    sess.putValue("uid", uid)
-    logger.debug("Returning new sessionID: " + sess.getId())
-    sess.getId()
-  }
-
   override
   def getAccount: JSAccount = {
     goteFarmService.getAccount(getUser)
@@ -80,28 +66,6 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
     sessionID(uid)
     */
     ""
-  }
-
-  private def getSession(sid: String) = {
-    val req = ServletUtils.getRequest()
-    val sess = req.getSession(false)
-    if ((sess eq null) || sess.getId() != sid) {
-      throw new UserNotLoggedInError
-    }
-
-    sess
-  }
-
-  override
-  def validateSID(sid: String) = {
-    try {
-      val sess = getSession(sid)
-      sess.getId()
-    }
-    catch {
-      case _: UserNotLoggedInError =>
-        null
-    }
   }
 
   override

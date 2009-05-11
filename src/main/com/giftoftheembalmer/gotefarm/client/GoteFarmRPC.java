@@ -15,7 +15,6 @@ public interface GoteFarmRPC extends RemoteService {
                IllegalArgumentException;
 
     public String newUser(String username, String email, String password) throws AlreadyExistsError;
-    public String validateSID(String sid);
 
     public List<JSRegion> getRegions();
 

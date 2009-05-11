@@ -18,7 +18,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, SelectionHandler<Integer> {
 
   static GoteFarmRPCAsync goteService = null;
-  static String sessionID = null;
 
   TabPanel tabpanel;
   Guilds guilds;
@@ -56,8 +55,6 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
     final VerticalPanel vpanel = new VerticalPanel();
     vpanel.setWidth("100%");
 
-    setSessionID("work in progress");
-
     tabpanel.setWidth("98%");
     tabpanel.addStyleName(tabpanel.getStylePrimaryName() + "-main");
     tabpanel.addSelectionHandler(this);
@@ -80,15 +77,6 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
 
     History.fireCurrentHistoryState();
   }
-
-    void setSessionID(String sessionID) {
-        GoteFarm.sessionID = sessionID;
-
-        // refresh UI elements that depend on the sessionID
-        events.refresh();
-        chars.loadCharacters();
-        admin.refresh();
-    }
 
     public void onValueChange(ValueChangeEvent<String> event) {
         final String historyToken = event.getValue();
