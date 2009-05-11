@@ -1508,56 +1508,66 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED,
-                 val rollbackFor = Array(classOf[Throwable])}
   override
   def changeEventSignup(user: User, event_signup_key: Key, new_role_key: Key,
                         new_signup_type: Int): JSEventSignups = {
-    // TODO: signup must belong to user
-    val signup = goteFarmDao.getEventSignup(event_signup_key).getOrElse(
-      throw new NotFoundError("Signup not found")
-    )
+    val account_key = getUserAccountKey(user)
 
-    val now = new Date
+    transactionTemplate.execute {
+      val signup = goteFarmDao.getEventSignup(event_signup_key).getOrElse(
+        throw new NotFoundError("Signup not found")
+      )
 
-    // changing roles does not change signup time,
-    signup.setRole(new_role_key)
+      if (account_key != signup.getAccount) {
+        throw new IllegalArgumentException("Signup does not belong to you")
+      }
 
-    // but changing types does.
-    if (signup.getSignupType != new_signup_type) {
-      signup.setSignupType(new_signup_type)
-      signup.setSignupTime(now)
+      val now = new Date
+
+      // changing roles does not change signup time,
+      signup.setRole(new_role_key)
+
+      // but changing types does.
+      if (signup.getSignupType != new_signup_type) {
+        signup.setSignupType(new_signup_type)
+        signup.setSignupTime(now)
+      }
+
+      val event = goteFarmDao.getEvent(signup.getEvent).getOrElse(
+        throw new NotFoundError("Event not found")
+      )
+
+      event.setLastModification(now)
+      event
     }
-
-    val event = goteFarmDao.getEvent(signup.getEvent).getOrElse(
-      throw new NotFoundError("Event not found")
-    )
-
-    event.setLastModification(now)
-    event
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED,
-                 val rollbackFor = Array(classOf[Throwable])}
   override
   def removeEventSignup(user: User, event_signup_key: Key): JSEventSignups = {
-    // TODO: signup must belong to user
-    val signup = goteFarmDao.getEventSignup(event_signup_key).getOrElse(
-      throw new NotFoundError("Signup not found")
-    )
+    val account_key = getUserAccountKey(user)
 
-    val event = goteFarmDao.getEvent(signup.getEvent).getOrElse(
-      throw new NotFoundError("Event not found")
-    )
+    transactionTemplate.execute {
+      val signup = goteFarmDao.getEventSignup(event_signup_key).getOrElse(
+        throw new NotFoundError("Signup not found")
+      )
 
-    val signups = event.getSignups
-    // FIXME: appengine null collection bug
-    if (signups ne null) {
-      event.setSignups(mkList(signups.filter(_.getKey != event_signup_key)))
+      if (account_key != signup.getAccount) {
+        throw new IllegalArgumentException("Signup does not belong to you")
+      }
+
+      val event = goteFarmDao.getEvent(signup.getEvent).getOrElse(
+        throw new NotFoundError("Event not found")
+      )
+
+      val signups = event.getSignups
+      // FIXME: appengine null collection bug
+      if (signups ne null) {
+        event.setSignups(mkList(signups.filter(_.getKey != event_signup_key)))
+      }
+
+      event.setLastModification(new Date)
+      event
     }
-
-    event.setLastModification(new Date)
-    event
   }
 
   private
