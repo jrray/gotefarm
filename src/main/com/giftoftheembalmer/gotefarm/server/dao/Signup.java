@@ -17,6 +17,9 @@ public class Signup {
     private Key key;
 
     @Persistent
+    private Key event;
+
+    @Persistent
     private Key character;
 
     @Persistent
@@ -34,8 +37,9 @@ public class Signup {
     @Persistent
     private String note;
 
-    public Signup(Key character, Key role, int signupType, Date signupTime,
-                  String note) {
+    public Signup(Key event, Key character, Key role, int signupType,
+                  Date signupTime, String note) {
+        this.event = event;
         this.character = character;
         this.role = role;
         this.signupType = signupType;
@@ -49,6 +53,10 @@ public class Signup {
 
     public Key getCharacter() {
         return character;
+    }
+
+    public Key getEvent() {
+        return event;
     }
 
     public Key getKey() {
