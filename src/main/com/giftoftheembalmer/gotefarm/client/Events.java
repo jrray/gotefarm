@@ -1,5 +1,6 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -389,11 +390,32 @@ public class Events
         }
 
         void showSignups() {
-            unregisterDropControllers();
-            remakeFlex(makeNewSignupTable());
+            try {
+                unregisterDropControllers();
+                remakeFlex(makeNewSignupTable());
+            }
+            catch (CharacterNotCachedException e) {
+                // Fetch the missing character and try again
+                // TODO: indicate progress in the UI somehow
+                final String key = e.getCharacterKey();
+                GWT.log("Requesting missing cached character: " + key, e);
+                GoteFarm.goteService.getCharacter(
+                                            key,
+                                            new AsyncCallback<JSCharacter>() {
+                    public void onSuccess(JSCharacter chr) {
+                        chr_cache.put(key, chr);
+                        // recurse (sort of)
+                        showSignups();
+                    }
+
+                    public void onFailure(Throwable caught) {
+                        // TODO: what to do here?
+                    }
+                });
+            }
         }
 
-        FlexTable makeNewSignupTable() {
+        FlexTable makeNewSignupTable() throws CharacterNotCachedException {
             FlexTable flex = new FlexTable();
 
             have_character_signed_up = false;
@@ -426,7 +448,9 @@ public class Events
             if (signups != null) {
                 // Categorize the current signups
                 for (JSEventSignup es : signups.signups) {
-                    if (es.chr.account_key.equals(account_key)) {
+                    JSCharacter chr = chr_cache.get(es.chr.key);
+
+                    if (chr.account_key.equals(account_key)) {
                         have_character_signed_up = true;
                     }
 
@@ -463,7 +487,7 @@ public class Events
                     // character missing required badges?
                     boolean standby = false;
                     for (JSEventBadge req_badge : rsup.badges_required) {
-                        if (!es.chr.hasBadge(req_badge.badge_key)) {
+                        if (!chr.hasBadge(req_badge.badge_key)) {
                             rsup.standby.add(es);
                             standby = true;
                             break;
@@ -475,7 +499,7 @@ public class Events
                     for (Map.Entry<JSEventBadge, Integer> needed : rsup.badges_needed.entrySet()) {
                         if (needed.getValue() >= role_spots_left) {
                             // character must have this badge to sign up
-                            if (!es.chr.hasBadge(needed.getKey().badge_key)) {
+                            if (!chr.hasBadge(needed.getKey().badge_key)) {
                                 rsup.standby.add(es);
                                 standby = true;
                                 break;
@@ -495,7 +519,7 @@ public class Events
                     List<JSEventBadge> to_delete = new ArrayList<JSEventBadge>();
                     for (Map.Entry<JSEventBadge, Integer> needed : rsup.badges_needed.entrySet()) {
                         int num = needed.getValue();
-                        if (es.chr.hasBadge(needed.getKey().badge_key)) {
+                        if (chr.hasBadge(needed.getKey().badge_key)) {
                             if (num == 1) {
                                 to_delete.add(needed.getKey());
                             }
@@ -538,7 +562,8 @@ public class Events
 
                 // show signups
                 for (JSEventSignup sup : rsup.coming) {
-                    vsign.add(new Signup(event.key, sup.chr, sup));
+                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    vsign.add(new Signup(event.key, chr, sup));
                 }
 
                 // show remaining slots
@@ -590,7 +615,8 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.standby) {
-                    vstand.add(new Signup(event.key, sup.chr, sup));
+                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    vstand.add(new Signup(event.key, chr, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
@@ -600,7 +626,8 @@ public class Events
                 VerticalPanel vmaybe = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.maybe) {
-                    vmaybe.add(new Signup(event.key, sup.chr, sup));
+                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    vmaybe.add(new Signup(event.key, chr, sup));
                 }
 
                 if (rsup.maybe.isEmpty()) {
@@ -620,7 +647,8 @@ public class Events
                 VerticalPanel vnotcoming = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.not_coming) {
-                    vnotcoming.add(new Signup(event.key, sup.chr, sup));
+                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    vnotcoming.add(new Signup(event.key, chr, sup));
                 }
 
                 if (rsup.not_coming.isEmpty()) {
@@ -647,7 +675,8 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : limbo) {
-                    vstand.add(new Signup(event.key, sup.chr, sup));
+                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    vstand.add(new Signup(event.key, chr, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
