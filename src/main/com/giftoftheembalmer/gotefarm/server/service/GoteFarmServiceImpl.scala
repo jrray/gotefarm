@@ -113,8 +113,7 @@ object GoteFarmServiceImpl {
   }
 }
 
-@Transactional{val propagation = Propagation.NEVER,
-               val rollbackFor = Array(classOf[Throwable])}
+@Transactional{val propagation = Propagation.NEVER}
 class GoteFarmServiceImpl extends GoteFarmServiceT {
   import GoteFarmServiceImpl._
 
@@ -922,7 +921,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getCharacter(user: User, character: Key): JSCharacter = {
     // XXX: should users only be allowed to see characters in their own
@@ -932,7 +932,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     )
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def setMainCharacter(user: User, guild: Key, character: Key): Unit = {
     val chr_group = goteFarmDao.getChrGroup(
@@ -972,13 +973,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getRoles(guild: Key): java.util.List[JSRole] = {
     mkList(goteFarmDao.getRoles(guild), role2JSRole)
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def addRole(user: User, guild: Key, name: String, restricted: Boolean)
     : JSRole = {
@@ -1043,13 +1046,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getBadges(guild: Key): java.util.List[JSBadge] = {
     mkList(goteFarmDao.getBadges(guild), badge2JSBadge)
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def addBadge(user: User, guild: Key, name: String, score: Int)
     : JSBadge = {
@@ -1104,14 +1109,16 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def addInstance(user: User, guild: Key, name: String): JSInstance = {
     // TODO: make sure user is an officer of the guild
     goteFarmDao.addInstance(guild, name)
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def addBoss(user: User, instance: Key, name: String): JSBoss = {
     // TODO: make sure user is an officer of the guild
@@ -1125,13 +1132,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     nb
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getInstances(guild: Key): java.util.List[JSInstance] = {
     mkList(goteFarmDao.getInstances(guild), instance2JSInstance)
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getInstanceBosses(instance: Key): java.util.List[JSBoss] = {
     val g = goteFarmDao.getInstance(instance).getOrElse(
@@ -1151,7 +1160,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
   */
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getEventTemplates(user: User, guild: Key)
     : java.util.List[JSEventTemplate] = {
@@ -1264,7 +1274,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     jset
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getEventSchedules(user: User, event_template: Key)
     : java.util.List[JSEventSchedule] = {
@@ -1426,7 +1437,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def getEventSignups(user: User, event_key: Key, if_changed_since: Date)
     : Option[JSEventSignups] = {
@@ -1512,7 +1524,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  @Transactional{val propagation = Propagation.REQUIRED}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
   def changeEventSignup(user: User, event_signup_key: Key, new_role_key: Key,
                         new_signup_type: Int): JSEventSignups = {
