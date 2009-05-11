@@ -36,7 +36,7 @@ public class RoleAndBadgeEditor extends Composite {
             boolean has_role = false;
             boolean is_waiting = false;
             for (B chrrole : chrroles) {
-                if (chrrole.getKey() == role.getKey()) {
+                if (chrrole.getKey().equals(role.getKey())) {
                     has_role = true;
                     hasrole.addClickHandler(
                         clickListener.newClickHandler(flex, row, chrrole)
