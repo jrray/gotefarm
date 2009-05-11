@@ -1,6 +1,5 @@
 package com.giftoftheembalmer.gotefarm.client;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -406,10 +405,7 @@ public class Events
                 // Fetch the missing character and try again
                 // TODO: indicate progress in the UI somehow
                 final String key = e.getCharacterKey();
-                GWT.log("Requesting missing cached character: " + key, e);
-                GoteFarm.goteService.getCharacter(
-                                            key,
-                                            new AsyncCallback<JSCharacter>() {
+                chr_cache.getCharacter(key, new AsyncCallback<JSCharacter>() {
                     public void onSuccess(JSCharacter chr) {
                         chr_cache.put(key, chr);
                         // recurse (sort of)
