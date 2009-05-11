@@ -11,8 +11,6 @@ interface GoteFarmRPCAsync {
 
     public void getGuildFromArmoryURL(String url, AsyncCallback<JSGuild> cb);
 
-    public void newUser(String username, String email, String password, AsyncCallback<String> cb);
-
     public void getRegions(AsyncCallback<List<JSRegion>> cb);
 
     public void newCharacter(String guild_key, String character, AsyncCallback<JSCharacter> cb);

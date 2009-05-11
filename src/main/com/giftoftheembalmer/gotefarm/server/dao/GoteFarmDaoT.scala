@@ -25,11 +25,6 @@ trait GoteFarmDaoT {
   def getAccount(user: User): Account
   def getAccount(key: Key): Option[Account]
 
-  /*
-  def validateUser(username: String, password: String): Long
-  def createUser(username: String, email: String, password: String): Long
-  */
-
   def getBoss(key: Key): Option[Boss]
 
   def getRegions: Collection[Region]

@@ -714,17 +714,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  /*
-  override
-  def login(username: String, password: String) =
-    goteFarmDao.validateUser(username, password)
-
-  @Transactional{val readOnly = false}
-  override
-  def newUser(username: String, email: String, password: String) =
-    goteFarmDao.createUser(username, email, password)
-  */
-
   override
   def getRegions: java.util.List[JSRegion] = {
     transactionTemplate.execute {

@@ -60,15 +60,6 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def newUser(username: String, email: String, password: String) = {
-    /*
-    val uid = goteFarmService.newUser(username, email, password)
-    sessionID(uid)
-    */
-    ""
-  }
-
-  override
   def getRegions: java.util.List[JSRegion] = goteFarmService.getRegions
 
   private def getUser: User = {

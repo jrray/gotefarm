@@ -14,8 +14,6 @@ public interface GoteFarmRPC extends RemoteService {
         throws UserNotLoggedInError, AlreadyExistsError, NotFoundError,
                IllegalArgumentException;
 
-    public String newUser(String username, String email, String password) throws AlreadyExistsError;
-
     public List<JSRegion> getRegions();
 
     public JSCharacter newCharacter(String guild_key, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;

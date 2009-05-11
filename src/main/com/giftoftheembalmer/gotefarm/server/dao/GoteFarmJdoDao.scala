@@ -68,61 +68,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[Account], key)
   }
 
-  /*
-  override
-  def validateUser(username: String, password: String) = {
-    val jdbc = getSimpleJdbcTemplate()
-    val acct = jdbc.query(
-      "select accountid, password from account where username = ?",
-      new ParameterizedRowMapper[(Long, String)] {
-        def mapRow(rs: ResultSet, rowNum: Int) = {
-          (rs.getLong(1), rs.getString(2))
-        }
-      },
-      Array[AnyRef](username): _*
-    )
-
-    if (acct.isEmpty) {
-      throw new InvalidCredentialsError
-    }
-
-    // validate password
-    if (!BCrypt.checkpw(password, acct(0)._2)) {
-      throw new InvalidCredentialsError
-    }
-
-    acct(0)._1
-  }
-
-  override
-  def createUser(username: String, email: String, password: String) = {
-    val crypt = BCrypt.hashpw(password, BCrypt.gensalt(12));
-
-    val jdbc = getSimpleJdbcTemplate()
-
-    try {
-      jdbc.update(
-        """insert into account (username, email, password, admin, created)
-                        values (?,        ?,     ?,        ?,     CURRENT_TIMESTAMP)""",
-        Array[AnyRef](username, email, crypt, "N"): _*
-      )
-    }
-    catch {
-      case _: DataIntegrityViolationException =>
-        throw new AlreadyExistsError("User '" + username + "' already exists.")
-
-      case e =>
-        logger.debug("Error creating user", e)
-        throw new RuntimeException("Error creating user: " + e.getMessage)
-    }
-
-    jdbc.queryForLong(
-      "select accountid from account where username = ?",
-      Array[AnyRef](username): _*
-    )
-  }
-  */
-
   override
   def getBoss(key: Key): Option[Boss] = {
     getObjectById(classOf[Boss], key)

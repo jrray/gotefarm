@@ -47,13 +47,6 @@ trait GoteFarmServiceT {
   @throws(classOf[IllegalArgumentException])
   def getGuildFromArmoryURL(user: User, url: String): JSGuild
 
-  /*
-  @throws(classOf[InvalidCredentialsError])
-  def login(username: String, password: String): Long
-
-  @throws(classOf[AlreadyExistsError])
-  def newUser(username: String, email: String, password: String): Long
-  */
   def getRegions: List[JSRegion]
 
   @throws(classOf[NotFoundError])
