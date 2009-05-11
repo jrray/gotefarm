@@ -9,7 +9,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class EventRole {
+public class EventRole implements Copyable<EventRole> {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
@@ -47,6 +47,10 @@ public class EventRole {
         this.roleKey = roleKey;
         this.min = min;
         this.max = max;
+    }
+
+    public EventRole copy() {
+        return new EventRole(role, roleKey, min, max);
     }
 
     public Key getKey() {

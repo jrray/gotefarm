@@ -208,16 +208,32 @@ public class Event {
         this.duration = duration;
     }
 
+    private <A extends Copyable<A>> List<A> copyList(List<A> input) {
+        int len = 0;
+        if (input != null) {
+            len = input.size();
+        }
+
+        List<A> output = new java.util.ArrayList<A>(len);
+        if (input != null) {
+            for (A item : input) {
+                output.add(item.copy());
+            }
+        }
+
+        return output;
+    }
+
     public void setEventBadges(List<EventBadge> eventBadges) {
-        this.eventBadges = eventBadges;
+        this.eventBadges = copyList(eventBadges);
     }
 
     public void setEventBosses(List<EventBoss> eventBosses) {
-        this.eventBosses = eventBosses;
+        this.eventBosses = copyList(eventBosses);
     }
 
     public void setEventRoles(List<EventRole> eventRoles) {
-        this.eventRoles = eventRoles;
+        this.eventRoles = copyList(eventRoles);
     }
 
     public void setInstance(String instance, Key instanceKey) {

@@ -610,36 +610,9 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
                       es.getDisplayEndDate, es.getSignupsStartDate,
                       es.getSignupsEndDate)
 
-    val new_badges = new java.util.ArrayList[EventBadge]
-    val t_badges = et.getBadges
-    // FIXME: appengine null collection bug
-    if (t_badges ne null) {
-      convertList(new_badges).addAll(t_badges.map(x =>
-        new EventBadge(x.getBadge, x.getBadgeKey, x.getRequireForSignup,
-                      x.getApplyToRole, x.getNumSlots, x.getEarlySignup)
-      ))
-    }
-    e.setEventBadges(new_badges)
-
-    val new_bosses = new java.util.ArrayList[EventBoss]
-    val t_bosses = et.getBosses
-    // FIXME: appengine null collection bug
-    if (t_bosses ne null) {
-      convertList(new_bosses).addAll(t_bosses.map(x =>
-        new EventBoss(x.getBoss, x.getBossKey)
-      ))
-    }
-    e.setEventBosses(new_bosses)
-
-    val new_roles = new java.util.ArrayList[EventRole]
-    val t_roles = et.getRoles
-    // FIXME: appengine null collection bug
-    if (t_roles ne null) {
-      convertList(new_roles).addAll(t_roles.map(x =>
-        new EventRole(x.getRole, x.getRoleKey, x.getMin, x.getMax)
-      ))
-    }
-    e.setEventRoles(new_roles)
+    e.setEventBadges(et.getBadges)
+    e.setEventBosses(et.getBosses)
+    e.setEventRoles(et.getRoles)
 
     getJdoTemplate.makePersistent(e)
   }

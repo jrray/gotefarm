@@ -9,7 +9,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class EventBoss {
+public class EventBoss implements Copyable<EventBoss> {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
@@ -23,6 +23,10 @@ public class EventBoss {
     public EventBoss(String boss, Key bossKey) {
         this.boss = boss;
         this.bossKey = bossKey;
+    }
+
+    public EventBoss copy() {
+        return new EventBoss(boss, bossKey);
     }
 
     public String getBoss() {

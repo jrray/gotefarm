@@ -9,7 +9,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class EventBadge {
+public class EventBadge implements Copyable<EventBadge> {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
@@ -49,6 +49,13 @@ public class EventBadge {
         this.applyToRole = applyToRole;
         this.numSlots = numSlots;
         this.earlySignup = earlySignup;
+    }
+
+    public EventBadge copy() {
+        EventBadge new_badge = new EventBadge(badge, badgeKey,
+                                              requireForSignup, applyToRole,
+                                              numSlots, earlySignup);
+        return new_badge;
     }
 
     public String getApplyToRole() {
