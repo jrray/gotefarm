@@ -8,6 +8,15 @@ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
        <display-name>Gote Farm</display-name>
 
         <security-constraint>
+           <web-resource-collection>
+               <url-pattern>/cron/*</url-pattern>
+           </web-resource-collection>
+           <auth-constraint>
+               <role-name>admin</role-name>
+           </auth-constraint>
+        </security-constraint>
+
+        <security-constraint>
             <web-resource-collection>
                 <url-pattern>/*</url-pattern>
             </web-resource-collection>
@@ -34,14 +43,14 @@ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
        </servlet-mapping>
 
     <servlet>
-            <servlet-name>servlets</servlet-name>
+            <servlet-name>cron</servlet-name>
             <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
             <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-            <servlet-name>servlets</servlet-name>
-            <url-pattern>/gotefarm/servlet/*</url-pattern>
+            <servlet-name>cron</servlet-name>
+            <url-pattern>/cron/*</url-pattern>
     </servlet-mapping>
 
 
