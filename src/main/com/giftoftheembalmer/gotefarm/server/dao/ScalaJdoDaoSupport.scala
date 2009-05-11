@@ -1,7 +1,10 @@
 package com.giftoftheembalmer.gotefarm.server.dao
 
+import org.springframework.orm.jdo.JdoCallback
 import org.springframework.orm.jdo.support.JdoDaoSupport
 import org.springframework.orm.ObjectRetrievalFailureException
+
+import javax.jdo.PersistenceManager
 
 import java.util.Collection
 
@@ -31,5 +34,14 @@ trait ScalaJdoDaoSupport extends JdoDaoSupport {
       case _: ObjectRetrievalFailureException =>
         None
     }
+  }
+
+  def executeFind[T](f: PersistenceManager => AnyRef): Collection[T] = {
+    getJdoTemplate.executeFind(new JdoCallback {
+      override
+      def doInJdo(pm: PersistenceManager): AnyRef = {
+        f(pm)
+      }
+    }).asInstanceOf[Collection[T]]
   }
 }
