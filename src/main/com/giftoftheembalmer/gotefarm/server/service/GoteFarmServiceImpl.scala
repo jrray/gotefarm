@@ -20,7 +20,8 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Race,
   Region,
   Role,
-  ScalaTransactionTemplate
+  ScalaTransactionTemplate,
+  Signup
 }
 
 import com.giftoftheembalmer.gotefarm.client.{
@@ -35,6 +36,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSEventBadge,
   JSEventRole,
   JSEventSchedule,
+  JSEventSignup,
   JSEventSignups,
   JSEventTemplate,
   JSInstance,
@@ -367,6 +369,19 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r.display_end = event.getDisplayEnd
     r.signups_start = event.getSignupsStart
     r.signups_end = event.getSignupsEnd
+    r
+  }
+
+  implicit def signup2JSEventSignup(signup: Signup): JSEventSignup = {
+    val r = new JSEventSignup
+    r
+  }
+
+  implicit def event2JSEventSignups(event: Event): JSEventSignups = {
+    val r = new JSEventSignups
+    r.key = event.getKey
+    r.signups = mkList(event.getSignups, signup2JSEventSignup)
+    r.asof = event.getLastModification
     r
   }
 
@@ -1389,55 +1404,77 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   def getEventSignups(eventid: Long, if_changed_since: Date)
     : Option[JSEventSignups] =
     goteFarmDao.getEventSignups(eventid, if_changed_since)
+  */
 
-  private def validateSignup(uid: Long, eventid: Long, chr: JSCharacter,
-                             roleid: Long) = {
-    // character must belong to user
-    if (chr.accountid != uid) {
-      throw new IllegalArgumentException("Signup does not belong to you.")
-    }
-
+  private def validateSignup(user: User, event: Event, chr: JSCharacter,
+                             role: Key): Unit = {
     // character must have roleid
-    if (!chr.hasRole(roleid)) {
+    if (!chr.hasRole(role)) {
       throw new IllegalArgumentException("Character missing role.")
     }
 
     // signups must not be closed
-    val event = goteFarmDao.getEvent(eventid)
     val now = System.currentTimeMillis
-    if (now > event.signups_end.getTime) {
+    if (now > event.getSignupsEnd.getTime) {
       throw new IllegalArgumentException("Signups are closed for this event.")
     }
 
     // character must be able to signup
-    val signups_start = event.signups_start.getTime
+    val signups_start = event.getSignupsStart.getTime
     if (now < signups_start) {
       // character needs to qualify for an early signup
-      lazy val role = goteFarmDao.getRole(roleid)
-      if (!event.badges.exists({ badge =>
-           ((now >= signups_start - badge.earlySignup * 3600000L)
-        && ((badge.applyToRole eq null) || badge.applyToRole == role.name)
-        && chr.hasBadge(badge.badgeid))
+      // FIXME: appengine null collection bug
+      val event_badges = event.getEventBadges
+      if ((event_badges eq null) || !event_badges.exists({ badge =>
+           ((now >= signups_start - badge.getEarlySignup * 3600000L)
+        && ((badge.getApplyToRole eq null) || badge.getApplyToRole == role)
+        && chr.hasBadge(badge.getBadgeKey))
       })) {
         throw new IllegalArgumentException("Character cannot sign up for this event yet.")
       }
     }
   }
 
-  private def validateSignup(uid: Long, eventid: Long, cid: Long,
-                             roleid: Long): Unit = {
-    val chr = goteFarmDao.getCharacter(cid)
-    validateSignup(uid, eventid, chr, roleid)
-  }
-
-  @Transactional{val readOnly = false}
   override
-  def signupForEvent(uid: Long, eventid: Long, cid: Long, roleid: Long,
-                     signup_type: Int) = {
-    validateSignup(uid, eventid, cid, roleid)
-    goteFarmDao.signupForEvent(eventid, cid, roleid, signup_type)
+  def signupForEvent(user: User, event_key: Key, character: Key, role: Key,
+                     signup_type: Int): JSEventSignups = {
+    val chr = transactionTemplate.execute {
+      val chr = goteFarmDao.getCharacter(character).getOrElse(
+        throw new NotFoundError("Character not found")
+      )
+
+      val acct = goteFarmDao.getAccount(chr.getAccountKey).getOrElse(
+        throw new NotFoundError("Account not found")
+      )
+
+      // character must belong to user
+      // TODO: or if user is an admin ...
+      if (acct.getUser != user) {
+        throw new IllegalArgumentException("Character does not belong to you.")
+      }
+
+      chr2JSCharacter(chr)
+    }
+
+    transactionTemplate.execute {
+      val event = goteFarmDao.getEvent(event_key).getOrElse(
+        throw new NotFoundError("Event not found")
+      )
+
+      validateSignup(user, event, chr, role)
+
+      val now = new Date
+
+      val signup = new Signup(character, role, signup_type, now, null)
+      listAdd(signup, event.getSignups, event.setSignups)
+
+      event.setLastModification(now)
+
+      event
+    }
   }
 
+  /*
   @Transactional{val readOnly = false}
   override
   def changeEventSignup(uid: Long, eventsignupid: Long, new_roleid: Long,

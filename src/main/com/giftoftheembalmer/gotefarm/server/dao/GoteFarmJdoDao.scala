@@ -635,31 +635,12 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          guild, new Date)
   }
 
-  /*
   override
-  def getEvent(eventid: Long) = {
-    val jdbc = getSimpleJdbcTemplate
-
-    val event = try {
-      jdbc.queryForObject(
-        "select " + JSEventMapper.columns
-                  + " from "
-                  + JSEventMapper.tables
-                  + " where eventid = ?",
-        JSEventMapper,
-        eventid: AnyRef
-      )
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("No such event")
-    }
-
-    populateEvent(event)
-
-    event
+  def getEvent(key: Key): Option[Event] = {
+    getObjectById(classOf[Event], key)
   }
 
+  /*
   override
   def getEventSignups(eventid: Long,
                       if_changed_since: Date): Option[JSEventSignups] = {
@@ -720,37 +701,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     catch {
       case _: IncorrectResultSizeDataAccessException =>
         throw new NotFoundError("No such event signup")
-    }
-  }
-
-  override
-  def signupForEvent(eventid: Long, cid: Long, roleid: Long,
-                     signup_type: Int): Unit = {
-    val jdbc = getSimpleJdbcTemplate
-    try {
-      jdbc.update(
-        """insert into eventsignup
-            (eventid, chrid, roleid, signup_type, signup_time)
-            values (?, ?, ?, ?, current_timestamp)""",
-        eventid, cid, roleid, signup_type
-      )
-    }
-    catch {
-      case e: DataIntegrityViolationException
-        if e.getMessage.contains("UNIQUE") =>
-          throw new AlreadyExistsError("Character already signed up")
-
-      case e: DataIntegrityViolationException
-        if e.getMessage.contains("EVENTID_FK") =>
-          throw new NotFoundError("No such event")
-
-      case e: DataIntegrityViolationException
-        if e.getMessage.contains("CHRID_FK") =>
-          throw new NotFoundError("No such character")
-
-      case e: DataIntegrityViolationException
-        if e.getMessage.contains("ROLEID_FK") =>
-          throw new NotFoundError("No such role")
     }
   }
 

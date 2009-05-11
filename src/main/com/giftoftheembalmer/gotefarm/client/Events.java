@@ -354,8 +354,7 @@ public class Events
                 signup_error.setText("");
                 if (sup.sup == null) {
                     // new signup
-                    GoteFarm.goteService.signupForEvent(GoteFarm.sessionID,
-                                                        event.key,
+                    GoteFarm.goteService.signupForEvent(event.key,
                                                         sup.chr.key, role.role_key,
                                                         signupType,
                                                         signupCallback);
