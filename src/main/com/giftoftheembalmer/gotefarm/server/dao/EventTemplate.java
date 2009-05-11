@@ -13,13 +13,14 @@ import javax.jdo.annotations.PrimaryKey;
 
 import java.util.List;
 
-@PersistenceCapable(identityType = IdentityType.APPLICATION)
+@PersistenceCapable(identityType = IdentityType.APPLICATION,
+                    detachable = "true")
 public class EventTemplate {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
 
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     private Key guild;
 
     @Persistent
@@ -34,13 +35,13 @@ public class EventTemplate {
     @Persistent
     private String instance;
 
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     private Key instanceKey;
 
     // FIXME: Using List here due to AppEngine bug, switch to Set once
     // it is fixed.
     // http://code.google.com/p/datanucleus-appengine/issues/detail?id=26
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     @Element(dependent = "true")
     @Order(extensions = @Extension(vendorName="datanucleus", key="list-ordering", value="boss asc"))
     private List<EventBoss> bosses;
@@ -48,7 +49,7 @@ public class EventTemplate {
     // FIXME: Using List here due to AppEngine bug, switch to Set once
     // it is fixed.
     // http://code.google.com/p/datanucleus-appengine/issues/detail?id=26
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     @Element(dependent = "true")
     @Order(extensions = @Extension(vendorName="datanucleus", key="list-ordering", value="role asc"))
     private List<EventRole> roles;
@@ -56,7 +57,7 @@ public class EventTemplate {
     // FIXME: Using List here due to AppEngine bug, switch to Set once
     // it is fixed.
     // http://code.google.com/p/datanucleus-appengine/issues/detail?id=26
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     @Element(dependent = "true")
     @Order(extensions = @Extension(vendorName="datanucleus", key="list-ordering", value="badge asc"))
     private List<EventBadge> badges;
