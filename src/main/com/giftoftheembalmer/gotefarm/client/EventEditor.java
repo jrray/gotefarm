@@ -440,7 +440,7 @@ public class EventEditor extends Composite implements ChangeHandler {
                 // clear error message
                 errmsg.setText("");
 
-                JSEventTemplate t = new JSEventTemplate();
+                final JSEventTemplate t = new JSEventTemplate();
 
                 if (EventEditor.this.et != null) {
                     t.key = EventEditor.this.et.key;
@@ -508,6 +508,11 @@ public class EventEditor extends Composite implements ChangeHandler {
                     public void onSuccess(JSEventTemplate result) {
                         EventEditor.this.admin.eventAdded();
                         EventEditor.this.admin.setCenterWidget(null);
+                        if (t.key != null && t.modifyEvents) {
+                            admin.fireAdminChange(
+                                AdminChange.getEventsChanged()
+                            );
+                        }
                     }
 
                     public void onFailure(Throwable caught) {
