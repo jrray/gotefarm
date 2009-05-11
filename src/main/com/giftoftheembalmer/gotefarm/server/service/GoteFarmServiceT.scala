@@ -105,10 +105,6 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   def getInstanceBosses(instance: Key): List[JSBoss]
 
-  /*
-  @throws(classOf[NotFoundError])
-  def getEventTemplate(name: String): JSEventTemplate
-  */
   @throws(classOf[NotFoundError])
   def getEventTemplates(user: User, guild: Key): List[JSEventTemplate]
 

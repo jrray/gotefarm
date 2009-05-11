@@ -1144,11 +1144,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  /*
-  override
-  def getEventTemplate(name: String) = goteFarmDao.getEventTemplate(name)
-  */
-
   @Transactional{val propagation = Propagation.REQUIRED,
                  val rollbackFor = Array(classOf[Throwable])}
   override
