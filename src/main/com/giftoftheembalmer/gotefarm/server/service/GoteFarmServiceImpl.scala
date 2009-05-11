@@ -6,6 +6,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Chr,
   ChrClass,
   ChrGroup,
+  Event,
   EventBadge,
   EventBoss,
   EventRole,
@@ -26,6 +27,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
   JSBoss,
   JSCharacter,
+  JSEvent,
   JSEventBadge,
   JSEventRole,
   JSEventSchedule,
@@ -291,6 +293,30 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     val r = new JSBoss
     r.key = boss.getKey
     r.name = boss.getName
+    r
+  }
+
+  implicit def event2JSEvent(event: Event): JSEvent = {
+    val r = new JSEvent
+
+    // EventTemplate
+    // XXX: JSEventTemplate.key assigned to event.key here, this is confusing
+    r.key = event.getKey
+    r.name = event.getName
+    r.size = event.getSize
+    r.minimumLevel = event.getMinimumLevel
+    r.instance_key = event.getInstanceKey
+    r.boss_keys = mkList(event.getEventBosses, (x: EventBoss) => x.getBossKey)
+    r.roles = mkList(event.getEventRoles, eventRole2JSEventRole)
+    r.badges = mkList(event.getEventBadges, eventBadge2JSEventBadge)
+
+    // Event
+    r.start_time = event.getStartTime
+    r.duration = event.getDuration
+    r.display_start = event.getDisplayStart
+    r.display_end = event.getDisplayEnd
+    r.signups_start = event.getSignupsStart
+    r.signups_end = event.getSignupsEnd
     r
   }
 
@@ -1201,9 +1227,22 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         throw new IllegalStateException("Unknown repeat_size value");
     }
   }
+  */
 
   override
-  def getEvents = goteFarmDao.getEvents
+  def getEvents(user: User, guild: Key): java.util.List[JSEvent] = {
+    // TODO: user must belong to guild
+    val now = System.currentTimeMillis
+    // Cannot have more than one inequality filter in the query, so filter
+    // the results further here to eliminate ones that should not be shown
+    // yet.
+    // TODO: Also cannot sort on displayStart when the query filter is on
+    // displayEnd so the events must be sorted here.
+    mkList(goteFarmDao.getEvents(guild),
+           (x: Event) => x.getDisplayStart.getTime <= now, event2JSEvent)
+  }
+
+  /*
   override
   def getEventSignups(eventid: Long, if_changed_since: Date)
     : Option[JSEventSignups] =

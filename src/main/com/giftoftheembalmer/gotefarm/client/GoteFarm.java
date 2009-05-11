@@ -48,6 +48,8 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
     guilds.addValueChangeHandler(chars);
     // So does Admin
     guilds.addValueChangeHandler(admin);
+    // and Events
+    guilds.addValueChangeHandler(events.guildChange);
 
     final VerticalPanel vpanel = new VerticalPanel();
     vpanel.setWidth("100%");

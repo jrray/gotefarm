@@ -47,8 +47,17 @@ public class Events
 
     private List<JSCharacter> characters = new ArrayList<JSCharacter>();
     private String account_key;
+    private JSGuild current_guild;
 
     PickupDragController dragController;
+
+    public ValueChangeHandler<JSGuild> guildChange
+                                        = new ValueChangeHandler<JSGuild>() {
+        public void onValueChange(ValueChangeEvent<JSGuild> event) {
+            current_guild = event.getValue();
+            refresh();
+        }
+    };
 
     public class Event
         extends Composite
@@ -1003,15 +1012,20 @@ public class Events
     public void refresh() {
         vmsgpanel.clear();
 
-        if (GoteFarm.sessionID == null) {
-            vmsgpanel.add(new Label("You are not signed in."));
+        if (current_guild == null) {
+            vmsgpanel.add(new Label("Loading..."));
+            return;
+        }
+        else if (current_guild.key == null) {
+            vmsgpanel.add(new Label("Select a guild to see events."));
             return;
         }
 
         // update the list of events, and also refresh the signup lists of
         // each event
 
-        GoteFarm.goteService.getEvents(GoteFarm.sessionID, new AsyncCallback<List<JSEvent>>() {
+        GoteFarm.goteService.getEvents(current_guild.key,
+                                       new AsyncCallback<List<JSEvent>>() {
             public void onSuccess(List<JSEvent> result) {
                 vmsgpanel.clear();
 

@@ -699,29 +699,17 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     populateEventBadges(eventid, es.eid)
     populateEventBosses(eventid, es.eid)
   }
+  */
 
   override
-  def getEvents = {
-    val jdbc = getSimpleJdbcTemplate
-
-    val events = jdbc.query(
-      "select " + JSEventMapper.columns
-                + " from "
-                + JSEventMapper.tables
-                + """ where event.display_start <= current_timestamp
-                        and event.display_end >= current_timestamp
-                      order by event.start_time""",
-      JSEventMapper,
-      noargs: _*
-    )
-
-    for (event <- events) {
-      populateEvent(event)
-    }
-
-    events
+  def getEvents(guild: Key): java.util.Collection[Event] = {
+    find(classOf[Event], "guild == guildParam && displayEnd >= now",
+           "com.google.appengine.api.datastore.Key guildParam, "
+         + "java.util.Date now")(
+         guild, new Date)
   }
 
+  /*
   override
   def getEvent(eventid: Long) = {
     val jdbc = getSimpleJdbcTemplate

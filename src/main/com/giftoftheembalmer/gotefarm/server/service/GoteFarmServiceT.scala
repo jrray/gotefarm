@@ -135,8 +135,8 @@ trait GoteFarmServiceT {
   @throws(classOf[IllegalArgumentException])
   def saveEventSchedule(user: User, guild: Key, es: JSEventSchedule): Unit
 
+  def getEvents(user: User, guild: Key): List[JSEvent]
   /*
-  def getEvents: List[JSEvent]
   @throws(classOf[NotFoundError])
   def getEventSignups(eventid: Long,
                       if_changed_since: Date): Option[JSEventSignups]

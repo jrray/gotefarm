@@ -233,12 +233,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def getEvents(sid: String) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.getEvents
-    */
-    new java.util.ArrayList[JSEvent]
+  def getEvents(guild_key: String): java.util.List[JSEvent] = {
+    goteFarmService.getEvents(getUser, guild_key)
   }
 
   override
