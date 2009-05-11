@@ -98,6 +98,9 @@ public class Event {
     ))
     private List<Signup> signups = new ArrayList<Signup>();
 
+    @Persistent
+    private Date lastModification = new Date();
+
     public Event(Key eventTemplate, Key guild, String name, int size,
                  int minimumLevel, String instance, Key instanceKey,
                  Date startTime, int duration, Date displayStart,
@@ -161,6 +164,10 @@ public class Event {
         return key;
     }
 
+    public Date getLastModification() {
+        return lastModification;
+    }
+
     public int getMinimumLevel() {
         return minimumLevel;
     }
@@ -216,6 +223,10 @@ public class Event {
     public void setInstance(String instance, Key instanceKey) {
         this.instance = instance;
         this.instanceKey = instanceKey;
+    }
+
+    public void setLastModification(Date lastModification) {
+        this.lastModification = lastModification;
     }
 
     public void setMinimumLevel(int minimumLevel) {
