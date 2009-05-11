@@ -95,11 +95,10 @@ trait GoteFarmServiceT {
   @throws(classOf[NotFoundError])
   def addBadge(user: User, guild: Key, name: String, score: Int): JSBadge
 
-  /*
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
-  def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long, adding: Boolean): Unit
-  */
+  def updateCharacterBadge(user: User, character: Key, badge: Key,
+                           adding: Boolean): JSCharacter
 
   @throws(classOf[NotFoundError])
   def addInstance(user: User, guild: Key, name: String): JSInstance

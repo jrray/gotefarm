@@ -71,10 +71,6 @@ trait GoteFarmDaoT {
 
   def addBadge(guild: Key, name: String, score: Int): Badge
 
-  /*
-  def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit
-  */
-
   def addInstance(guild: Key, name: String): Instance
   def getInstances(guild: Key): Collection[Instance]
 

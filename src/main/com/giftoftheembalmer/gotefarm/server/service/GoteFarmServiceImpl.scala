@@ -1032,19 +1032,50 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     goteFarmDao.addBadge(guild, name, score)
   }
 
-  /*
-  @Transactional{val readOnly = false}
   override
-  def updateCharacterBadge(uid: Long, cid: Long, badgeid: Long,
-                           adding: Boolean): Unit = {
-    // character must belong to user
-    val chr = goteFarmDao.getCharacter(cid)
-    if (chr.accountid != uid) {
-      throw new IllegalArgumentException("Character does not belong to you.")
+  def updateCharacterBadge(user: User, character: Key, badge: Key,
+                           adding: Boolean): JSCharacter = {
+
+    val badge_name = key2BadgeName(badge)
+
+    transactionTemplate.execute {
+      val chr = goteFarmDao.getCharacter(character).getOrElse(
+        throw new NotFoundError("Character not found")
+      )
+
+      val acct = goteFarmDao.getAccount(chr.getAccountKey).getOrElse(
+        throw new NotFoundError("Account not found")
+      )
+
+      // character must belong to user
+      // TODO: or if user is an admin ...
+      if (acct.getUser != user) {
+        throw new IllegalArgumentException("Character does not belong to you.")
+      }
+
+      val curr_badges = chr.getBadges
+
+      if (adding) {
+        // avoid adding duplicates
+        if (   (curr_badges eq null)
+            || !curr_badges.exists(_.getBadgeKey == badge)) {
+          val new_badge = new ChrBadge(badge_name, badge, true, false)
+          listAdd(new_badge, curr_badges, chr.setBadges)
+        }
+      }
+      else {
+        if (curr_badges ne null) {
+          chr.setBadges(mkList(curr_badges.filter(_.getBadgeKey != badge)))
+        }
+
+        // TODO: Update last_signup_modification for any event that this
+        // character is signed up for that has badge requirements involving
+        // the badge being deleted.
+      }
+
+      chr
     }
-    goteFarmDao.updateCharacterBadge(cid, badgeid, adding)
   }
-  */
 
   @Transactional{val propagation = Propagation.REQUIRED}
   override

@@ -161,15 +161,10 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def updateCharacterBadge(sid: String, character_key: String,
-                           badge_key: String, adding: Boolean): JSCharacter = {
-    /*
-    val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Long]
-    goteFarmService.updateCharacterBadge(uid, cid, badgeid, adding)
-    goteFarmService.getCharacter(cid)
-    */
-    new JSCharacter
+  def updateCharacterBadge(character_key: String, badge_key: String,
+                           adding: Boolean): JSCharacter = {
+    goteFarmService.updateCharacterBadge(getUser, character_key, badge_key,
+                                         adding)
   }
 
   override

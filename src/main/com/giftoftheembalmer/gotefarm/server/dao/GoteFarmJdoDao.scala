@@ -331,35 +331,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     nb
   }
 
-  /*
-  override
-  def updateCharacterBadge(cid: Long, badgeid: Long, adding: Boolean): Unit = {
-    val jdbc = getSimpleJdbcTemplate()
-    if (adding) {
-      try {
-        jdbc.update("""insert into chrbadge (chrid, badgeid, waiting, approved)
-                        VALUES (?, ?, 'Y', 'N')""",
-                    cid, badgeid)
-      }
-      catch {
-        case e: DataIntegrityViolationException if e.getMessage.contains("CHRBADGE_CHRID_FK") =>
-          throw new NotFoundError
-
-        case e: DataIntegrityViolationException if e.getMessage.contains("UNIQUE") =>
-          // badge already there, ignore
-      }
-    }
-    else {
-      // TODO: Update last_signup_modification for any event that this
-      // character is signed up for that has badge requirements involving
-      // the badge being deleted.
-
-      jdbc.update("""delete from chrbadge where chrid = ? and badgeid = ?""",
-                  cid, badgeid)
-    }
-  }
-  */
-
   override
   def addInstance(guild: Key, name: String): Instance = {
     val ni = new Instance(guild, name)
