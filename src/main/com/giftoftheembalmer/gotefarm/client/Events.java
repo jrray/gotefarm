@@ -367,9 +367,7 @@ public class Events
                 else
                 {
                     // changing signup
-                    GoteFarm.goteService.changeEventSignup(GoteFarm.sessionID,
-                                                           event.key,
-                                                           sup.sup.key,
+                    GoteFarm.goteService.changeEventSignup(sup.sup.key,
                                                            role.role_key,
                                                            signupType,
                                                            signupCallback);

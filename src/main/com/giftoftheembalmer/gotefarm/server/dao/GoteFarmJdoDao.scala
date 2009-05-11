@@ -572,36 +572,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
 
   /*
   override
-  def changeEventSignup(eventsignupid: Long, new_roleid: Long,
-                        new_signup_type: Int): Unit = {
-    // changing roles does not change signup time,
-    // but changing types does.
-    val jdbc = getSimpleJdbcTemplate
-    try {
-      val c = jdbc.update(
-        """update eventsignup
-            set signup_time = case
-                                when signup_type = ? then signup_time
-                                else current_timestamp
-                              END,
-                roleid = ?,
-                signup_type = ?
-            where eventsignupid = ?""",
-        new_signup_type, new_roleid, new_signup_type, eventsignupid
-      )
-
-      if (c == 0) {
-        throw new NotFoundError("Signup not found")
-      }
-    }
-    catch {
-      case e: DataIntegrityViolationException
-        if e.getMessage.contains("ROLEID_FK") =>
-          throw new NotFoundError("No such role")
-    }
-  }
-
-  override
   def removeEventSignup(eventsignupid: Long): Unit = {
     val jdbc = getSimpleJdbcTemplate
     val c = jdbc.update(

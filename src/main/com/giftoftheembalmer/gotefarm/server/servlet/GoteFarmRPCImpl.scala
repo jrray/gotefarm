@@ -252,17 +252,10 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def changeEventSignup(sid: String, event_key: String,
-                        event_signup_key: String, new_role_key: String,
-                        new_signup_type: Int) = {
-    /*
-    val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Long]
-    goteFarmService.changeEventSignup(uid, eventsignupid, new_roleid,
+  def changeEventSignup(event_signup_key: String, new_role_key: String,
+                        new_signup_type: Int): JSEventSignups = {
+    goteFarmService.changeEventSignup(getUser, event_signup_key, new_role_key,
                                       new_signup_type)
-    forceGetEvents(eventid)
-    */
-    null
   }
 
   override

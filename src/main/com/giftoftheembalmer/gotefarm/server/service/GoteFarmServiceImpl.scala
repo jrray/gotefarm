@@ -1512,16 +1512,35 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
   }
 
-  /*
-  @Transactional{val readOnly = false}
+  @Transactional{val propagation = Propagation.REQUIRED}
   override
-  def changeEventSignup(uid: Long, eventsignupid: Long, new_roleid: Long,
-                        new_signup_type: Int): Unit = {
-    val es = goteFarmDao.getEventSignup(eventsignupid)
-    validateSignup(uid, es.eventid, es.chr, new_roleid)
-    goteFarmDao.changeEventSignup(eventsignupid, new_roleid, new_signup_type)
+  def changeEventSignup(user: User, event_signup_key: Key, new_role_key: Key,
+                        new_signup_type: Int): JSEventSignups = {
+    // TODO: signup must belong to user
+    val signup = goteFarmDao.getEventSignup(event_signup_key).getOrElse(
+      throw new NotFoundError("Signup not found")
+    )
+
+    val now = new Date
+
+    // changing roles does not change signup time,
+    signup.setRole(new_role_key)
+
+    // but changing types does.
+    if (signup.getSignupType != new_signup_type) {
+      signup.setSignupType(new_signup_type)
+      signup.setSignupTime(now)
+    }
+
+    val event = goteFarmDao.getEvent(signup.getEvent).getOrElse(
+      throw new NotFoundError("Event not found")
+    )
+
+    event.setLastModification(now)
+    event
   }
 
+  /*
   @Transactional{val readOnly = false}
   override
   def removeEventSignup(uid: Long, eventsignupid: Long): Unit = {
