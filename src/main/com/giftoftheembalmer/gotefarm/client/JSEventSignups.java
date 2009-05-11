@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 public class JSEventSignups implements IsSerializable {
-    public long eventid;
+    public String key;
     public List<JSEventSignup> signups;
     public Date asof;
 
