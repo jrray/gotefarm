@@ -411,6 +411,10 @@ public class Characters
         chrpanel.clear();
 
         if (current_guild == null) {
+            chrpanel.add(new Label("Loading..."));
+            enrollbtn.setEnabled(false);
+            return;
+        } else if (current_guild.key == null) {
             chrpanel.add(new Label("Select a guild before managing characters."));
             enrollbtn.setEnabled(false);
             return;
