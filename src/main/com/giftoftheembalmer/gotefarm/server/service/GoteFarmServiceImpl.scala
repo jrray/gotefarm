@@ -1289,12 +1289,20 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       }
     }
 
-    transactionTemplate.execute {
-      goteFarmDao.saveEventSchedule(guild, es)
+    val (es_key, et_key) = transactionTemplate.execute {
+      val r = goteFarmDao.saveEventSchedule(guild, es)
+      (r.getKey, r.getEventTemplate)
     }
 
-    // TODO: publish this schedule's events right away
-    // publishEvents()
+    val detached_event_template = transactionTemplate.execute {
+      val et = goteFarmDao.getEventTemplate(et_key).getOrElse(
+        throw new NotFoundError("Event template not found")
+      )
+      goteFarmDao.detachCopy(et)
+      et
+    }
+
+    publishEvents(detached_event_template, es_key)
   }
 
   private def getEventNextOccurrence(event: EventSchedule): Date = {
@@ -1511,14 +1519,91 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   }
   */
 
+  private
+  def publishEvents(detached_event_template: EventTemplate,
+                    event_schedule: Key): Unit = {
+    val reftime = System.currentTimeMillis
+    while (publishEvent(detached_event_template, event_schedule, reftime)) ()
+  }
+
+  // Get schedules one hour into the future. If the process to publish events
+  // runs every hour, publishing events up to one hour early will make it so
+  // no events are published late. The "early" events can be filtered by the
+  // client. Add a pad of 5 minutes to be on the safe side.
+  private val publish_events_early_window = 3900000L
+
+  private
+  def publishEvent(detached_event_template: EventTemplate,
+                   event_schedule: Key,
+                   reftime: Long): Boolean = {
+    // some gymnastics to get the transaction demarcation right
+    (for (result <- transactionTemplate.execute {
+      val sched = goteFarmDao.getEventSchedule(event_schedule).getOrElse(
+        throw new NotFoundError("Event schedule not found")
+      )
+
+      // Because this method is called from both the cron job (where
+      // displayStartDate is known to be past a specific time), and from
+      // saveEventSchedule (where it isn't), double check the displayStartDate
+      // to make sure the schedule is ready to be published
+      if (   sched.getDisplayStartDate.getTime
+          > reftime + publish_events_early_window) {
+        // not ready yet
+        Some(false)
+      }
+      else if (sched.getDisplayEndDate.getTime <= reftime) {
+        // time is past for showing the event, don't bother instancing
+        // it
+        sched.setActive(false)
+        Some(false)
+      }
+      else {
+        // yield a zero so the OrElse below in invoked
+        None
+      }
+    }) yield result).getOrElse({
+      // create it
+      val detached_event_schedule = transactionTemplate.execute {
+        val sched = goteFarmDao.getEventSchedule(event_schedule).getOrElse(
+          throw new NotFoundError("Event schedule not found")
+        )
+        goteFarmDao.detachCopy(sched)
+        sched
+      }
+
+      transactionTemplate.execute {
+        goteFarmDao.publishEvent(detached_event_schedule,
+                                 detached_event_template)
+      }
+
+      // update to next time
+      transactionTemplate.execute {
+        (for (s <- goteFarmDao.getEventSchedule(event_schedule)) yield {
+          if (s.getRepeatSize != JSEventSchedule.REPEAT_NEVER) {
+            s.setStartTime(getEventNextOccurrence(s))
+
+            // new display date within window for publishing another?
+            boolean2Boolean(
+                s.getDisplayStartDate.getTime
+              <= reftime + publish_events_early_window
+            )
+          }
+          else {
+            // one-shot event, deactive it
+            s.setActive(false)
+            java.lang.Boolean.FALSE
+          }
+        }).getOrElse(java.lang.Boolean.FALSE)
+      }.booleanValue
+    })
+  }
+
   override
   def publishEvent: Boolean = {
     val reftime = System.currentTimeMillis
-    // Get schedules one hour into the future. If the process to publish events
-    // runs every hour, publishing events up to one hour early will make it so
-    // no events are published late. The "early" events can be filtered by the
-    // client. Add a pad of 5 minutes to be on the safe side.
-    val active_schedules = goteFarmDao.getActiveEventSchedule(3900000L)
+    val active_schedules = goteFarmDao.getActiveEventSchedule(
+      publish_events_early_window
+    )
     val count = active_schedules.size
     logger.debug("publishEvent got " + count + " results")
     if (count == 0) {
@@ -1529,50 +1614,20 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       val sched = iter.next
       val sched_key = sched.getKey
 
-      if (sched.getDisplayEndDate.getTime <= reftime) {
-        // time is past for showing the event, don't bother instancing
-        // it
-        transactionTemplate.execute {
-          for (s <- goteFarmDao.getEventSchedule(sched_key)) {
-            s.setActive(false)
-          }
-        }
-        count > 1
+      // need a detached copy of the EventTemplate
+      val et = transactionTemplate.execute {
+        val et = goteFarmDao.getEventTemplate(sched.getEventTemplate)
+                            .getOrElse(
+          throw new NotFoundError("Event template not found")
+        )
+        goteFarmDao.detachCopy(et)
+        et
       }
-      else {
-        // need a detached copy of the EventTemplate
-        val et = transactionTemplate.execute {
-          val et = goteFarmDao.getEventTemplate(sched.getEventTemplate)
-                              .getOrElse(
-            throw new NotFoundError("Event template not found")
-          )
-          goteFarmDao.detachCopy(et)
-          et
-        }
 
-        // create it
-        transactionTemplate.execute {
-          goteFarmDao.publishEvent(sched, et)
-        }
+      val has_more = publishEvent(et, sched_key, reftime)
 
-        // update to next time
-        transactionTemplate.execute {
-          (for (s <- goteFarmDao.getEventSchedule(sched_key)) yield {
-            if (s.getRepeatSize != JSEventSchedule.REPEAT_NEVER) {
-              s.setStartTime(getEventNextOccurrence(s))
-
-              boolean2Boolean(
-                count > 1 || sched.getDisplayStart <= reftime
-              )
-            }
-            else {
-              // one-shot event, deactive it
-              s.setActive(false)
-              boolean2Boolean(count > 1)
-            }
-          }).getOrElse(java.lang.Boolean.FALSE)
-        }.booleanValue
-      }
+      // are there more events to publish?
+      has_more || count > 1
     }
   }
 
