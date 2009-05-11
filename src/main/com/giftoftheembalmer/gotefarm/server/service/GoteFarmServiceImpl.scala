@@ -372,15 +372,25 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
-  implicit def signup2JSEventSignup(signup: Signup): JSEventSignup = {
+  // not an implicit, need a way to know the event_key
+  def signup2JSEventSignup(event_key: String, signup: Signup)
+    : JSEventSignup = {
     val r = new JSEventSignup
+    r.key = signup.getKey
+    r.event_key = event_key
+    r.chr_key = signup.getCharacter
+    r.role_key = signup.getRole
+    r.signup_type = signup.getSignupType
+    r.signup_time = signup.getSignupTime
+    r.note = signup.getNote
     r
   }
 
   implicit def event2JSEventSignups(event: Event): JSEventSignups = {
     val r = new JSEventSignups
     r.key = event.getKey
-    r.signups = mkList(event.getSignups, signup2JSEventSignup)
+    r.signups = mkList(event.getSignups, (x: Signup) =>
+      signup2JSEventSignup(r.key, x))
     r.asof = event.getLastModification
     r
   }

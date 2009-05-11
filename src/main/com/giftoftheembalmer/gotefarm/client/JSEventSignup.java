@@ -14,8 +14,8 @@ public class JSEventSignup implements IsSerializable {
 
     public String key;
     public String event_key;
-    public JSCharacter chr;
-    public JSRole role;
+    public String chr_key;
+    public String role_key;
     public int signup_type;
     public Date signup_time;
     public String note;

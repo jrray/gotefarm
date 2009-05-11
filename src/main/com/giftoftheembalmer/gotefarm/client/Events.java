@@ -329,7 +329,7 @@ public class Events
                 // is this no-op drop?
                 if (   sup.sup != null
                     && role != null
-                    && sup.sup.role.key.equals(role.role_key)
+                    && sup.sup.role_key.equals(role.role_key)
                     && sup.sup.signup_type == signupType) {
                     throw new VetoDragException();
                 }
@@ -448,13 +448,13 @@ public class Events
             if (signups != null) {
                 // Categorize the current signups
                 for (JSEventSignup es : signups.signups) {
-                    JSCharacter chr = chr_cache.get(es.chr.key);
+                    JSCharacter chr = chr_cache.get(es.chr_key);
 
                     if (chr.account_key.equals(account_key)) {
                         have_character_signed_up = true;
                     }
 
-                    RoleSignup rsup = role_signups.get(es.role.key);
+                    RoleSignup rsup = role_signups.get(es.role_key);
 
                     // role does not exist: limbo
                     if (rsup == null) {
@@ -562,7 +562,7 @@ public class Events
 
                 // show signups
                 for (JSEventSignup sup : rsup.coming) {
-                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    JSCharacter chr = chr_cache.get(sup.chr_key);
                     vsign.add(new Signup(event.key, chr, sup));
                 }
 
@@ -615,7 +615,7 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.standby) {
-                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    JSCharacter chr = chr_cache.get(sup.chr_key);
                     vstand.add(new Signup(event.key, chr, sup));
                 }
 
@@ -626,7 +626,7 @@ public class Events
                 VerticalPanel vmaybe = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.maybe) {
-                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    JSCharacter chr = chr_cache.get(sup.chr_key);
                     vmaybe.add(new Signup(event.key, chr, sup));
                 }
 
@@ -647,7 +647,7 @@ public class Events
                 VerticalPanel vnotcoming = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.not_coming) {
-                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    JSCharacter chr = chr_cache.get(sup.chr_key);
                     vnotcoming.add(new Signup(event.key, chr, sup));
                 }
 
@@ -675,7 +675,7 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : limbo) {
-                    JSCharacter chr = chr_cache.get(sup.chr.key);
+                    JSCharacter chr = chr_cache.get(sup.chr_key);
                     vstand.add(new Signup(event.key, chr, sup));
                 }
 
