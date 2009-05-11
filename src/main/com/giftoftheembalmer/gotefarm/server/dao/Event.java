@@ -90,6 +90,14 @@ public class Event {
     @Persistent
     Date signupsEnd;
 
+    @Persistent
+    @Element(dependent = "true")
+    @Order(extensions = @Extension(
+        vendorName = "datanucleus", key = "list-ordering",
+        value = "signupTime asc, actualSignupTime asc, character asc"
+    ))
+    private List<Signup> signups = new ArrayList<Signup>();
+
     public Event(Key eventTemplate, Key guild, String name, int size,
                  int minimumLevel, String instance, Key instanceKey,
                  Date startTime, int duration, Date displayStart,
@@ -161,6 +169,10 @@ public class Event {
         return name;
     }
 
+    public List<Signup> getSignups() {
+        return signups;
+    }
+
     public Date getSignupsEnd() {
         return signupsEnd;
     }
@@ -212,6 +224,10 @@ public class Event {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setSignups(List<Signup> signups) {
+        this.signups = signups;
     }
 
     public void setSignupsEnd(Date signupsEnd) {
