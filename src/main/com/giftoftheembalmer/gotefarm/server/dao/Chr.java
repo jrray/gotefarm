@@ -67,6 +67,15 @@ public class Chr {
                                    key = "list-ordering", value = "role asc"))
     private List<ChrRole> roles = new ArrayList<ChrRole>();
 
+    // FIXME: Using List here due to AppEngine bug, switch to Set once
+    // it is fixed.
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=26
+    @Persistent
+    @Element(dependent = "true")
+    @Order(extensions = @Extension(vendorName = "datanucleus",
+                                   key = "list-ordering", value = "badge asc"))
+    private List<ChrBadge> badges = new ArrayList<ChrBadge>();
+
     public Chr(Key accountKey, ChrGroup chrGroup, Key guild, String name,
                boolean main, String race, Key raceKey, String clazz,
                Key classKey, int level, String chrxml, Date created) {
@@ -86,6 +95,10 @@ public class Chr {
 
     public Key getAccountKey() {
         return accountKey;
+    }
+
+    public List<ChrBadge> getBadges() {
+        return badges;
     }
 
     public String getChrClass() {
@@ -138,6 +151,10 @@ public class Chr {
 
     public List<ChrRole> getRoles() {
         return roles;
+    }
+
+    public void setBadges(List<ChrBadge> badges) {
+        this.badges = badges;
     }
 
     public void setChrClass(String clazz, Key classKey) {
