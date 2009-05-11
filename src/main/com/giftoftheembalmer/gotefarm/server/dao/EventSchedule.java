@@ -2,6 +2,7 @@ package com.giftoftheembalmer.gotefarm.server.dao;
 
 import com.google.appengine.api.datastore.Key;
 
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -10,22 +11,31 @@ import javax.jdo.annotations.PrimaryKey;
 
 import java.util.Date;
 
-@PersistenceCapable(identityType = IdentityType.APPLICATION)
+@PersistenceCapable(identityType = IdentityType.APPLICATION,
+                    detachable = "true")
 public class EventSchedule {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
 
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     private Key guild;
 
-    @Persistent
+    @Persistent(defaultFetchGroup = "true")
     private Key eventTemplate;
 
+    // Extension to work around appengine bug
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=30
     @Persistent
+    @Extension(vendorName = "datanucleus", key = "is-second-class",
+               value="false")
     private Date startTime;
 
+    // Extension to work around appengine bug
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=30
     @Persistent
+    @Extension(vendorName = "datanucleus", key = "is-second-class",
+               value="false")
     private Date origStartTime;
 
     @Persistent
@@ -37,25 +47,41 @@ public class EventSchedule {
     @Persistent
     private int displayStart;
 
+    // Extension to work around appengine bug
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=30
     @Persistent
+    @Extension(vendorName = "datanucleus", key = "is-second-class",
+               value="false")
     private Date displayStartDate;
 
     @Persistent
     private int displayEnd;
 
+    // Extension to work around appengine bug
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=30
     @Persistent
+    @Extension(vendorName = "datanucleus", key = "is-second-class",
+               value="false")
     private Date displayEndDate;
 
     @Persistent
     private int signupsStart;
 
+    // Extension to work around appengine bug
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=30
     @Persistent
+    @Extension(vendorName = "datanucleus", key = "is-second-class",
+               value="false")
     private Date signupsStartDate;
 
     @Persistent
     private int signupsEnd;
 
+    // Extension to work around appengine bug
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=30
     @Persistent
+    @Extension(vendorName = "datanucleus", key = "is-second-class",
+               value="false")
     private Date signupsEndDate;
 
     @Persistent
