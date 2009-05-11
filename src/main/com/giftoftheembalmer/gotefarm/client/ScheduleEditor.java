@@ -446,6 +446,7 @@ public class ScheduleEditor extends Composite {
                         public void onSuccess(Void v) {
                             errmsg.removeStyleName(errmsg.getStylePrimaryName() + "-error");
                             errmsg.setText("Schedule saved successfully.");
+                            admin.fireAdminChange(AdminChange.getEventsChanged());
                         }
 
                         public void onFailure(Throwable caught) {

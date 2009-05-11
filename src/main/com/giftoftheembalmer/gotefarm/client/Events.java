@@ -60,6 +60,17 @@ public class Events
         }
     };
 
+    public ValueChangeHandler<AdminChange> adminChange
+                                    = new ValueChangeHandler<AdminChange>() {
+        public void onValueChange(
+                ValueChangeEvent<AdminChange> event) {
+            AdminChange value = event.getValue();
+            if (value.events_changed) {
+                refresh();
+            }
+        }
+    };
+
     private final CharacterCache chr_cache = new CharacterCache();
 
     public class Event

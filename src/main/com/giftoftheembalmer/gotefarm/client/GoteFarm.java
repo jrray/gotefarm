@@ -44,6 +44,8 @@ public class GoteFarm implements EntryPoint, ValueChangeHandler<String>, Selecti
 
     // Events wants to know when there are changes to the user's characters
     chars.addValueChangeHandler(events);
+    // it also wants to know about some AdminChange events
+    admin.addValueChangeHandler(events.adminChange);
     // Characters wants to know when the current guild changes
     guilds.addValueChangeHandler(chars);
     // So does Admin

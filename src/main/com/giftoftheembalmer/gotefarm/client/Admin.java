@@ -1,7 +1,9 @@
 package com.giftoftheembalmer.gotefarm.client;
 
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -12,7 +14,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Admin extends Composite implements ValueChangeHandler<JSGuild> {
+public class Admin extends Composite
+    implements ValueChangeHandler<JSGuild>,
+               HasValueChangeHandlers<AdminChange> {
 
     Widget centerWidget = null;
     DockPanel dpanel = new DockPanel();
@@ -99,5 +103,14 @@ public class Admin extends Composite implements ValueChangeHandler<JSGuild> {
         // discard any current activity
         setCenterWidget(null);
         refresh();
+    }
+
+    public HandlerRegistration addValueChangeHandler(
+            ValueChangeHandler<AdminChange> handler) {
+        return addHandler(handler, ValueChangeEvent.getType());
+    }
+
+    public void fireAdminChange(AdminChange adminChange) {
+        ValueChangeEvent.fire(this, adminChange);
     }
 }
