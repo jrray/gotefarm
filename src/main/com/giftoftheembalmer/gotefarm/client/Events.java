@@ -359,9 +359,7 @@ public class Events
                 }
                 else if (signupType < 0) {
                     // deleting signup
-                    GoteFarm.goteService.removeEventSignup(GoteFarm.sessionID,
-                                                           event.key,
-                                                           sup.sup.key,
+                    GoteFarm.goteService.removeEventSignup(sup.sup.key,
                                                            signupCallback);
                 }
                 else

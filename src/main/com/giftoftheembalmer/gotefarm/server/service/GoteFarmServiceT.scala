@@ -147,12 +147,10 @@ trait GoteFarmServiceT {
   def changeEventSignup(user: User, event_signup_key: Key, new_role_key: Key,
                         new_signup_type: Int): JSEventSignups
 
-  /*
   @throws(classOf[NotFoundError])
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[IllegalArgumentException])
-  def removeEventSignup(uid: Long, eventsignupid: Long): Unit
-  */
+  def removeEventSignup(user: User, event_signup_key: Key): JSEventSignups
 
   def publishEvent: Boolean
 

@@ -100,9 +100,5 @@ trait GoteFarmDaoT {
 
   def getEventSignup(key: Key): Option[Signup]
 
-  /*
-  def removeEventSignup(eventsignupid: Long): Unit
-  */
-
   def detachCopy[T <: AnyRef](entity: T): T
 }

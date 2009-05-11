@@ -1553,18 +1553,28 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     event
   }
 
-  /*
-  @Transactional{val readOnly = false}
+  @Transactional{val propagation = Propagation.REQUIRED,
+                 val rollbackFor = Array(classOf[Throwable])}
   override
-  def removeEventSignup(uid: Long, eventsignupid: Long): Unit = {
-    // character must belong to user
-    val es = goteFarmDao.getEventSignup(eventsignupid)
-    if (es.chr.accountid != uid) {
-      throw new IllegalArgumentException("Signup does not belong to you.")
+  def removeEventSignup(user: User, event_signup_key: Key): JSEventSignups = {
+    // TODO: signup must belong to user
+    val signup = goteFarmDao.getEventSignup(event_signup_key).getOrElse(
+      throw new NotFoundError("Signup not found")
+    )
+
+    val event = goteFarmDao.getEvent(signup.getEvent).getOrElse(
+      throw new NotFoundError("Event not found")
+    )
+
+    val signups = event.getSignups
+    // FIXME: appengine null collection bug
+    if (signups ne null) {
+      event.setSignups(mkList(signups.filter(_.getKey != event_signup_key)))
     }
-    goteFarmDao.removeEventSignup(eventsignupid)
+
+    event.setLastModification(new Date)
+    event
   }
-  */
 
   private
   def publishEvents(detached_event_template: EventTemplate,

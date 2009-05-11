@@ -81,8 +81,7 @@ public interface GoteFarmRPC extends RemoteService {
                                             int new_signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
-    public JSEventSignups removeEventSignup(String sid, String event_key,
-                                            String event_signup_key)
+    public JSEventSignups removeEventSignup(String event_signup_key)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
 

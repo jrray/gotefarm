@@ -230,20 +230,6 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
       .getOrElse(null)
   }
 
-  private val time_zero = new Date(0L)
-  private def forceGetEvents(eventid: Long) = {
-    /*
-    goteFarmService.getEventSignups(eventid, time_zero).getOrElse({
-      val r = new JSEventSignups
-      r.eventid = eventid
-      r.signups = new java.util.ArrayList[JSEventSignup]
-      r.asof = time_zero
-      r
-    })
-    */
-    null
-  }
-
   override
   def signupForEvent(event_key: String, character_key: String,
                      role_key: String, signup_type: Int): JSEventSignups = {
@@ -259,15 +245,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def removeEventSignup(sid: String, event_key: String,
-                        event_signup_key: String) = {
-    /*
-    val sess = getSession(sid)
-    val uid = sess.getValue("uid").asInstanceOf[Long]
-    goteFarmService.removeEventSignup(uid, eventsignupid)
-    forceGetEvents(eventid)
-    */
-    null
+  def removeEventSignup(event_signup_key: String): JSEventSignups = {
+    goteFarmService.removeEventSignup(getUser, event_signup_key)
   }
 
   override

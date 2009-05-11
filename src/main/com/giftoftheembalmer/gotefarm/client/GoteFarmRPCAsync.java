@@ -67,8 +67,7 @@ interface GoteFarmRPCAsync {
     public void changeEventSignup(String event_signup_key, String new_role_key,
                                   int new_signup_type,
                                   AsyncCallback<JSEventSignups> cb);
-    public void removeEventSignup(String sid, String event_key,
-                                  String event_signup_key,
+    public void removeEventSignup(String event_signup_key,
                                   AsyncCallback<JSEventSignups> cb);
 
     public void getTimeZones(AsyncCallback<String[]> cb);

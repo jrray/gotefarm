@@ -570,22 +570,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[Signup], key)
   }
 
-  /*
-  override
-  def removeEventSignup(eventsignupid: Long): Unit = {
-    val jdbc = getSimpleJdbcTemplate
-    val c = jdbc.update(
-      """delete from eventsignup
-          where eventsignupid = ?""",
-      eventsignupid
-    )
-
-    if (c == 0) {
-      throw new NotFoundError("Signup not found")
-    }
-  }
-  */
-
   def detachCopy[T <: AnyRef](entity: T): T = {
     getJdoTemplate.detachCopy(entity).asInstanceOf[T]
   }
