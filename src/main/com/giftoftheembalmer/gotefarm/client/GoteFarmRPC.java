@@ -22,7 +22,8 @@ public interface GoteFarmRPC extends RemoteService {
     public JSCharacter newCharacter(String guild_key, String character) throws UserNotLoggedInError, AlreadyExistsError, NotFoundError;
 
     public List<JSCharacter> getCharacters(String guild_key) throws UserNotLoggedInError;
-    public JSCharacter getCharacter(String sid, long cid) throws UserNotLoggedInError, NotFoundError;
+    public JSCharacter getCharacter(String character_key)
+        throws UserNotLoggedInError, NotFoundError;
 
     public void setMainCharacter(String guild_key, String character_key)
         throws UserNotLoggedInError, NotFoundError;

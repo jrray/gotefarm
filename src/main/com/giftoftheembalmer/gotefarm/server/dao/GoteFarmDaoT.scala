@@ -52,11 +52,9 @@ trait GoteFarmDaoT {
     : Guild
 
   def getCharacter(guild: Key, name: String): Option[Chr]
+  def getCharacter(key: Key): Option[Chr]
 
   def getChrGroup(key: Key): Option[ChrGroup]
-  /*
-  def getCharacter(cid: Long): JSCharacter
-  */
 
   def getRole(key: Key): Option[Role]
   def getRoles(guild: Key): Collection[Role]

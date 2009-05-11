@@ -241,6 +241,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
+  def getCharacter(key: Key): Option[Chr] = {
+    getObjectById(classOf[Chr], key)
+  }
+
   /*
   def getCharacterRoles(cid: Long): Seq[JSChrRole] = {
     val jdbc = getSimpleJdbcTemplate()
@@ -265,31 +270,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   def getChrGroup(key: Key): Option[ChrGroup] = {
     getObjectById(classOf[ChrGroup], key)
   }
-
-  /*
-  override
-  def getCharacter(cid: Long) = {
-    val jdbc = getSimpleJdbcTemplate()
-    try {
-      val chr = jdbc.queryForObject(
-        "select " + JSCharacterMapper.columns + " from "
-          + JSCharacterMapper.tables
-          + """ where chrid = ?""",
-        JSCharacterMapper,
-        Array[AnyRef](cid): _*
-      )
-
-      chr.roles = getCharacterRoles(chr.cid).toArray
-      chr.badges = getCharacterBadges(chr.cid).toArray
-
-      chr
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("Character not found.")
-    }
-  }
-  */
 
   override
   def getRole(key: Key): Option[Role] = {

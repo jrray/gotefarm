@@ -124,12 +124,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def getCharacter(sid: String, cid: Long) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.getCharacter(cid)
-    */
-    new JSCharacter
+  def getCharacter(character_key: String): JSCharacter = {
+    goteFarmService.getCharacter(getUser, character_key)
   }
 
   override

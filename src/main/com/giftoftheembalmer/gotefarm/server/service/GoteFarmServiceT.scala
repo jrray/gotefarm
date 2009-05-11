@@ -74,14 +74,11 @@ trait GoteFarmServiceT {
   def newCharacter(user: User, guild: Key, character: String): JSCharacter
 
   def getCharacters(user: User, guild: Key): List[JSCharacter]
+  @throws(classOf[NotFoundError])
+  def getCharacter(user: User, character: Key): JSCharacter
 
   @throws(classOf[NotFoundError])
   def setMainCharacter(user: User, guild: Key, character: Key): Unit
-
-  /*
-  @throws(classOf[NotFoundError])
-  def getCharacter(cid: Long): JSCharacter
-  */
 
   @throws(classOf[NotFoundError])
   def getRoles(guild: Key): List[JSRole]

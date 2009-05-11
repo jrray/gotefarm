@@ -875,6 +875,16 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
   @Transactional{val propagation = Propagation.REQUIRED}
   override
+  def getCharacter(user: User, character: Key): JSCharacter = {
+    // XXX: should users only be allowed to see characters in their own
+    // guild(s)? That test would be somewhat expensive.
+    goteFarmDao.getCharacter(character).getOrElse(
+      throw new NotFoundError("Character not found")
+    )
+  }
+
+  @Transactional{val propagation = Propagation.REQUIRED}
+  override
   def setMainCharacter(user: User, guild: Key, character: Key): Unit = {
     val chr_group = goteFarmDao.getChrGroup(
       getUserChrGroupKey(user, guild)
@@ -912,11 +922,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       new_main.setMain(true)
     }
   }
-
-  /*
-  override
-  def getCharacter(cid: Long) = goteFarmDao.getCharacter(cid)
-  */
 
   @Transactional{val propagation = Propagation.REQUIRED}
   override
