@@ -453,45 +453,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
-  /*
-  private def rebuildEvents(et: JSEventTemplate): Unit = {
-    val jdbc = getSimpleJdbcTemplate
-
-    val iid = getInstanceId(et.instance)
-
-    for {
-      leventid <- jdbc.query("""select eventid from event
-                                  where event.eventtmplid = ? for update""",
-                             new ParameterizedRowMapper[java.lang.Long] {
-                               def mapRow(rs: ResultSet, rowNum: Int) = {
-                                 rs.getLong(1)
-                               }
-                             },
-                             et.eid)
-      eventid = leventid.longValue
-    } {
-      // update the event row itself
-      jdbc.update("""update event set
-        name = ?,
-        size = ?,
-        minimum_level = ?,
-        instanceid = ?
-        where eventid = ?""",
-        et.name, et.size, et.minimumLevel, iid, eventid)
-
-      // delete and recreate the bosses, roles and badges
-      jdbc.update("delete from eventrole where eventid = ?", eventid)
-      populateEventRoles(eventid, et.eid)
-
-      jdbc.update("delete from eventbadge where eventid = ?", eventid)
-      populateEventBadges(eventid, et.eid)
-
-      jdbc.update("delete from eventboss where eventid = ?", eventid)
-      populateEventBosses(eventid, et.eid)
-    }
-  }
-  */
-
   override
   def getActiveEventSchedule(window: Long)
     : java.util.Collection[EventSchedule] = {
@@ -567,40 +528,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
-  /*
-  private def populateEventRoles(eventid: Long, eventtmplid: Long): Unit = {
-    val jdbc = getSimpleJdbcTemplate
-    jdbc.update(
-      """insert into eventrole (eventid, roleid, min_count, max_count)
-          select ?, roleid, min_count, max_count
-            from eventtmplrole
-            where eventtmplid = ?""",
-      Array[AnyRef](eventid, eventtmplid): _*)
-  }
-
-  private def populateEventBadges(eventid: Long, eventtmplid: Long): Unit = {
-    val jdbc = getSimpleJdbcTemplate
-    jdbc.update(
-      """insert into eventbadge (eventid, badgeid, require_for_signup, roleid,
-          num_slots, early_signup)
-          select ?, badgeid, require_for_signup, roleid, num_slots,
-            early_signup
-            from eventtmplbadge
-            where eventtmplid = ?""",
-      Array[AnyRef](eventid, eventtmplid): _*)
-  }
-
-  private def populateEventBosses(eventid: Long, eventtmplid: Long): Unit = {
-    val jdbc = getSimpleJdbcTemplate
-    jdbc.update(
-      """insert into eventboss (eventid, bossid)
-          select ?, bossid
-            from eventtmplboss
-            where eventtmplid = ?""",
-      Array[AnyRef](eventid, eventtmplid): _*)
-  }
-  */
-
   override
   def publishEvent(es: EventSchedule, et: EventTemplate): Unit = {
     // create event
@@ -623,6 +550,14 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
            "com.google.appengine.api.datastore.Key guildParam, "
          + "java.util.Date now")(
          guild, new Date)
+  }
+
+  override
+  def getEventKeys(event_template: Key): Iterable[Key] = {
+    find(
+      classOf[Event], "eventTemplate == etParam",
+      "com.google.appengine.api.datastore.Key etParam"
+    )(event_template).map(_.getKey)
   }
 
   override

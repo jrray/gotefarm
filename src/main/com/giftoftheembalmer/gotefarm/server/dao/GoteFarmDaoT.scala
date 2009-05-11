@@ -95,6 +95,7 @@ trait GoteFarmDaoT {
   def publishEvent(es: EventSchedule, et: EventTemplate): Unit
 
   def getEvents(guild: Key): Collection[Event]
+  def getEventKeys(event_template: Key): Iterable[Key]
   def getEvent(key: Key): Option[Event]
   /*
   def getEventSignup(eventsignupid: Long): JSEventSignup

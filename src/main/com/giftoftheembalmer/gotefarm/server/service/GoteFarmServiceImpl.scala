@@ -1198,7 +1198,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       role_map.put(role.role_key, name)
     }
 
-    transactionTemplate.execute {
+    val et = transactionTemplate.execute {
       val et = if (event_is_new) {
         val et = goteFarmDao.addEventTemplate(guild, jset.name, jset.size,
                                               jset.minimumLevel, instance,
@@ -1241,10 +1241,26 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
                        x.numSlots, x.earlySignup)
       }))
       et.setBadges(badges)
+
+      goteFarmDao.detachCopy(et)
     }
 
     if (!event_is_new && jset.modifyEvents) {
-      // TODO: rebuild events
+      for (event_key <- goteFarmDao.getEventKeys(jset.key)) {
+        transactionTemplate.execute {
+          val event = goteFarmDao.getEvent(event_key).getOrElse(
+            throw new NotFoundError("Event not found")
+          )
+
+          event.setName(et.getName)
+          event.setSize(et.getSize)
+          event.setMinimumLevel(et.getMinimumLevel)
+          event.setInstance(et.getInstance, et.getInstanceKey)
+          event.setEventBosses(et.getBosses)
+          event.setEventRoles(et.getRoles)
+          event.setEventBadges(et.getBadges)
+        }
+      }
     }
 
     jset
