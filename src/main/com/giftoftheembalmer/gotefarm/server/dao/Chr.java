@@ -3,13 +3,18 @@ package com.giftoftheembalmer.gotefarm.server.dao;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Text;
 
+import javax.jdo.annotations.Element;
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Order;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Chr {
@@ -52,6 +57,15 @@ public class Chr {
 
     @Persistent
     private Date created;
+
+    // FIXME: Using List here due to AppEngine bug, switch to Set once
+    // it is fixed.
+    // http://code.google.com/p/datanucleus-appengine/issues/detail?id=26
+    @Persistent
+    @Element(dependent = "true")
+    @Order(extensions = @Extension(vendorName = "datanucleus",
+                                   key = "list-ordering", value = "role asc"))
+    private List<ChrRole> roles = new ArrayList<ChrRole>();
 
     public Chr(Key accountKey, ChrGroup chrGroup, Key guild, String name,
                boolean main, String race, Key raceKey, String clazz,
@@ -122,6 +136,10 @@ public class Chr {
         return raceKey;
     }
 
+    public List<ChrRole> getRoles() {
+        return roles;
+    }
+
     public void setChrClass(String clazz, Key classKey) {
         this.clazz = clazz;
         this.classKey = classKey;
@@ -150,5 +168,9 @@ public class Chr {
     public void setRace(String race, Key raceKey) {
         this.race = race;
         this.raceKey = raceKey;
+    }
+
+    public void setRoles(List<ChrRole> roles) {
+        this.roles = roles;
     }
 }

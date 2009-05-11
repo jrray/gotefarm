@@ -6,6 +6,7 @@ import com.giftoftheembalmer.gotefarm.server.dao.{
   Chr,
   ChrClass,
   ChrGroup,
+  ChrRole,
   Event,
   EventBadge,
   EventBoss,
@@ -27,6 +28,7 @@ import com.giftoftheembalmer.gotefarm.client.{
   JSBadge,
   JSBoss,
   JSCharacter,
+  JSChrRole,
   JSEvent,
   JSEventBadge,
   JSEventRole,
@@ -205,6 +207,17 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  implicit def chrrole2JSChrRole(chrrole: ChrRole): JSChrRole = {
+    val r = new JSChrRole
+    r.key = chrrole.getRoleKey
+    r.name = chrrole.getRole
+    // FIXME: not setting restricted, is it needed?
+    r.waiting = chrrole.isWaiting
+    r.approved = chrrole.isApproved
+    r.message = chrrole.getMessage
+    r
+  }
+
   implicit def chr2JSCharacter(chr: Chr): JSCharacter = {
     val r = new JSCharacter
     r.key = chr.getKey
@@ -216,7 +229,14 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r.level = chr.getLevel.shortValue
     r.characterxml = chr.getChrXml
     r.created = chr.getCreated
-    r.roles = Array()
+    // FIXME: appengine null collection bug
+    val chr_roles = chr.getRoles
+    r.roles = if (chr_roles ne null) {
+      chr_roles.map(chrrole2JSChrRole).toArray
+    }
+    else {
+      Array()
+    }
     r.badges = Array()
     r
   }
