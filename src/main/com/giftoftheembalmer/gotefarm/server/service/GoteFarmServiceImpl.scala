@@ -999,7 +999,9 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       if (adding) {
         // avoid adding duplicates
         if ((curr_roles eq null) || !curr_roles.exists(_.getRoleKey == role)) {
-          val new_role = new ChrRole(role_name, role, restricted, !restricted)
+          // XXX: disabling restriction during develoment
+          val new_role = new ChrRole(role_name, role,
+                                     false, true) // restricted, !restricted)
           listAdd(new_role, curr_roles, chr.setRoles)
         }
       }
@@ -1059,7 +1061,9 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         // avoid adding duplicates
         if (   (curr_badges eq null)
             || !curr_badges.exists(_.getBadgeKey == badge)) {
-          val new_badge = new ChrBadge(badge_name, badge, true, false)
+          // XXX: disabling restriction during develoment
+          val new_badge = new ChrBadge(badge_name, badge,
+                                       false, true) // true, false)
           listAdd(new_badge, curr_badges, chr.setBadges)
         }
       }
