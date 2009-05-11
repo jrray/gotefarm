@@ -142,18 +142,9 @@ public class Events
             JSCharacter chr;
             JSEventSignup sup;
 
-            public Signup(String eventKey, JSEventSignup sup) {
-                super(sup.chr.name);
-                this.eventKey = eventKey;
+            public Signup(String eventKey, JSCharacter chr, JSEventSignup sup) {
+                this(eventKey, chr);
                 this.sup = sup;
-                dragController.makeDraggable(this);
-                if (sup.chr.account_key.equals(account_key)) {
-                    addStyleName("draggable-character");
-                }
-                else {
-                    addStyleName("non-draggable-character");
-                }
-                addStyleName(sup.chr.clazz.replace(' ', '-'));
             }
 
             public Signup(String eventKey, JSCharacter chr) {
@@ -171,12 +162,7 @@ public class Events
             }
 
             public JSCharacter getCharacter() {
-                if (chr != null) {
-                    return chr;
-                }
-                else {
-                    return sup.chr;
-                }
+                return chr;
             }
         }
 
@@ -550,7 +536,7 @@ public class Events
 
                 // show signups
                 for (JSEventSignup sup : rsup.coming) {
-                    vsign.add(new Signup(event.key, sup));
+                    vsign.add(new Signup(event.key, sup.chr, sup));
                 }
 
                 // show remaining slots
@@ -602,7 +588,7 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.standby) {
-                    vstand.add(new Signup(event.key, sup));
+                    vstand.add(new Signup(event.key, sup.chr, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
@@ -612,7 +598,7 @@ public class Events
                 VerticalPanel vmaybe = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.maybe) {
-                    vmaybe.add(new Signup(event.key, sup));
+                    vmaybe.add(new Signup(event.key, sup.chr, sup));
                 }
 
                 if (rsup.maybe.isEmpty()) {
@@ -632,7 +618,7 @@ public class Events
                 VerticalPanel vnotcoming = new VerticalPanel();
 
                 for (JSEventSignup sup : rsup.not_coming) {
-                    vnotcoming.add(new Signup(event.key, sup));
+                    vnotcoming.add(new Signup(event.key, sup.chr, sup));
                 }
 
                 if (rsup.not_coming.isEmpty()) {
@@ -659,7 +645,7 @@ public class Events
                 VerticalPanel vstand = new VerticalPanel();
 
                 for (JSEventSignup sup : limbo) {
-                    vstand.add(new Signup(event.key, sup));
+                    vstand.add(new Signup(event.key, sup.chr, sup));
                 }
 
                 flex.setWidget(2, column, vstand);
