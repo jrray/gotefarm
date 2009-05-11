@@ -690,6 +690,11 @@ public class Events
         }
 
         void resizeRows() {
+            if (!flex.isAttached()) {
+                // Can't figure out the size if not attached to DOM.
+                return;
+            }
+
             int column = flex.getCellCount(1);
 
             // Each role <td> must have the same number of items in it to size
@@ -1071,6 +1076,8 @@ public class Events
                         dragController.addDragHandler(event);
                         events.add(old_index, event);
                         veventpanel.insert(event, old_index);
+                        // need to resize after attaching to DOM
+                        event.resizeRows();
                     }
 
                     ++old_index;
