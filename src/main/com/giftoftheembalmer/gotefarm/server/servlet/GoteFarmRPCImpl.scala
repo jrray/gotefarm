@@ -228,13 +228,8 @@ class GoteFarmRPCImpl extends RemoteServiceServlet
   }
 
   override
-  def saveEventSchedule(sid: String, es: JSEventSchedule) = {
-    /*
-    val sess = getSession(sid)
-    goteFarmService.saveEventSchedule(es)
-    true
-    */
-    false
+  def saveEventSchedule(guild_key: String, es: JSEventSchedule): Unit = {
+    goteFarmService.saveEventSchedule(getUser, guild_key, es)
   }
 
   override

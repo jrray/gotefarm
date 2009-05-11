@@ -1055,10 +1055,9 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
            eventSchedule2JSEventSchedule)
   }
 
-  /*
-  @Transactional{val readOnly = false}
   override
-  def saveEventSchedule(es: JSEventSchedule) = {
+  def saveEventSchedule(user: User, guild: Key, es: JSEventSchedule): Unit = {
+    // TODO: check user is a guild officer
     if (es.repeat_size < JSEventSchedule.REPEAT_NEVER || es.repeat_size > JSEventSchedule.REPEAT_MONTHLY) {
       throw new IllegalArgumentException("Illegal repeat size")
     }
@@ -1074,14 +1073,27 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
       throw new IllegalArgumentException("Illegal repeat by")
     }
 
-    val r = goteFarmDao.saveEventSchedule(es)
+    // get the guild's time zone
+    transactionTemplate.execute {
+      val g = goteFarmDao.getGuild(guild).getOrElse(
+        throw new NotFoundError("Guild not found")
+      )
 
-    // publish events right away
-    publishEvents()
+      es.time_zone = g.getTimeZone
+      if (es.time_zone eq null) {
+        throw new IllegalArgumentException("Guild time zone not set")
+      }
+    }
 
-    r
+    transactionTemplate.execute {
+      goteFarmDao.saveEventSchedule(guild, es)
+    }
+
+    // TODO: publish this schedule's events right away
+    // publishEvents()
   }
 
+  /*
   private def getEventNextOccurrence(event: JSEventSchedule): Date = {
     val h = event.timezone_offset / 60 * -1
     // FIXME: This ignores daylight saving time

@@ -439,8 +439,11 @@ public class ScheduleEditor extends Composite {
                     // clone start_time into orig_start_time
                     Schedule.this.sched.orig_start_time = Schedule.this.sched.start_time;
 
-                    GoteFarm.goteService.saveEventSchedule(GoteFarm.sessionID, Schedule.this.sched, new AsyncCallback<Boolean>() {
-                        public void onSuccess(Boolean result) {
+                    GoteFarm.goteService.saveEventSchedule(
+                                                    admin.current_guild.key,
+                                                    Schedule.this.sched,
+                                                    new AsyncCallback<Void>() {
+                        public void onSuccess(Void v) {
                             errmsg.removeStyleName(errmsg.getStylePrimaryName() + "-error");
                             errmsg.setText("Schedule saved successfully.");
                         }

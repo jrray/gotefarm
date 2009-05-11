@@ -54,7 +54,8 @@ interface GoteFarmRPCAsync {
 
     public void getEventSchedules(String event_template_key,
                                   AsyncCallback<List<JSEventSchedule>> cb);
-    public void saveEventSchedule(String sid, JSEventSchedule es, AsyncCallback<Boolean> cb);
+    public void saveEventSchedule(String guild_key, JSEventSchedule es,
+                                  AsyncCallback<Void> cb);
 
     public void getEvents(String sid, AsyncCallback<List<JSEvent>> cb);
     public void getEventSignups(String sid, String event_key,

@@ -131,11 +131,11 @@ trait GoteFarmServiceT {
     : JSEventTemplate
 
   def getEventSchedules(user: User, event_template: Key): List[JSEventSchedule]
-  /*
   @throws(classOf[NotFoundError])
   @throws(classOf[IllegalArgumentException])
-  def saveEventSchedule(es: JSEventSchedule): Long
+  def saveEventSchedule(user: User, guild: Key, es: JSEventSchedule): Unit
 
+  /*
   def getEvents: List[JSEvent]
   @throws(classOf[NotFoundError])
   def getEventSignups(eventid: Long,

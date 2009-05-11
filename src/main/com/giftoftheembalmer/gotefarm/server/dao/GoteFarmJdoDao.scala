@@ -587,71 +587,47 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
-  /*
   override
-  def saveEventSchedule(es: JSEventSchedule) = {
-    val jdbc = getSimpleJdbcTemplate
+  def saveEventSchedule(guild: Key, es: JSEventSchedule): EventSchedule = {
+    import com.giftoftheembalmer.gotefarm.server.service.GoteFarmServiceImpl.{
+      key2String,
+      string2Key
+    }
 
-    if (es.esid == -1) {
+    if (es.event_schedule_key eq null) {
       // new schedule
-      jdbc.update(
-        """insert into eventsched
-            (eventtmplid, active,
-             start_time, orig_start_time,
-             timezone_offset, duration,
-             display_start, display_end,
-             signups_start, signups_end,
-             repeat_size, repeat_freq,
-             day_mask, repeat_by)
-            VALUES
-            (?, ?,
-             ?, ?,
-             ?, ?,
-             ?, ?,
-             ?, ?,
-             ?, ?,
-             ?, ?)""",
-          Array[AnyRef](es.eid, boolchar(es.active),
-                        es.start_time, es.orig_start_time,
-                        es.timezone_offset, es.duration,
-                        es.display_start, es.display_end,
-                        es.signups_start, es.signups_end,
-                        es.repeat_size, es.repeat_freq,
-                        es.day_mask, es.repeat_by): _*)
-
-      jdbc.queryForLong("values IDENTITY_VAL_LOCAL()", noargs: _*)
+      val nes = new EventSchedule(
+        guild, es.event_template_key, es.start_time, es.time_zone, es.duration,
+        es.display_start, es.display_end, es.signups_start, es.signups_end,
+        es.repeat_size, es.repeat_freq, es.day_mask, es.repeat_by, es.active
+      )
+      getJdoTemplate.makePersistent(nes)
+      es.event_schedule_key = nes.getKey
+      nes
     }
     else {
       // update existing
-      val r = jdbc.update(
-        """update eventsched
-            set
-              eventtmplid = ?, active = ?,
-              start_time = ?, orig_start_time = ?,
-              timezone_offset = ?, duration = ?,
-              display_start = ?, display_end = ?,
-              signups_start = ?, signups_end = ?,
-              repeat_size = ?, repeat_freq = ?, day_mask = ?,
-              repeat_by = ?
-            where
-              eventschedid = ?""",
-          Array[AnyRef](es.eid, boolchar(es.active),
-                        es.start_time, es.orig_start_time,
-                        es.timezone_offset, es.duration,
-                        es.display_start, es.display_end,
-                        es.signups_start, es.signups_end,
-                        es.repeat_size, es.repeat_freq, es.day_mask,
-                        es.repeat_by, es.esid): _*)
+      val nes = getEventSchedule(es.event_schedule_key).getOrElse(
+        throw new NotFoundError("Event schedule not found")
+      )
 
-      if (r == 0) {
-        throw new NotFoundError(  "Event schedule not found, "
-                                + "did somebody else delete it?")
-      }
-
-      es.esid
+      nes.setStartTime(es.start_time)
+      nes.setTimeZone(es.time_zone)
+      nes.setDuration(es.duration)
+      nes.setDisplayStart(es.display_start)
+      nes.setDisplayEnd(es.display_end)
+      nes.setSignupsStart(es.signups_start)
+      nes.setSignupsEnd(es.signups_end)
+      nes.setRepeatSize(es.repeat_size)
+      nes.setRepeatFreq(es.repeat_freq)
+      nes.setDayMask(es.day_mask)
+      nes.setRepeatBy(es.repeat_by)
+      nes.setActive(es.active)
+      nes
     }
   }
 
+  /*
   private def populateEventRoles(eventid: Long, eventtmplid: Long): Unit = {
     val jdbc = getSimpleJdbcTemplate
     jdbc.update(

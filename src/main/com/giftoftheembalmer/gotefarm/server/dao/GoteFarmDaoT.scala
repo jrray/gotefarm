@@ -97,8 +97,8 @@ trait GoteFarmDaoT {
   def getEventSchedules(event_template: Key): Collection[EventSchedule]
   def getGuildEventSchedules(guild: Key): Collection[EventSchedule]
 
+  def saveEventSchedule(guild: Key, es: JSEventSchedule): EventSchedule
   /*
-  def saveEventSchedule(es: JSEventSchedule): Long
   def publishEvent(es: JSEventSchedule): Unit
 
   def getEvents: List[JSEvent]
