@@ -1297,27 +1297,23 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     // publishEvents()
   }
 
-  /*
-  private def getEventNextOccurrence(event: JSEventSchedule): Date = {
-    val h = event.timezone_offset / 60 * -1
-    // FIXME: This ignores daylight saving time
-    val m = Math.abs(event.timezone_offset % 60)
-    val tz = String.format("GMT%+03d%02d", Array(int2Integer(h), int2Integer(m)): _*)
-    val cal = new GregorianCalendar(TimeZone.getTimeZone(tz))
+  private def getEventNextOccurrence(event: EventSchedule): Date = {
+    val tz = TimeZone.getTimeZone(event.getTimeZone)
+    val cal = new GregorianCalendar(tz)
     cal.setFirstDayOfWeek(Calendar.SUNDAY)
-    cal.setTime(event.start_time)
+    cal.setTime(event.getStartTime)
 
-    event.repeat_size match {
+    event.getRepeatSize match {
       case JSEventSchedule.REPEAT_NEVER =>
         throw new IllegalStateException("Event does not repeat")
 
       case JSEventSchedule.REPEAT_DAILY =>
-        cal.add(Calendar.DAY_OF_MONTH, event.repeat_freq)
+        cal.add(Calendar.DAY_OF_MONTH, event.getRepeatFreq)
         cal.getTime
 
       case JSEventSchedule.REPEAT_WEEKLY =>
         // look for the next day this week, or skip ahead repeat_freq weeks
-        if (event.day_mask == 0) {
+        if (event.getDayMask == 0) {
           throw new IllegalStateException("Event repeats weekly but no days are set")
         }
 
@@ -1328,7 +1324,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
             // rolled forward into next week, no match
             None
           }
-          else if ((event.day_mask & (1<<(dom-1))) != 0) {
+          else if ((event.getDayMask & (1<<(dom-1))) != 0) {
             // this day's bit is set, a match
             Some(cal.getTime)
           }
@@ -1345,24 +1341,24 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         scanForNextDay(cal, false).getOrElse({
           // no match for the current week, so seek forward to the next
           // Sunday, skipping repeat_freq weeks
-          val start_of_week = new GregorianCalendar(TimeZone.getTimeZone(tz))
-          start_of_week.setTime(event.start_time)
+          val start_of_week = new GregorianCalendar(tz)
+          start_of_week.setTime(event.getStartTime)
           start_of_week.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-          start_of_week.add(Calendar.WEEK_OF_YEAR, event.repeat_freq)
+          start_of_week.add(Calendar.WEEK_OF_YEAR, event.getRepeatFreq)
           scanForNextDay(start_of_week, true).getOrElse({
             throw new RuntimeException("Unexpected None in scanForNextDay")
           })
         })
 
       case JSEventSchedule.REPEAT_MONTHLY =>
-        val orig_cal = new GregorianCalendar(TimeZone.getTimeZone(tz))
+        val orig_cal = new GregorianCalendar(tz)
         orig_cal.setFirstDayOfWeek(Calendar.SUNDAY)
-        orig_cal.setTime(event.orig_start_time)
+        orig_cal.setTime(event.getOrigStartTime)
 
-        event.repeat_by match {
+        event.getRepeatBy match {
           case JSEventSchedule.REPEAT_BY_DAY_OF_MONTH =>
             val dom = orig_cal.get(Calendar.DAY_OF_MONTH)
-            cal.add(Calendar.MONTH, event.repeat_freq)
+            cal.add(Calendar.MONTH, event.getRepeatFreq)
             val max_dom = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
             cal.set(Calendar.DAY_OF_MONTH, if (dom > max_dom) max_dom else dom)
             cal.getTime
@@ -1370,7 +1366,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
           case JSEventSchedule.REPEAT_BY_DAY_OF_WEEK =>
             val dow = orig_cal.get(Calendar.DAY_OF_WEEK)
             val dowim = orig_cal.get(Calendar.DAY_OF_WEEK_IN_MONTH)
-            cal.add(Calendar.MONTH, event.repeat_freq)
+            cal.add(Calendar.MONTH, event.getRepeatFreq)
             // go to middle of month...
             cal.set(Calendar.DAY_OF_MONTH, 15)
             // so changing the day won't change the month
@@ -1389,7 +1385,6 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         throw new IllegalStateException("Unknown repeat_size value");
     }
   }
-  */
 
   override
   def getEvents(user: User, guild: Key): java.util.List[JSEvent] = {
@@ -1514,48 +1509,72 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     }
     goteFarmDao.removeEventSignup(eventsignupid)
   }
+  */
 
-  @Transactional{val readOnly = false}
   override
-  def publishEvents() = synchronized {
+  def publishEvent: Boolean = {
     val reftime = System.currentTimeMillis
+    // Get schedules one hour into the future. If the process to publish events
+    // runs every hour, publishing events up to one hour early will make it so
+    // no events are published late. The "early" events can be filtered by the
+    // client. Add a pad of 5 minutes to be on the safe side.
+    val active_schedules = goteFarmDao.getActiveEventSchedule(3900000L)
+    val count = active_schedules.size
+    logger.debug("publishEvent got " + count + " results")
+    if (count == 0) {
+      false
+    }
+    else {
+      val iter = active_schedules.iterator
+      val sched = iter.next
+      val sched_key = sched.getKey
 
-    def keepPublishing(event: JSEventSchedule): Unit = {
-      // publish as soon as the display time is hit
-      if (event.start_time.getTime - event.display_start * 1000 <= reftime) {
-        logger.debug("publishing " + event.esid)
-        logger.debug(event.start_time)
-        logger.debug("repeat_size: " + event.repeat_size)
-        logger.debug("repeat_freq: " + event.repeat_freq)
-        logger.debug("day_mask: " + event.day_mask)
-        logger.debug("repeat_by: " + event.repeat_by)
+      if (sched.getDisplayEndDate.getTime <= reftime) {
+        // time is past for showing the event, don't bother instancing
+        // it
+        transactionTemplate.execute {
+          for (s <- goteFarmDao.getEventSchedule(sched_key)) {
+            s.setActive(false)
+          }
+        }
+        count > 1
+      }
+      else {
+        // need a detached copy of the EventTemplate
+        val et = transactionTemplate.execute {
+          val et = goteFarmDao.getEventTemplate(sched.getEventTemplate)
+                              .getOrElse(
+            throw new NotFoundError("Event template not found")
+          )
+          goteFarmDao.detachCopy(et)
+          et
+        }
 
-        goteFarmDao.publishEvent(event)
+        // create it
+        transactionTemplate.execute {
+          goteFarmDao.publishEvent(sched, et)
+        }
 
         // update to next time
-        if (event.repeat_size != JSEventSchedule.REPEAT_NEVER) {
-          event.start_time = getEventNextOccurrence(event)
-          logger.debug("Next: " + event.start_time)
+        transactionTemplate.execute {
+          (for (s <- goteFarmDao.getEventSchedule(sched_key)) yield {
+            if (s.getRepeatSize != JSEventSchedule.REPEAT_NEVER) {
+              s.setStartTime(getEventNextOccurrence(s))
 
-          // save new start time
-          goteFarmDao.saveEventSchedule(event)
-
-          // try to publish again
-          keepPublishing(event)
-        }
-        else {
-          // one-shot event, deactive it
-          event.active = false
-          goteFarmDao.saveEventSchedule(event)
-        }
+              boolean2Boolean(
+                count > 1 || sched.getDisplayStart <= reftime
+              )
+            }
+            else {
+              // one-shot event, deactive it
+              s.setActive(false)
+              boolean2Boolean(count > 1)
+            }
+          }).getOrElse(java.lang.Boolean.FALSE)
+        }.booleanValue
       }
     }
-
-    for (event <- goteFarmDao.getActiveEventSchedules) {
-      keepPublishing(event)
-    }
   }
-  */
 
   private
   lazy val time_zones = {

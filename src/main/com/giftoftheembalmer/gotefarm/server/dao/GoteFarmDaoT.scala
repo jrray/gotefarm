@@ -80,18 +80,19 @@ trait GoteFarmDaoT {
   def addEventTemplate(guild: Key, name: String, size: Int, min_level: Int,
                        instance: String, instance_key: Key): EventTemplate
 
-  /*
-  def getActiveEventSchedules: List[JSEventSchedule]
-  */
+  /**
+   * Return the next two event schedules ready to publish events.
+   * @param window how long in milliseconds into the future to look for
+   *        display start dates
+   */
+  def getActiveEventSchedule(window: Long): Collection[EventSchedule]
 
   def getEventSchedule(key: Key): Option[EventSchedule]
   def getEventSchedules(event_template: Key): Collection[EventSchedule]
   def getGuildEventSchedules(guild: Key): Collection[EventSchedule]
 
   def saveEventSchedule(guild: Key, es: JSEventSchedule): EventSchedule
-  /*
-  def publishEvent(es: JSEventSchedule): Unit
-  */
+  def publishEvent(es: EventSchedule, et: EventTemplate): Unit
 
   def getEvents(guild: Key): Collection[Event]
   def getEvent(key: Key): Option[Event]
@@ -101,4 +102,6 @@ trait GoteFarmDaoT {
                         new_signup_type: Int): Unit
   def removeEventSignup(eventsignupid: Long): Unit
   */
+
+  def detachCopy[T <: AnyRef](entity: T): T
 }

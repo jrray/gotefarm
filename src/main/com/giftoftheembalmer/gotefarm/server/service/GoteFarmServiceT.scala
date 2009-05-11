@@ -151,9 +151,9 @@ trait GoteFarmServiceT {
   @throws(classOf[AlreadyExistsError])
   @throws(classOf[IllegalArgumentException])
   def removeEventSignup(uid: Long, eventsignupid: Long): Unit
-
-  def publishEvents(): Unit
   */
+
+  def publishEvent: Boolean
 
   def getTimeZones: Array[String]
   @throws(classOf[IllegalArgumentException])

@@ -478,21 +478,23 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
       populateEventBosses(eventid, et.eid)
     }
   }
+  */
 
   override
-  def getActiveEventSchedules = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    jdbc.query(
-      "select " + JSEventScheduleMapper.columns +
-      """ from eventsched join eventtmpl
-            on eventsched.eventtmplid = eventtmpl.eventtmplid
-          where active = 'Y'""",
-      JSEventScheduleMapper,
-      noargs: _*
-    )
+  def getActiveEventSchedule(window: Long)
+    : java.util.Collection[EventSchedule] = {
+    // limit results to two: one to act upon and another to know if there is
+    // more work to do
+    executeFind { pm =>
+      val query = pm.newQuery(classOf[EventSchedule],
+                              "active == true && displayStartDate <= now")
+      getJdoTemplate.prepareQuery(query)
+      query.declareParameters("java.util.Date now")
+      query.setOrdering("displayStartDate asc")
+      query.setRange(0, 1)
+      query.executeWithArray(new Date(System.currentTimeMillis + window))
+    }
   }
-  */
 
   override
   def getEventSchedule(key: Key): Option[EventSchedule] = {
@@ -585,47 +587,50 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
             where eventtmplid = ?""",
       Array[AnyRef](eventid, eventtmplid): _*)
   }
+  */
 
   override
-  def publishEvent(es: JSEventSchedule) = {
-    val jdbc = getSimpleJdbcTemplate
-
+  def publishEvent(es: EventSchedule, et: EventTemplate): Unit = {
     // create event
+    val e = new Event(es.getEventTemplate, es.getGuild, et.getName, et.getSize,
+                      et.getMinimumLevel, et.getInstance, et.getInstanceKey,
+                      es.getStartTime, es.getDuration, es.getDisplayStartDate,
+                      es.getDisplayEndDate, es.getSignupsStartDate,
+                      es.getSignupsEndDate)
 
-    //   calculate display/signup dates
-    val display_start = new Date(es.start_time.getTime - es.display_start * 1000)
-    val display_end = new Date(es.start_time.getTime + es.display_end * 1000)
-    val signups_start = new Date(es.start_time.getTime - es.signups_start * 1000)
-    val signups_end = new Date(es.start_time.getTime + es.signups_end * 1000)
+    val new_badges = new java.util.ArrayList[EventBadge]
+    val t_badges = et.getBadges
+    // FIXME: appengine null collection bug
+    if (t_badges ne null) {
+      convertList(new_badges).addAll(t_badges.map(x =>
+        new EventBadge(x.getBadge, x.getBadgeKey, x.getRequireForSignup,
+                      x.getApplyToRole, x.getNumSlots, x.getEarlySignup)
+      ))
+    }
+    e.setEventBadges(new_badges)
 
-    val jset = jdbc.queryForObject(
-      "select " + JSEventTemplateMapper.columns
-                + " from "
-                + JSEventTemplateMapper.tables
-                + " where eventtmpl.eventtmplid = ?",
-      JSEventTemplateMapper,
-      Array[AnyRef](es.eid): _*
-    )
+    val new_bosses = new java.util.ArrayList[EventBoss]
+    val t_bosses = et.getBosses
+    // FIXME: appengine null collection bug
+    if (t_bosses ne null) {
+      convertList(new_bosses).addAll(t_bosses.map(x =>
+        new EventBoss(x.getBoss, x.getBossKey)
+      ))
+    }
+    e.setEventBosses(new_bosses)
 
-    val iid = getInstanceId(jset.instance)
+    val new_roles = new java.util.ArrayList[EventRole]
+    val t_roles = et.getRoles
+    // FIXME: appengine null collection bug
+    if (t_roles ne null) {
+      convertList(new_roles).addAll(t_roles.map(x =>
+        new EventRole(x.getRole, x.getRoleKey, x.getMin, x.getMax)
+      ))
+    }
+    e.setEventRoles(new_roles)
 
-    jdbc.update(
-      """insert into event (eventtmplid, name, size, minimum_level, instanceid,
-          start_time, duration, display_start, display_end, signups_start,
-          signups_end)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-      Array[AnyRef](es.eid, jset.name, jset.size, jset.minimumLevel, iid,
-        es.start_time, es.duration, display_start, display_end,
-        signups_start, signups_end
-      ): _*)
-
-    val eventid = jdbc.queryForLong("values IDENTITY_VAL_LOCAL()", noargs: _*)
-
-    populateEventRoles(eventid, es.eid)
-    populateEventBadges(eventid, es.eid)
-    populateEventBosses(eventid, es.eid)
+    getJdoTemplate.makePersistent(e)
   }
-  */
 
   override
   def getEvents(guild: Key): java.util.Collection[Event] = {
@@ -707,4 +712,8 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
   */
+
+  def detachCopy[T <: AnyRef](entity: T): T = {
+    getJdoTemplate.detachCopy(entity).asInstanceOf[T]
+  }
 }
