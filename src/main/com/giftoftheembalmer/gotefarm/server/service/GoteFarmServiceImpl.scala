@@ -409,6 +409,12 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  private def mkList[A](col: Collection[A]): java.util.List[A] = {
+    val r = new java.util.ArrayList[A](col.size)
+    r.addAll(col)
+    r
+  }
+
   private
   def setAdd[I <: AnyRef, S <: java.util.Set[I]](
                                             element: I, existing_set: S,
