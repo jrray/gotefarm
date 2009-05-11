@@ -1056,6 +1056,8 @@ public class Events
 
                 // merge new events into existing event list, to reuse widgets
 
+                Date now = new Date();
+
                 int old_index = 0;
                 int new_index = 0;
                 for (JSEvent e : result) {
@@ -1077,8 +1079,14 @@ public class Events
                         dragController.addDragHandler(event);
                         events.add(old_index, event);
                         veventpanel.insert(event, old_index);
-                        // need to resize after attaching to DOM
-                        event.resizeRows();
+                        // should we be seeing this event?
+                        if (e.display_start.compareTo(now) > 0) {
+                            event.setVisible(false);
+                        }
+                        else {
+                            // need to resize after attaching to DOM
+                            event.resizeRows();
+                        }
                     }
 
                     ++old_index;
@@ -1093,12 +1101,26 @@ public class Events
                     veventpanel.remove(event);
                 }
 
-                if (result.size() == 0) {
-                    vmsgpanel.add(new Label("No events"));
-                }
+                boolean any_visible = false;
 
                 for (Event e : events) {
+                    if (!e.isVisible()) {
+                        if (e.event.display_start.compareTo(now) <= 0) {
+                            any_visible = true;
+
+                            e.setVisible(true);
+                            e.resizeRows();
+                        }
+                    }
+                    else {
+                        any_visible = true;
+                    }
+
                     e.fetchSignups();
+                }
+
+                if (!any_visible) {
+                    vmsgpanel.add(new Label("No events"));
                 }
             }
 
