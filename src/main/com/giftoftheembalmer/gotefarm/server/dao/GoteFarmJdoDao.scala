@@ -209,15 +209,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
   }
 
   /*
-  def getCharacterRoles(cid: Long): Seq[JSChrRole] = {
-    val jdbc = getSimpleJdbcTemplate()
-    jdbc.query(
-      "select " + JSChrRoleMapper.columns + " from role join chrrole on role.roleid = chrrole.roleid where chrid = ? order by name",
-      JSChrRoleMapper,
-      Array[AnyRef](cid): _*
-    )
-  }
-
   def getCharacterBadges(cid: Long): Seq[JSChrBadge] = {
     val jdbc = getSimpleJdbcTemplate()
     jdbc.query(

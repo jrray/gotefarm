@@ -25,7 +25,6 @@ interface GoteFarmRPCAsync {
     public void getRoles(String guild_key, AsyncCallback<List<JSRole>> cb);
     public void addRole(String guild_key, String name, boolean restricted,
                         AsyncCallback<JSRole> cb);
-    // public void getCharacterRoles(long cid, AsyncCallback<List<JSCharRole>> cb);
     public void updateCharacterRole(String character_key, String role_key,
                                     boolean adding,
                                     AsyncCallback<JSCharacter> cb);
