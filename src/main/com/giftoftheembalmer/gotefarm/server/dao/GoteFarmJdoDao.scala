@@ -51,6 +51,11 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     }
   }
 
+  override
+  def getAccount(key: Key): Option[Account] = {
+    getObjectById(classOf[Account], key)
+  }
+
   /*
   override
   def validateUser(username: String, password: String) = {
