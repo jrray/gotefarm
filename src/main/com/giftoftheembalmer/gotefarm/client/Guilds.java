@@ -206,6 +206,14 @@ public class Guilds extends Composite implements HasValue<JSGuild> {
     }
 
     void enroll() {
+        // fake a non-existent guild with a null key so other
+        // panels indicate no guild is selected
+        JSGuild fake = new JSGuild();
+        fake.name = "Not A Guild";
+        fake.owner = "nobody";
+        fake.officers = new java.util.HashSet<String>();
+        setValue(fake, true);
+
         vpanel.clear();
 
         vpanel.add(new Label("You need to create or join a guild."));
