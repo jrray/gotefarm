@@ -59,6 +59,8 @@ public class Events
         }
     };
 
+    private final CharacterCache chr_cache = new CharacterCache();
+
     public class Event
         extends Composite
         implements DragHandler {
