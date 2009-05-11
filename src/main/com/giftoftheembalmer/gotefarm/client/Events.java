@@ -363,7 +363,7 @@ public class Events
                     // deleting signup
                     GoteFarm.goteService.removeEventSignup(GoteFarm.sessionID,
                                                            event.key,
-                                                           sup.sup.eventsignupid,
+                                                           sup.sup.key,
                                                            signupCallback);
                 }
                 else
@@ -371,7 +371,7 @@ public class Events
                     // changing signup
                     GoteFarm.goteService.changeEventSignup(GoteFarm.sessionID,
                                                            event.key,
-                                                           sup.sup.eventsignupid,
+                                                           sup.sup.key,
                                                            role.role_key,
                                                            signupType,
                                                            signupCallback);

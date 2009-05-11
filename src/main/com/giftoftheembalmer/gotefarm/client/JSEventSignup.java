@@ -12,8 +12,8 @@ public class JSEventSignup implements IsSerializable {
     static final String SIGNUP_LABEL_MAYBE = "Maybe";
     static final String SIGNUP_LABEL_NOT_COMING = "Not Coming";
 
-    public long eventsignupid;
-    public long eventid;
+    public String key;
+    public String event_key;
     public JSCharacter chr;
     public JSRole role;
     public int signup_type;

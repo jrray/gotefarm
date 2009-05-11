@@ -77,13 +77,13 @@ public interface GoteFarmRPC extends RemoteService {
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
     public JSEventSignups changeEventSignup(String sid, String event_key,
-                                            long eventsignupid,
+                                            String event_signup_key,
                                             String new_role_key,
                                             int new_signup_type)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
     public JSEventSignups removeEventSignup(String sid, String event_key,
-                                            long eventsignupid)
+                                            String event_signup_key)
         throws UserNotLoggedInError, NotFoundError, AlreadyExistsError,
                IllegalArgumentException;
 
