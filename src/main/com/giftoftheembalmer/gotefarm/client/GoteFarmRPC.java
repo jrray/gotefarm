@@ -49,7 +49,6 @@ public interface GoteFarmRPC extends RemoteService {
     public List<JSBoss> getInstanceBosses(String instance_key)
         throws NotFoundError;
 
-    public JSEventTemplate getEventTemplate(String sid, String name) throws UserNotLoggedInError, NotFoundError;
     public List<JSEventTemplate> getEventTemplates(String guild_key)
         throws UserNotLoggedInError, NotFoundError;
     public JSEventTemplate saveEventTemplate(String guild_key,
