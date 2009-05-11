@@ -12,7 +12,14 @@
     <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
         <property name="mappings">
             <value>
+                /publish_events=publishEvents
             </value>
         </property>
+    </bean>
+
+    <bean id="publishEvents"
+          class="com.giftoftheembalmer.gotefarm.server.servlet.PublishEvents">
+          <property name="goteFarmService" ref="goteFarmService"/>
+          <property name="cacheSeconds"><value>0</value></property>
     </bean>
 </beans>
