@@ -95,6 +95,16 @@ object GoteFarmServiceImpl {
       KeyFactory.stringToKey(key)
     }
   }
+
+  implicit def function2ToComparator[T](f: (T, T) => Int)
+    : java.util.Comparator[T] = {
+    new java.util.Comparator[T] {
+      override
+      def compare(o1: T, o2: T): Int = {
+        f(o1, o2)
+      }
+    }
+  }
 }
 
 @Transactional{val propagation = Propagation.NEVER,
@@ -1236,10 +1246,15 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     // Cannot have more than one inequality filter in the query, so filter
     // the results further here to eliminate ones that should not be shown
     // yet.
-    // TODO: Also cannot sort on displayStart when the query filter is on
-    // displayEnd so the events must be sorted here.
-    mkList(goteFarmDao.getEvents(guild),
-           (x: Event) => x.getDisplayStart.getTime <= now, event2JSEvent)
+    // Also cannot sort on startTime when the query filter is on displayEnd so
+    // the events must be sorted here.
+    val r = mkList(goteFarmDao.getEvents(guild),
+                   (x: Event) => x.getDisplayStart.getTime <= now,
+                   event2JSEvent)
+    java.util.Collections.sort(r, (x: JSEvent, y: JSEvent) =>
+      x.start_time.compareTo(y.start_time)
+    )
+    r
   }
 
   /*
