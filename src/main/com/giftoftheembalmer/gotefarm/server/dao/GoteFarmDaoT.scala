@@ -97,8 +97,10 @@ trait GoteFarmDaoT {
   def getEvents(guild: Key): Collection[Event]
   def getEventKeys(event_template: Key): Iterable[Key]
   def getEvent(key: Key): Option[Event]
+
+  def getEventSignup(key: Key): Option[Signup]
+
   /*
-  def getEventSignup(eventsignupid: Long): JSEventSignup
   def changeEventSignup(eventsignupid: Long, new_roleid: Long,
                         new_signup_type: Int): Unit
   def removeEventSignup(eventsignupid: Long): Unit

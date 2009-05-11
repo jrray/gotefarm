@@ -565,29 +565,12 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
     getObjectById(classOf[Event], key)
   }
 
-  /*
   override
-  def getEventSignup(eventsignupid: Long) = {
-    val jdbc = getSimpleJdbcTemplate
-    try {
-      val r = jdbc.queryForObject(
-        JSEventSignupMapper.prefix +
-          " where eventsignupid = ?",
-        JSEventSignupMapper,
-        eventsignupid: AnyRef
-      )
-
-      r.chr.roles = getCharacterRoles(r.chr.cid).toArray
-      r.chr.badges = getCharacterBadges(r.chr.cid).toArray
-
-      r
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("No such event signup")
-    }
+  def getEventSignup(key: Key): Option[Signup] = {
+    getObjectById(classOf[Signup], key)
   }
 
+  /*
   override
   def changeEventSignup(eventsignupid: Long, new_roleid: Long,
                         new_signup_type: Int): Unit = {
