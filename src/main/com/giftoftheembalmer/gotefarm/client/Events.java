@@ -115,7 +115,7 @@ public class Events
             JSEvent old_event = this.event;
             this.event = event;
             if (event == null || !event.equals(old_event)) {
-                showSignups();
+                showSignups(false);
             }
         }
 
@@ -171,8 +171,7 @@ public class Events
 
         void setSignups(JSEventSignups signups) {
             this.signups = signups;
-            showSignups();
-            charactersChanged();
+            showSignups(true);
         }
 
         AsyncCallback<JSEventSignups> signupCallback = new AsyncCallback<JSEventSignups>() {
@@ -389,10 +388,13 @@ public class Events
             }
         }
 
-        void showSignups() {
+        void showSignups(final boolean call_characters_changed) {
             try {
                 unregisterDropControllers();
                 remakeFlex(makeNewSignupTable());
+                if (call_characters_changed) {
+                    charactersChanged();
+                }
             }
             catch (CharacterNotCachedException e) {
                 // Fetch the missing character and try again
@@ -405,7 +407,7 @@ public class Events
                     public void onSuccess(JSCharacter chr) {
                         chr_cache.put(key, chr);
                         // recurse (sort of)
-                        showSignups();
+                        showSignups(call_characters_changed);
                     }
 
                     public void onFailure(Throwable caught) {
