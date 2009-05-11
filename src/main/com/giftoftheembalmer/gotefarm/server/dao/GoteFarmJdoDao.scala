@@ -34,6 +34,18 @@ import scala.Predef.{
 class GoteFarmJdoDao extends ScalaJdoDaoSupport
   with GoteFarmDaoT {
 
+  implicit def convertCollection[T](col: java.util.Collection[T])
+    : scala.collection.jcl.CollectionWrapper[T] = {
+    new scala.collection.jcl.CollectionWrapper[T] {
+      override val underlying = col
+      override def transform(f: (T) => T): Boolean = {
+        throw new UnsupportedOperationException(
+          "In-place modification not possible"
+        )
+      }
+    }
+  }
+
   override
   def getAccount(user: User): Account = {
     val r = find(classOf[Account], "user == userParam",
