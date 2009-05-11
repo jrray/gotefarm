@@ -1471,7 +1471,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
   override
   def signupForEvent(user: User, event_key: Key, character: Key, role: Key,
                      signup_type: Int): JSEventSignups = {
-    val chr = transactionTemplate.execute {
+    val (chr, account_key) = transactionTemplate.execute {
       val chr = goteFarmDao.getCharacter(character).getOrElse(
         throw new NotFoundError("Character not found")
       )
@@ -1486,7 +1486,7 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
         throw new IllegalArgumentException("Character does not belong to you.")
       }
 
-      chr2JSCharacter(chr)
+      (chr2JSCharacter(chr), acct.getKey)
     }
 
     transactionTemplate.execute {
@@ -1498,8 +1498,8 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
 
       val now = new Date
 
-      val signup = new Signup(event_key, character, role, signup_type, now,
-                              null)
+      val signup = new Signup(event_key, account_key, event.getGuild,
+                              character, role, signup_type, now, null)
       listAdd(signup, event.getSignups, event.setSignups)
 
       event.setLastModification(now)

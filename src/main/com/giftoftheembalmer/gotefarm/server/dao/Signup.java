@@ -20,6 +20,12 @@ public class Signup {
     private Key event;
 
     @Persistent
+    private Key account;
+
+    @Persistent
+    private Key guild;
+
+    @Persistent
     private Key character;
 
     @Persistent
@@ -37,14 +43,20 @@ public class Signup {
     @Persistent
     private String note;
 
-    public Signup(Key event, Key character, Key role, int signupType,
-                  Date signupTime, String note) {
+    public Signup(Key event, Key account, Key guild, Key character, Key role,
+                  int signupType, Date signupTime, String note) {
         this.event = event;
+        this.account = account;
+        this.guild = guild;
         this.character = character;
         this.role = role;
         this.signupType = signupType;
         setSignupTime(signupTime);
         this.note = note;
+    }
+
+    public Key getAccount() {
+        return account;
     }
 
     public Date getActualSignupTime() {
@@ -57,6 +69,10 @@ public class Signup {
 
     public Key getEvent() {
         return event;
+    }
+
+    public Key getGuild() {
+        return guild;
     }
 
     public Key getKey() {
