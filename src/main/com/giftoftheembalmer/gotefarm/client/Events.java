@@ -104,7 +104,6 @@ public class Events
             hchractions.add(signup_error);
 
             setSignups(null);
-            fetchSignups();
 
             initWidget(vpanel);
 
