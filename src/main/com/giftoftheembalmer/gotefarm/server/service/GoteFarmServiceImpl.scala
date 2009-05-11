@@ -317,6 +317,22 @@ class GoteFarmServiceImpl extends GoteFarmServiceT {
     r
   }
 
+  private def mkList[A,B](col: java.util.Collection[A], filter: A => Boolean,
+                          map: A => B)
+    : java.util.List[B] = {
+    val r = new java.util.ArrayList[B]
+    if (col ne null) {
+      val i = col.iterator
+      while (i.hasNext) {
+        val n = i.next
+        if (filter(n)) {
+          r.add(map(n))
+        }
+      }
+    }
+    r
+  }
+
   private
   def setAdd[I <: AnyRef, S <: java.util.Set[I]](
                                             element: I, existing_set: S,
