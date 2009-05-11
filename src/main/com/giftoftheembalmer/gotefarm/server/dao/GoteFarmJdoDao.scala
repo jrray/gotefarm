@@ -235,25 +235,6 @@ class GoteFarmJdoDao extends ScalaJdoDaoSupport
          "com.google.appengine.api.datastore.Key guildParam")(guild)
   }
 
-  /*
-  override
-  def getRole(roleid: Long) = {
-    val jdbc = getSimpleJdbcTemplate()
-
-    try {
-      jdbc.queryForObject(
-        "select " + JSRoleMapper.columns + " from role where roleid = ?",
-        JSRoleMapper,
-        roleid: AnyRef
-      )
-    }
-    catch {
-      case _: IncorrectResultSizeDataAccessException =>
-        throw new NotFoundError("Role not found.")
-    }
-  }
-  */
-
   override
   def addRole(guild: Key, name: String, restricted: Boolean): Role = {
     val nr = new Role(guild, name, restricted)

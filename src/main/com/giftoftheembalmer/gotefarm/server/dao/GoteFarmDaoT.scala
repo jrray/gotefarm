@@ -55,10 +55,6 @@ trait GoteFarmDaoT {
   def getRole(key: Key): Option[Role]
   def getRoles(guild: Key): Collection[Role]
 
-  /*
-  def getRole(roleid: Long): JSRole
-  */
-
   def addRole(guild: Key, name: String, restricted: Boolean): Role
 
   def getBadge(key: Key): Option[Badge]
